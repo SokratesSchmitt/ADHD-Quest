@@ -5,8 +5,8 @@
  * ============================================================================
  */
 const ADHDQuestEngine = (function() {
-  const APP_VERSION = "0.23";
-  const STORAGE_KEY = "ADHD_QUEST_LOCAL_STATE_V0_23";
+  const APP_VERSION = "0.24";
+  const STORAGE_KEY = "ADHD_QUEST_LOCAL_STATE_V0_24";
 
   // Alle Grafik-Adressen aus dem Tabellenblatt "Raum_adressen" (umgewandelt in direkte raw-Links)
   const ASSETS = {
@@ -18,7 +18,6 @@ const ADHDQuestEngine = (function() {
       "Wohnzimmer": "assets/bg_livingroom_orig.png",
       "Kinderzimmer": "assets/bg_kinderzimmer_orig.png",
       "Schlafzimmer": "assets/bg_schlafzimmer_orig.png",
-      "Startbildschirm": "https://raw.githubusercontent.com/SokratesSchmitt/ADHD-Quest/main/backgrounds/bg_startbildschirm.png",
       "Startlogo": "https://raw.githubusercontent.com/SokratesSchmitt/ADHD-Quest/main/backgrounds/bg_startlogo.png"
     }
   };

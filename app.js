@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * ADHD-QUEST VISUAL POINT & CLICK CONTROLLER v0.23
+ * ADHD-QUEST VISUAL POINT & CLICK CONTROLLER v0.24
  * (Puristisches Avatar-Porträt mit Gefühlszuständen & Blick-Loop + In-World Tür
  *  + Arbeitszimmer als Startraum mit Sparschwein & Tageschronik)
  * ============================================================================
@@ -605,5 +605,5 @@ document.addEventListener("DOMContentLoaded", () => {
   renderDashboard();
   startAvatarLookLoop();
   initRoomSwipeNavigation();
-  setTimeout(dismissIntroScreen, 2200);
+  setTimeout(dismissIntroScreen, 4200);
 });

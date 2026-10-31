@@ -2,8 +2,15 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>ADHD QUEST | Version 0.23</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#ff7a00">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="ADHD Quest">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="assets/avatar/avatar_happy_center.png">
+  <title>ADHD QUEST | Version 0.24</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -11,22 +18,20 @@
   <div class="app-shell">
 
     <!-- ==================================================================
-         INTRO / SPLASH SCREEN (bg_startbildschirm.png + bg_startlogo.png)
-         Blendet sich automatisch nach 2,2s oder bei Klick aus
+         INTRO / SPLASH SCREEN (Rein weißer Hintergrund + 100% breites Titelbild)
+         Bleibt 4,2 Sekunden (2s länger als zuvor) sichtbar oder blendet bei Klick aus
          ================================================================== -->
     <div class="intro-overlay" id="intro-screen" onclick="dismissIntroScreen()">
-      <div class="intro-logo-card">
+      <div class="intro-logo-fullwidth-wrap">
         <img src="https://raw.githubusercontent.com/SokratesSchmitt/ADHD-Quest/main/backgrounds/bg_startlogo.png"
-             alt="ADHD Quest Logo" class="intro-logo-img"
-             onerror="this.style.display='none'">
-        <div style="font-weight:800; color:#ff7a00; font-size:18px;">ADHD QUEST</div>
-        <div style="font-size:12px; color:#64748b; font-weight:600;">Version 0.23 • Point & Click UI</div>
+             alt="ADHD Quest Titelbild" class="intro-logo-img-full">
+        <div style="font-size:12px; color:#64748b; font-weight:700; margin-top:12px;">Version 0.24 • Point & Click UI</div>
       </div>
       <button class="intro-start-btn" onclick="dismissIntroScreen()">▶ SPIEL STARTEN</button>
     </div>
 
     <!-- ==================================================================
-         100% VOLLBILD RAUM-KULISSE (Mit Top-App UI-Upgrades v0.23!)
+         100% VOLLBILD RAUM-KULISSE (Mit Top-App UI-Upgrades v0.24!)
          ================================================================== -->
     <main class="middle-zone">
       <div class="room-canvas" id="room-canvas" data-room="Arbeitszimmer">
@@ -51,7 +56,7 @@
           <img src="assets/icons/sprite_door.png" alt="Tür zur Map">
         </div>
 
-        <!-- 4. NEU IN v0.23: DEZENT SCHWEBENDE SPARZIEL-PILLE UNTEN MITTIG (Spotify-Mini-Player-Stil)
+        <!-- 4. NEU IN v0.24: DEZENT SCHWEBENDE SPARZIEL-PILLE UNTEN MITTIG (Spotify-Mini-Player-Stil)
              Verhindert "Aus den Augen, aus dem Sinn" und öffnet per Klick direkt das Sparschwein! -->
         <div class="goal-pill-widget" id="goal-pill-widget" onclick="openShopModal()" title="Klicken, um den Sparschwein-Shop zu öffnen">
           <div class="goal-pill-content">
@@ -72,7 +77,7 @@
     <div class="modal-backdrop" id="char-modal" onclick="if(event.target===this) closeModal('char-modal')">
       <div class="modal-card">
         <div class="modal-header">
-          <span>🧔 Charakterbogen & Befinden (v0.23)</span>
+          <span>🧔 Charakterbogen & Befinden (v0.24)</span>
           <button class="modal-close" onclick="closeModal('char-modal')">✕</button>
         </div>
         <div class="modal-body" id="char-modal-body"></div>
@@ -80,7 +85,7 @@
     </div>
 
     <!-- ==================================================================
-         MODAL 2: NEU IN v0.23 -> HALB-HOHES BOTTOM-SHEET FÜR OBJEKTE!
+         MODAL 2: NEU IN v0.24 -> HALB-HOHES BOTTOM-SHEET FÜR OBJEKTE!
          Gleitet von unten ins Bild, sodass oben dein Raum & dein jubelndes
          Porträt sichtbar bleiben, während Münzen/Sterne zum Porträt fliegen!
          ================================================================== -->
@@ -132,7 +137,7 @@
     <div class="modal-backdrop" id="log-modal" onclick="if(event.target===this) closeModal('log-modal')">
       <div class="modal-card">
         <div class="modal-header">
-          <span>📖 Tageschronik & Statistik (v0.23)</span>
+          <span>📖 Tageschronik & Statistik (v0.24)</span>
           <button class="modal-close" onclick="closeModal('log-modal')">✕</button>
         </div>
         <div class="modal-body">
