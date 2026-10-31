@@ -5,8 +5,8 @@
  * ============================================================================
  */
 const ADHDQuestEngine = (function() {
-  const APP_VERSION = "0.24";
-  const STORAGE_KEY = "ADHD_QUEST_LOCAL_STATE_V0_24";
+  const APP_VERSION = "0.25";
+  const STORAGE_KEY = "ADHD_QUEST_LOCAL_STATE_V0_25";
 
   // Alle Grafik-Adressen aus dem Tabellenblatt "Raum_adressen" (umgewandelt in direkte raw-Links)
   const ASSETS = {
@@ -509,6 +509,19 @@ const ADHDQuestEngine = (function() {
           name: "10.000 Schritte gehen / Frische Luft schnappen",
           mb: 25, xp: 30, gold: 0, ap: 2,
           x: 26, y: 96,
+          completedToday: false
+        },
+        {
+          id: "MB_SCH_07",
+          raum: "Schlafzimmer",
+          icon: "🧢",
+          iconUrl: "assets/schlafzimmer_sprites/sprite_sch_schiebermuetze.png",
+          isSceneSprite: true,
+          leftPct: 22.0, topPct: 54.0, widthPct: 17.5, heightPct: 7.5,
+          objekt: "Lieblings-Schiebermütze",
+          name: "Lieblings-Schiebermütze aufsetzen & entspannter Kopf-frei-Spaziergang",
+          mb: 20, xp: 25, gold: 0, ap: 2,
+          x: 31, y: 58,
           completedToday: false
         },
         // Kinderzimmer (Nahtlose Original-Sprites aus bg_kinderzimmer_orig.png)

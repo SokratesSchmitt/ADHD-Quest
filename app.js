@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * ADHD-QUEST VISUAL POINT & CLICK CONTROLLER v0.24
+ * ADHD-QUEST VISUAL POINT & CLICK CONTROLLER v0.25
  * (Puristisches Avatar-Porträt mit Gefühlszuständen & Blick-Loop + In-World Tür
  *  + Arbeitszimmer als Startraum mit Sparschwein & Tageschronik)
  * ============================================================================
@@ -14,7 +14,7 @@ function dismissIntroScreen() {
   if (intro) intro.classList.add("hidden");
 }
 
-// Bestimmt anhand von Geisteskraft (MB) das aktuelle Gefühls-Porträt + Blickrichtung
+// Bestimmt anhand von Geisteskraft (MB) das aktuelle Gefühls-Porträt (2-Ebenen Pop-Out mit Schiebermütze)
 function getAvatarFrameUrl() {
   if (isExcitedOverride) {
     return "assets/avatar/avatar_excited.png";
@@ -23,25 +23,24 @@ function getAvatarFrameUrl() {
   const mbPct = (s.character.mb / s.character.maxMb) * 100;
 
   if (mbPct >= 75) {
-    if (lookPhase === "right") return "assets/avatar/avatar_happy_right.png";
-    if (lookPhase === "left") return "assets/avatar/avatar_happy_left.png";
-    return "assets/avatar/avatar_happy_center.png";
+    if (lookPhase === "right") return "assets/avatar/avatar_neutral.png";
+    return "assets/avatar/avatar_happy.png";
   } else if (mbPct >= 45) {
-    if (lookPhase === "right") return "assets/avatar/avatar_neutral_right.png";
-    if (lookPhase === "left") return "assets/avatar/avatar_neutral_left.png";
-    return "assets/avatar/avatar_neutral_center.png";
+    if (lookPhase === "left") return "assets/avatar/avatar_skeptical.png";
+    if (lookPhase === "right") return "assets/avatar/avatar_happy.png";
+    return "assets/avatar/avatar_neutral.png";
   } else if (mbPct >= 20) {
     return "assets/avatar/avatar_tired.png";
   } else {
-    return "assets/avatar/avatar_exhausted.png";
+    return "assets/avatar/avatar_grumpy.png";
   }
 }
 
 function getMoodDescription(mbPct) {
-  if (mbPct >= 75) return "😄 Voller Fokus & Energie (Geisteskraft hoch)";
-  if (mbPct >= 45) return "🙂 Ausgeglichen & Aufmerksam";
-  if (mbPct >= 20) return "😪 Müde – Zeit für eine MB-Erholung!";
-  return "😰 Erschöpft – Gönn dir dringend Ruhe!";
+  if (mbPct >= 75) return "😄 Glücklich & Voller Fokus (Geisteskraft hoch)";
+  if (mbPct >= 45) return "🙂 Entspannt & Aufmerksam (Neutral)";
+  if (mbPct >= 20) return "🥱 Müde – Zeit für eine MB-Erholung!";
+  return "😠 Grummelig & Erschöpft – Gönn dir dringend Ruhe!";
 }
 
 function updateAvatarVisual() {

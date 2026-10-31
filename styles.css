@@ -1,5 +1,5 @@
 /* ============================================================================
-   ADHD-QUEST: VISUELLES POINT & CLICK UI v0.24
+   ADHD-QUEST: VISUELLES POINT & CLICK UI v0.25
    (100% Vollbild-Raumkulisse + Animiertes Charakter-Porträt + In-World Tür)
    ============================================================================ */
 :root {
@@ -191,26 +191,27 @@ body {
 /* Instagram/Duolingo-Stil Fortschrittsring um das Porträt oben links */
 .avatar-ring-wrap {
   position: absolute;
-  top: 12px;
-  left: 12px;
-  width: 114px;
-  height: 114px;
+  top: 14px;
+  left: 14px;
+  width: 118px;
+  height: 118px;
   border-radius: 50%;
   padding: 5px;
   background: conic-gradient(var(--orange-main) var(--xp-deg, 120deg), rgba(255, 255, 255, 0.45) 0deg);
-  box-shadow: 0 0 0 2.5px #ffffff, 0 10px 24px rgba(0, 0, 0, 0.34);
+  box-shadow: 0 0 0 3px #ffffff, 0 10px 24px rgba(0, 0, 0, 0.35);
   cursor: pointer;
   z-index: 60; /* Bleibt auch über dem halb-hohen Bottom-Sheet sichtbar! */
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow: visible; /* WICHTIG: Erlaubt das Hinausragen von Schiebermütze & Händen über den Ring! */
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
   animation: avatarBreathe 3.6s infinite ease-in-out;
 }
 
 .avatar-ring-wrap:hover {
   transform: scale(1.07);
-  box-shadow: 0 0 0 3px #ffffff, 0 0 18px rgba(255, 122, 0, 0.9);
+  box-shadow: 0 0 0 3.5px #ffffff, 0 0 18px rgba(255, 122, 0, 0.95);
 }
 
 .avatar-ring-wrap.avatar-celebrate {
@@ -224,24 +225,37 @@ body {
   75% { transform: scale(1.12) rotate(4deg); }
 }
 
+/* Ebene 1: Der runde, warm leuchtende Gelb-Orange-Hintergrund im Ring */
 .avatar-portrait-widget {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: radial-gradient(circle at 50% 35%, #ffffff 0%, #fff3e0 100%);
-  border: 2.5px solid #ffffff;
-  overflow: hidden;
+  background: radial-gradient(circle at 50% 32%, #ffe082 0%, #ffb300 58%, #fb8c00 100%);
+  border: 3px solid #ffffff;
+  box-shadow: inset 0 4px 10px rgba(255, 255, 255, 0.55), inset 0 -4px 10px rgba(230, 81, 0, 0.35);
+  overflow: visible; /* Kein Abschneiden am Kreisrand! */
+  position: relative;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-end;
 }
 
+/* Ebene 2: Dein freigestelltes Charakter-Sprite, das oben (Schiebermütze) & seitlich (Hände) über den Rahmen ragt */
 .avatar-portrait-widget img {
-  width: 94%;
-  height: 94%;
+  position: absolute;
+  width: 148%;
+  height: 132%;
+  left: 50%;
+  bottom: -4%;
+  transform: translateX(-50%);
   object-fit: contain;
-  transform: translateY(3px);
   pointer-events: none;
+  filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.32));
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.avatar-ring-wrap.avatar-celebrate .avatar-portrait-widget img {
+  transform: translateX(-50%) scale(1.08) translateY(-3px);
 }
 
 .avatar-level-badge {
@@ -485,11 +499,12 @@ body {
 }
 
 .char-sheet-avatar {
-  width: 98px;
-  height: 98px;
+  width: 104px;
+  height: 104px;
   border-radius: 50%;
-  background: #ffffff;
+  background: radial-gradient(circle at 50% 32%, #ffe082 0%, #ffb300 58%, #fb8c00 100%);
   border: 3px solid var(--orange-main);
+  box-shadow: 0 0 0 2px #ffffff, 0 6px 14px rgba(0, 0, 0, 0.2);
   object-fit: contain;
   flex-shrink: 0;
 }
@@ -784,7 +799,7 @@ body {
 }
 
 /* ============================================================================
-   NEU IN v0.24: 1) HALB-HOHES BOTTOM-SHEET (Lässt Porträt oben sichtbar!)
+   NEU IN v0.25: 1) HALB-HOHES BOTTOM-SHEET (Lässt Porträt oben sichtbar!)
    ============================================================================ */
 .bottom-sheet-backdrop {
   align-items: flex-end !important;
@@ -815,7 +830,7 @@ body {
 }
 
 /* ============================================================================
-   NEU IN v0.24: 2) DEZENT SCHWEBENDE SPARZIEL-PILLE UNTEN MITTIG (Spotify-Stil)
+   NEU IN v0.25: 2) DEZENT SCHWEBENDE SPARZIEL-PILLE UNTEN MITTIG (Spotify-Stil)
    ============================================================================ */
 .goal-pill-widget {
   position: absolute;
@@ -875,7 +890,7 @@ body {
 }
 
 /* ============================================================================
-   NEU IN v0.24: 3) FLIEGENDE LOOT-PARTIKEL ZUM PORTRÄT & DONE-CHECKMARK
+   NEU IN v0.25: 3) FLIEGENDE LOOT-PARTIKEL ZUM PORTRÄT & DONE-CHECKMARK
    ============================================================================ */
 .loot-particle {
   position: absolute;

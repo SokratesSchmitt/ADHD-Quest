@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="ADHD Quest">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="assets/avatar/avatar_happy_center.png">
-  <title>ADHD QUEST | Version 0.24</title>
+  <title>ADHD QUEST | Version 0.25</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -25,13 +25,13 @@
       <div class="intro-logo-fullwidth-wrap">
         <img src="https://raw.githubusercontent.com/SokratesSchmitt/ADHD-Quest/main/backgrounds/bg_startlogo.png"
              alt="ADHD Quest Titelbild" class="intro-logo-img-full">
-        <div style="font-size:12px; color:#64748b; font-weight:700; margin-top:12px;">Version 0.24 • Point & Click UI</div>
+        <div style="font-size:12px; color:#64748b; font-weight:700; margin-top:12px;">Version 0.25 • Point & Click UI</div>
       </div>
       <button class="intro-start-btn" onclick="dismissIntroScreen()">▶ SPIEL STARTEN</button>
     </div>
 
     <!-- ==================================================================
-         100% VOLLBILD RAUM-KULISSE (Mit Top-App UI-Upgrades v0.24!)
+         100% VOLLBILD RAUM-KULISSE (Mit Top-App UI-Upgrades v0.25!)
          ================================================================== -->
     <main class="middle-zone">
       <div class="room-canvas" id="room-canvas" data-room="Arbeitszimmer">
@@ -40,7 +40,7 @@
              Der äußere Conic-Gradient-Ring zeigt deinen Level-XP/MB-Fortschritt ohne Zahlen! -->
         <div class="avatar-ring-wrap" id="avatar-ring" onclick="openCharacterModal()" title="Charakterbogen & Statuswerte öffnen">
           <div class="avatar-portrait-widget" id="avatar-widget">
-            <img src="assets/avatar/avatar_neutral_center.png" id="avatar-img" alt="Charakter Porträt">
+            <img src="assets/avatar/avatar_happy.png" id="avatar-img" alt="Charakter Porträt">
           </div>
           <div class="avatar-level-badge" id="avatar-lvl-badge">Lv.1</div>
         </div>
@@ -56,7 +56,7 @@
           <img src="assets/icons/sprite_door.png" alt="Tür zur Map">
         </div>
 
-        <!-- 4. NEU IN v0.24: DEZENT SCHWEBENDE SPARZIEL-PILLE UNTEN MITTIG (Spotify-Mini-Player-Stil)
+        <!-- 4. NEU IN v0.25: DEZENT SCHWEBENDE SPARZIEL-PILLE UNTEN MITTIG (Spotify-Mini-Player-Stil)
              Verhindert "Aus den Augen, aus dem Sinn" und öffnet per Klick direkt das Sparschwein! -->
         <div class="goal-pill-widget" id="goal-pill-widget" onclick="openShopModal()" title="Klicken, um den Sparschwein-Shop zu öffnen">
           <div class="goal-pill-content">
@@ -77,7 +77,7 @@
     <div class="modal-backdrop" id="char-modal" onclick="if(event.target===this) closeModal('char-modal')">
       <div class="modal-card">
         <div class="modal-header">
-          <span>🧔 Charakterbogen & Befinden (v0.24)</span>
+          <span>🧔 Charakterbogen & Befinden (v0.25)</span>
           <button class="modal-close" onclick="closeModal('char-modal')">✕</button>
         </div>
         <div class="modal-body" id="char-modal-body"></div>
@@ -85,7 +85,7 @@
     </div>
 
     <!-- ==================================================================
-         MODAL 2: NEU IN v0.24 -> HALB-HOHES BOTTOM-SHEET FÜR OBJEKTE!
+         MODAL 2: NEU IN v0.25 -> HALB-HOHES BOTTOM-SHEET FÜR OBJEKTE!
          Gleitet von unten ins Bild, sodass oben dein Raum & dein jubelndes
          Porträt sichtbar bleiben, während Münzen/Sterne zum Porträt fliegen!
          ================================================================== -->
@@ -137,7 +137,7 @@
     <div class="modal-backdrop" id="log-modal" onclick="if(event.target===this) closeModal('log-modal')">
       <div class="modal-card">
         <div class="modal-header">
-          <span>📖 Tageschronik & Statistik (v0.24)</span>
+          <span>📖 Tageschronik & Statistik (v0.25)</span>
           <button class="modal-close" onclick="closeModal('log-modal')">✕</button>
         </div>
         <div class="modal-body">
