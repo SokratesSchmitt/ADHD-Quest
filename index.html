@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ADHD QUEST | Version 0.23</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div class="app-shell">
+
+    <!-- ==================================================================
+         INTRO / SPLASH SCREEN (bg_startbildschirm.png + bg_startlogo.png)
+         Blendet sich automatisch nach 2,2s oder bei Klick aus
+         ================================================================== -->
+    <div class="intro-overlay" id="intro-screen" onclick="dismissIntroScreen()">
+      <div class="intro-logo-card">
+        <img src="https://raw.githubusercontent.com/SokratesSchmitt/ADHD-Quest/main/backgrounds/bg_startlogo.png"
+             alt="ADHD Quest Logo" class="intro-logo-img"
+             onerror="this.style.display='none'">
+        <div style="font-weight:800; color:#ff7a00; font-size:18px;">ADHD QUEST</div>
+        <div style="font-size:12px; color:#64748b; font-weight:600;">Version 0.23 • Point & Click UI</div>
+      </div>
+      <button class="intro-start-btn" onclick="dismissIntroScreen()">▶ SPIEL STARTEN</button>
+    </div>
+
+    <!-- ==================================================================
+         100% VOLLBILD RAUM-KULISSE (Mit Top-App UI-Upgrades v0.23!)
+         ================================================================== -->
+    <main class="middle-zone">
+      <div class="room-canvas" id="room-canvas" data-room="Arbeitszimmer">
+
+        <!-- 1. PORTRAIT-WIDGET OBEN LINKS MIT INSTAGRAM/DUOLINGO FORTSCHRITTS-RING
+             Der äußere Conic-Gradient-Ring zeigt deinen Level-XP/MB-Fortschritt ohne Zahlen! -->
+        <div class="avatar-ring-wrap" id="avatar-ring" onclick="openCharacterModal()" title="Charakterbogen & Statuswerte öffnen">
+          <div class="avatar-portrait-widget" id="avatar-widget">
+            <img src="assets/avatar/avatar_neutral_center.png" id="avatar-img" alt="Charakter Porträt">
+          </div>
+          <div class="avatar-level-badge" id="avatar-lvl-badge">Lv.1</div>
+        </div>
+
+        <!-- Dezent schwebendes Raum-Schild oben rechts -->
+        <div class="room-banner-label" id="room-banner">🏠 <strong>Arbeitszimmer</strong></div>
+
+        <!-- 2. DYNAMISCHE IN-WORLD OBJEKTE & SPRITES DES AKTUELLEN RAUMS -->
+        <div id="hotspots-layer"></div>
+
+        <!-- 3. DURCHGEHENDES IN-WORLD ELEMENT: DIE TÜR ZUR MAP -->
+        <div class="inworld-door-spot" id="room-door" onclick="openMapModal()" title="Tür: Wohnungs-Grundriss (Raum wechseln)">
+          <img src="assets/icons/sprite_door.png" alt="Tür zur Map">
+        </div>
+
+        <!-- 4. NEU IN v0.23: DEZENT SCHWEBENDE SPARZIEL-PILLE UNTEN MITTIG (Spotify-Mini-Player-Stil)
+             Verhindert "Aus den Augen, aus dem Sinn" und öffnet per Klick direkt das Sparschwein! -->
+        <div class="goal-pill-widget" id="goal-pill-widget" onclick="openShopModal()" title="Klicken, um den Sparschwein-Shop zu öffnen">
+          <div class="goal-pill-content">
+            <span id="goal-pill-text">🐷 Sparziel lädt...</span>
+            <span class="goal-pill-pct" id="goal-pill-pct">0%</span>
+          </div>
+          <div class="goal-pill-bar-bg">
+            <div class="goal-pill-bar-fill" id="goal-pill-bar" style="width: 0%;"></div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- ==================================================================
+         MODAL 1: CHARAKTERBOGEN & AUSFÜHRLICHE WERTE (Klick auf Porträt)
+         ================================================================== -->
+    <div class="modal-backdrop" id="char-modal" onclick="if(event.target===this) closeModal('char-modal')">
+      <div class="modal-card">
+        <div class="modal-header">
+          <span>🧔 Charakterbogen & Befinden (v0.23)</span>
+          <button class="modal-close" onclick="closeModal('char-modal')">✕</button>
+        </div>
+        <div class="modal-body" id="char-modal-body"></div>
+      </div>
+    </div>
+
+    <!-- ==================================================================
+         MODAL 2: NEU IN v0.23 -> HALB-HOHES BOTTOM-SHEET FÜR OBJEKTE!
+         Gleitet von unten ins Bild, sodass oben dein Raum & dein jubelndes
+         Porträt sichtbar bleiben, während Münzen/Sterne zum Porträt fliegen!
+         ================================================================== -->
+    <div class="modal-backdrop bottom-sheet-backdrop" id="spot-modal" onclick="if(event.target===this) closeModal('spot-modal')">
+      <div class="modal-card bottom-sheet-card" id="spot-modal-card">
+        <div class="bottom-sheet-handle"></div>
+        <div class="modal-header">
+          <span id="spot-modal-title">Objekt</span>
+          <button class="modal-close" onclick="closeModal('spot-modal')">✕</button>
+        </div>
+        <div class="modal-body" id="spot-modal-body"></div>
+      </div>
+    </div>
+
+    <!-- ==================================================================
+         MODAL 3: WOHNUNGS-GRUNDRISS / MAP (Klick auf die Tür)
+         ================================================================== -->
+    <div class="modal-backdrop" id="map-modal" onclick="if(event.target===this) closeModal('map-modal')">
+      <div class="modal-card map-only-card">
+        <div class="modal-header">
+          <span>🗺️ Wohnungs-Grundriss (Klicke auf einen Raum)</span>
+          <button class="modal-close" onclick="closeModal('map-modal')">✕</button>
+        </div>
+        <div class="modal-body map-only-body">
+          <div class="interactive-map-canvas" id="interactive-map-canvas"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================================================================
+         MODAL 4: SPARSCHWEIN-SHOP (Klick auf Sparschwein oder Sparziel-Pille)
+         ================================================================== -->
+    <div class="modal-backdrop" id="shop-modal" onclick="if(event.target===this) closeModal('shop-modal')">
+      <div class="modal-card">
+        <div class="modal-header">
+          <span>🐷 Sparschwein-Shop (Belohnungen)</span>
+          <button class="modal-close" onclick="closeModal('shop-modal')">✕</button>
+        </div>
+        <div class="modal-body">
+          <div id="shop-pinned-section" style="margin-bottom:14px;"></div>
+          <div id="shop-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================================================================
+         MODAL 5: TAGESCHRONIK, STATISTIK & BACKUP (Im Arbeitszimmer)
+         ================================================================== -->
+    <div class="modal-backdrop" id="log-modal" onclick="if(event.target===this) closeModal('log-modal')">
+      <div class="modal-card">
+        <div class="modal-header">
+          <span>📖 Tageschronik & Statistik (v0.23)</span>
+          <button class="modal-close" onclick="closeModal('log-modal')">✕</button>
+        </div>
+        <div class="modal-body">
+          <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px;">
+            <button class="mini-btn" onclick="Engine.grantEveningBoost(true); openLogModal();">🌆 +5 AP Abend-Boost</button>
+            <button class="mini-btn" onclick="Engine.runNightlyMaintenance(true); openLogModal();">🌙 Nacht-Reset</button>
+            <button class="mini-btn" onclick="Engine.exportBackup()">📥 Backup</button>
+            <button class="mini-btn" onclick="document.getElementById('import-input').click()">📤 Laden</button>
+            <input type="file" id="import-input" style="display:none" accept=".json" onchange="handleImportFile(event)">
+          </div>
+          <div id="log-stats-summary" style="margin-bottom:12px;"></div>
+          <div id="log-list"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="engine.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
