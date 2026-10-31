@@ -1,5 +1,5 @@
 /* ============================================================================
-   ADHD-QUEST: VISUELLES POINT & CLICK UI v0.23
+   ADHD-QUEST: VISUELLES POINT & CLICK UI v0.24
    (100% Vollbild-Raumkulisse + Animiertes Charakter-Porträt + In-World Tür)
    ============================================================================ */
 :root {
@@ -69,16 +69,15 @@ body {
 .intro-overlay {
   position: absolute;
   inset: 0;
-  background-color: var(--panel-white);
-  background-image: url('https://raw.githubusercontent.com/SokratesSchmitt/ADHD-Quest/main/backgrounds/bg_startbildschirm.png');
-  background-size: cover;
-  background-position: center;
+  background-color: #ffffff;
+  background-image: none;
   z-index: 100;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  padding: 36px 20px;
+  gap: 36px;
+  padding: 0;
   transition: opacity 0.6s ease, visibility 0.6s ease;
 }
 
@@ -88,25 +87,20 @@ body {
   pointer-events: none;
 }
 
-.intro-logo-card {
-  background: rgba(255, 255, 255, 0.92);
-  border: 3px solid var(--orange-main);
-  border-radius: 20px;
-  padding: 16px 20px;
+.intro-logo-fullwidth-wrap {
+  width: 100%;
   text-align: center;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
-  max-width: 90%;
+  padding: 0;
+  margin: 0;
   animation: floatLogo 3s infinite ease-in-out;
 }
 
-.intro-logo-img {
-  max-width: 240px;
-  max-height: 140px;
+.intro-logo-img-full {
   width: 100%;
   height: auto;
   object-fit: contain;
   display: block;
-  margin: 0 auto 8px auto;
+  margin: 0 auto;
 }
 
 @keyframes floatLogo {
@@ -790,7 +784,7 @@ body {
 }
 
 /* ============================================================================
-   NEU IN v0.23: 1) HALB-HOHES BOTTOM-SHEET (Lässt Porträt oben sichtbar!)
+   NEU IN v0.24: 1) HALB-HOHES BOTTOM-SHEET (Lässt Porträt oben sichtbar!)
    ============================================================================ */
 .bottom-sheet-backdrop {
   align-items: flex-end !important;
@@ -821,7 +815,7 @@ body {
 }
 
 /* ============================================================================
-   NEU IN v0.23: 2) DEZENT SCHWEBENDE SPARZIEL-PILLE UNTEN MITTIG (Spotify-Stil)
+   NEU IN v0.24: 2) DEZENT SCHWEBENDE SPARZIEL-PILLE UNTEN MITTIG (Spotify-Stil)
    ============================================================================ */
 .goal-pill-widget {
   position: absolute;
@@ -881,7 +875,7 @@ body {
 }
 
 /* ============================================================================
-   NEU IN v0.23: 3) FLIEGENDE LOOT-PARTIKEL ZUM PORTRÄT & DONE-CHECKMARK
+   NEU IN v0.24: 3) FLIEGENDE LOOT-PARTIKEL ZUM PORTRÄT & DONE-CHECKMARK
    ============================================================================ */
 .loot-particle {
   position: absolute;
