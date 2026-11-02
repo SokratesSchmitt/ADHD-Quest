@@ -1,84 +1,59 @@
-/* ============================================================================
-   ADHD-QUEST: VISUELLES POINT & CLICK UI v0.25
-   (100% Vollbild-Raumkulisse + Animiertes Charakter-Porträt + In-World Tür)
-   ============================================================================ */
+/* ADHD QUEST - Version 0.28 Stylesheet (Null-Naht Sprites für Flur & neue Wohnungs-Map) */
 :root {
-  --bg-outer: #eef2f6;
-  --panel-white: #ffffff;
-  --surface-light: #f8fafc;
-  --border-subtle: #e2e8f0;
   --orange-main: #ff7a00;
-  --orange-bright: #ff9800;
-  --orange-dark: #e65100;
-  --orange-soft: #fff3e0;
-  --orange-border: #ffb74d;
-  --green-bar: #28a745;
-  --green-soft: #e8f5e9;
+  --orange-glow: #ffb703;
+  --wood-dark: #3b2314;
+  --wood-mid: #5c3a21;
+  --panel-white: #ffffff;
   --text-main: #1e293b;
-  --text-muted: #64748b;
-  --danger: #dc3545;
 }
 
 * {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
 
 body {
-  margin: 0;
-  padding: 0;
-  background-color: var(--bg-outer);
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #0f0b14;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   color: var(--text-main);
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  min-height: 100dvh;
+  overflow: hidden;
 }
 
-/* Smartphone-Rahmen (390x844 Standard-Auflösung, 100% Vollbild für den Raum) */
 .app-shell {
-  width: 100%;
-  max-width: 410px;
-  height: 100vh;
-  max-height: 860px;
+  position: relative;
+  width: 100vw;
+  height: 100dvh;
+  max-width: 390px;
+  max-height: 844px;
   background: var(--panel-white);
-  border: 4px solid var(--orange-main);
-  border-radius: 24px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.16);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  position: relative;
-}
-
-@media (max-width: 440px) {
-  .app-shell {
-    max-width: 100%;
-    height: 100dvh;
-    max-height: 100dvh;
-    border: none;
-    border-radius: 0;
-  }
+  box-shadow: 0 0 35px rgba(0, 0, 0, 0.65);
 }
 
 /* ============================================================================
-   SPLASH / INTRO SCREEN
+   1. TÄGLICHER 5-SEKUNDEN INTRO-SPLASH-SCREEN MIT SANFTEM ZOOM-OUT
    ============================================================================ */
 .intro-overlay {
   position: absolute;
   inset: 0;
-  background-color: #ffffff;
-  background-image: none;
-  z-index: 100;
+  background-color: #120d16;
+  z-index: 9999;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 36px;
-  padding: 0;
-  transition: opacity 0.6s ease, visibility 0.6s ease;
+  opacity: 1;
+  transition: opacity 0.7s ease, visibility 0.7s ease;
 }
 
 .intro-overlay.hidden {
@@ -87,349 +62,320 @@ body {
   pointer-events: none;
 }
 
-.intro-logo-fullwidth-wrap {
+.intro-zoom-container {
   width: 100%;
-  text-align: center;
-  padding: 0;
-  margin: 0;
-  animation: floatLogo 3s infinite ease-in-out;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.intro-logo-img-full {
+.intro-splash-img {
   width: 100%;
-  height: auto;
-  object-fit: contain;
-  display: block;
-  margin: 0 auto;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: pixelated;
+  transform: scale(1.16);
 }
 
-@keyframes floatLogo {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+.intro-splash-img.animate-zoom {
+  animation: introSlowZoomOut 4.8s ease-out forwards;
 }
 
-.intro-start-btn {
-  background: var(--orange-main);
-  color: #ffffff;
-  border: 3px solid #ffffff;
-  outline: 3px solid var(--orange-main);
-  border-radius: 16px;
-  padding: 14px 28px;
-  font-size: 16px;
-  font-weight: 800;
-  font-family: inherit;
-  cursor: pointer;
-  box-shadow: 0 8px 24px rgba(255, 122, 0, 0.45);
-  transition: transform 0.15s ease, background 0.15s ease;
+@keyframes introSlowZoomOut {
+  0% { transform: scale(1.16); }
+  100% { transform: scale(1.0); }
 }
 
-.intro-start-btn:hover {
-  background: var(--orange-dark);
-  transform: scale(1.04);
+.intro-version-badge {
+  position: absolute;
+  bottom: 24px;
+  background: rgba(18, 13, 22, 0.85);
+  color: #ffcc33;
+  border: 2px solid #ff7a00;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
 }
 
 /* ============================================================================
-   100% VOLLBILD RAUM-KULISSE
+   2. TOP HEADER & 2-EBENEN POP-OUT AVATAR-RING (v0.25 + v0.26)
    ============================================================================ */
-.middle-zone {
-  flex: 1;
-  width: 100%;
-  height: 100%;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+.top-header {
+  background: var(--panel-white);
+  border-bottom: 3px solid var(--orange-main);
+  padding: 8px 10px;
+  z-index: 20;
 }
 
-.room-canvas {
-  flex: 1;
+.header-top-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.avatar-popout-wrapper {
   position: relative;
+  width: 86px;
+  height: 86px;
+  flex-shrink: 0;
+  overflow: visible;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-ring-bg {
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 42%, #ffe066 0%, #ff922b 72%, #e8590c 100%);
+  border: 3.5px solid var(--wood-dark);
+  box-shadow: 0 4px 12px rgba(255, 122, 0, 0.4);
+  z-index: 1;
+  overflow: hidden;
+}
+
+.avatar-ring-bg::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 38%, #fff9db 0%, #ffd43b 65%, #f76707 100%);
+  z-index: 0;
+}
+
+.avatar-popout-sprite {
+  position: absolute;
+  left: 50%;
+  bottom: 5px;
+  transform: translateX(-50%);
+  width: 76px;
+  height: 78px;
+  object-fit: contain;
+  object-position: center bottom;
+  border-radius: 0 0 38px 38px;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.45));
+  z-index: 2;
+  pointer-events: none;
+}
+
+.title-and-controls {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand-title {
+  font-weight: 900;
+  font-size: 18px;
+  color: var(--wood-dark);
+  letter-spacing: 0.5px;
+}
+
+.version-pill {
+  background: #fff3e0;
+  color: var(--orange-main);
+  border: 1px solid var(--orange-main);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 99px;
+}
+
+.quick-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.top-btn {
+  background: #fff8f0;
+  border: 2px solid var(--orange-main);
+  border-radius: 10px;
+  padding: 5px 9px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--wood-dark);
+  cursor: pointer;
+}
+
+.room-Trigger-btn {
+  flex: 1;
+  text-align: left;
+}
+
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  background: var(--wood-dark);
+  padding: 6px;
+  border-radius: 12px;
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 122, 0, 0.5);
+  border-radius: 8px;
+  padding: 4px 6px;
+  text-align: center;
+  color: #ffffff;
+}
+
+.stat-label {
+  font-size: 10px;
+  color: #fed7aa;
+  font-weight: 700;
+}
+
+.stat-value {
+  font-size: 15px;
+  font-weight: 900;
+  color: #ffedd5;
+}
+
+.stat-sub {
+  font-size: 10px;
+  color: #cbd5e1;
+}
+
+/* ============================================================================
+   3. RAUM-KULISSE & NULL-NAHT ORIGINAL-SPRITES ("sprite-hotspot")
+   ============================================================================ */
+.room-canvas {
+  position: relative;
+  flex: 1;
   width: 100%;
-  height: 100%;
+  background-color: #1e1b24;
   background-size: 100% 100%;
   background-position: center;
   background-repeat: no-repeat;
-  transition: background-image 0.3s ease;
+  image-rendering: pixelated;
   overflow: hidden;
 }
 
-.room-canvas[data-room="Arbeitszimmer"] {
-  background-image:
-    url('assets/bg_dashboard_orig.png'),
-    url('https://raw.githubusercontent.com/SokratesSchmitt/ADHD-Quest/main/backgrounds/bg_dashboard.png');
-  background-size: 100% 100%;
-}
-.room-canvas[data-room="Küche"] {
-  background-image:
-    url('assets/bg_kitchen_orig.png'),
-    url('https://raw.githubusercontent.com/SokratesSchmitt/ADHD-Quest/main/backgrounds/bg_kitchen.png');
-}
-.room-canvas[data-room="Wohnzimmer"] {
-  background-image:
-    url('assets/bg_livingroom_orig.png'),
-    url('https://raw.githubusercontent.com/SokratesSchmitt/ADHD-Quest/main/backgrounds/bg_livingroom_me.png');
-  background-size: 100% 100%;
-}
-.room-canvas[data-room="Badezimmer"] {
-  background-image:
-    url('assets/bg_bathroom_orig.png'),
-    url('https://raw.githubusercontent.com/SokratesSchmitt/ADHD-Quest/main/backgrounds/bg_bathroom.png');
-  background-size: 100% 100%;
-}
-.room-canvas[data-room="Schlafzimmer"] {
-  background-image: url('assets/bg_schlafzimmer_orig.png');
-  background-size: 100% 100%;
-}
-.room-canvas[data-room="Kinderzimmer"] {
-  background-image: url('assets/bg_kinderzimmer_orig.png');
-  background-size: 100% 100%;
-}
-
-/* ============================================================================
-   1. PURISTISCHES PORTRAIT-WIDGET OBEN LINKS (Ohne Zahlen im Raum!)
-   ============================================================================ */
-/* Instagram/Duolingo-Stil Fortschrittsring um das Porträt oben links */
-.avatar-ring-wrap {
+.hotspots-layer {
   position: absolute;
-  top: 14px;
-  left: 14px;
-  width: 118px;
-  height: 118px;
-  border-radius: 50%;
-  padding: 5px;
-  background: conic-gradient(var(--orange-main) var(--xp-deg, 120deg), rgba(255, 255, 255, 0.45) 0deg);
-  box-shadow: 0 0 0 3px #ffffff, 0 10px 24px rgba(0, 0, 0, 0.35);
+  inset: 0;
+}
+
+/* Null-Naht Original-Sprites: Liegen exakt über ihren Gegenstücken im Hintergrundbild */
+.room-sprite-hotspot {
+  position: absolute;
   cursor: pointer;
-  z-index: 60; /* Bleibt auch über dem halb-hohen Bottom-Sheet sichtbar! */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: visible; /* WICHTIG: Erlaubt das Hinausragen von Schiebermütze & Händen über den Ring! */
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
-  animation: avatarBreathe 3.6s infinite ease-in-out;
+  display: block;
+  transition: filter 0.18s ease, transform 0.16s ease;
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.85))
+          drop-shadow(0 0 7px rgba(255, 122, 0, 0.72));
+  animation: pulseRoomSprite 2.5s infinite ease-in-out;
 }
 
-.avatar-ring-wrap:hover {
-  transform: scale(1.07);
-  box-shadow: 0 0 0 3.5px #ffffff, 0 0 18px rgba(255, 122, 0, 0.95);
-}
-
-.avatar-ring-wrap.avatar-celebrate {
-  animation: avatarCelebrateBounce 0.6s ease-in-out 2;
-  box-shadow: 0 0 0 4px #ffffff, 0 0 26px #ff9800, 0 0 40px #28a745;
-}
-
-@keyframes avatarCelebrateBounce {
-  0%, 100% { transform: scale(1); }
-  40% { transform: scale(1.16) rotate(-4deg); }
-  75% { transform: scale(1.12) rotate(4deg); }
-}
-
-/* Ebene 1: Der runde, warm leuchtende Gelb-Orange-Hintergrund im Ring */
-.avatar-portrait-widget {
+.room-sprite-hotspot img {
   width: 100%;
   height: 100%;
-  border-radius: 50%;
-  background: radial-gradient(circle at 50% 32%, #ffe082 0%, #ffb300 58%, #fb8c00 100%);
-  border: 3px solid #ffffff;
-  box-shadow: inset 0 4px 10px rgba(255, 255, 255, 0.55), inset 0 -4px 10px rgba(230, 81, 0, 0.35);
-  overflow: visible; /* Kein Abschneiden am Kreisrand! */
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
+  display: block;
+  image-rendering: pixelated;
+  pointer-events: none;
 }
 
-/* Ebene 2: Dein freigestelltes Charakter-Sprite, das oben (Schiebermütze) & seitlich (Hände) über den Rahmen ragt */
-.avatar-portrait-widget img {
+.room-sprite-hotspot:hover,
+.room-sprite-hotspot:active {
+  filter: brightness(1.06) sepia(0.24) saturate(2.4) hue-rotate(-10deg)
+          drop-shadow(0 0 3px #ffffff) drop-shadow(0 0 13px #ff7a00);
+  z-index: 25 !important;
+}
+
+.room-sprite-hotspot.done-today {
+  filter: drop-shadow(0 0 2px #4ade80) drop-shadow(0 0 8px rgba(34, 197, 94, 0.75));
+  animation: none;
+}
+
+.sprite-done-badge {
   position: absolute;
-  width: 148%;
-  height: 132%;
+  top: 50%;
   left: 50%;
-  bottom: -4%;
-  transform: translateX(-50%);
-  object-fit: contain;
-  pointer-events: none;
-  filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.32));
-  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.avatar-ring-wrap.avatar-celebrate .avatar-portrait-widget img {
-  transform: translateX(-50%) scale(1.08) translateY(-3px);
-}
-
-.avatar-level-badge {
-  position: absolute;
-  bottom: -2px;
-  right: -2px;
-  background: var(--orange-main);
-  color: #ffffff;
-  border: 2px solid #ffffff;
-  border-radius: 12px;
-  padding: 2px 7px;
-  font-size: 10px;
-  font-weight: 800;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
-  pointer-events: none;
-}
-
-@keyframes avatarBreathe {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-2.5px); }
-}
-
-/* Dezent schwebendes Raum-Schild oben rechts */
-.room-banner-label {
-  position: absolute;
-  top: 16px;
-  right: 14px;
-  background: rgba(255, 255, 255, 0.92);
-  border: 2px solid var(--orange-main);
-  padding: 5px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 800;
-  color: var(--text-main);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
-  z-index: 12;
-  pointer-events: none;
-}
-
-/* ============================================================================
-   2. IN-WORLD TÜR (In jedem Raum für den direkten Wechsel zur Map)
-   ============================================================================ */
-.inworld-door-spot {
-  position: absolute;
-  right: 12px;
-  bottom: 18px;
-  width: 54px;
-  height: 94px;
-  cursor: pointer;
-  z-index: 12;
-  filter: drop-shadow(0 0 2px #ffffff) drop-shadow(0 0 8px rgba(255, 122, 0, 0.85));
-  transition: transform 0.18s ease, filter 0.2s ease;
-  animation: pulseSpriteGlow 2.6s infinite ease-in-out;
-}
-
-.inworld-door-spot:hover {
-  transform: scale(1.08) translateY(-2px);
-  filter: brightness(1.08) drop-shadow(0 0 3px #ffffff) drop-shadow(0 0 14px #ff7a00);
-}
-
-.inworld-door-spot img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  image-rendering: pixelated;
-  pointer-events: none;
-}
-
-/* Im Arbeitszimmer (bg_dashboard) sitzt rechts bereits eine echte Zimmertür im Bild ->
-   Wir legen die Tür-Klickzone passgenau über diesen rechten Türbereich! */
-.room-canvas[data-room="Arbeitszimmer"] .inworld-door-spot,
-.room-canvas[data-room="Wohnzimmer"] .inworld-door-spot,
-.room-canvas[data-room="Badezimmer"] .inworld-door-spot,
-.room-canvas[data-room="Schlafzimmer"] .inworld-door-spot {
-  display: none;
-}
-
-/* ============================================================================
-   3. ANKLICKBARE GEGENSTÄNDE IM RAUM (REINER KONTUR-SCHIMMER OHNE TEXTSCHILDER!)
-   ============================================================================ */
-.scene-sprite-spot {
-  position: absolute;
-  cursor: pointer;
-  z-index: 6;
-  display: block;
-  transform: translateZ(0);
-  transition: filter 0.2s ease, transform 0.15s ease;
-  filter: drop-shadow(0 0 1.5px rgba(255, 255, 255, 0.95)) drop-shadow(0 0 6px rgba(255, 122, 0, 0.8));
-  animation: pulseSpriteGlow 2.4s infinite ease-in-out;
-}
-
-.scene-sprite-spot img {
-  width: 100%;
-  height: 100%;
-  display: block;
-  image-rendering: pixelated;
-  pointer-events: none;
-}
-
-.scene-sprite-spot:hover {
-  filter: brightness(1.09) drop-shadow(0 0 3px #ffffff) drop-shadow(0 0 13px #ff7a00);
-  z-index: 10;
-}
-
-.scene-sprite-spot.done-spot {
-  filter: drop-shadow(0 0 1.5px #ffffff) drop-shadow(0 0 5px #28a745);
-  animation: none;
-}
-
-/* Freistehende In-World-Objekte (z.B. Sparschwein & Tageschronik auf dem Schreibtisch im Arbeitszimmer
-   sowie Icons in anderen Räumen) -> ebenfalls komplett ohne Textkasten, nur mit Kontur-Schimmer! */
-.inworld-icon-spot {
-  position: absolute;
   transform: translate(-50%, -50%);
-  width: 62px;
-  height: 62px;
-  cursor: pointer;
-  z-index: 7;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: transform 0.16s ease, filter 0.2s ease;
-  filter: drop-shadow(0 0 2px #ffffff) drop-shadow(0 0 8px rgba(255, 122, 0, 0.85));
-  animation: pulseSpriteGlow 2.4s infinite ease-in-out;
-}
-
-.inworld-icon-spot:hover {
-  transform: translate(-50%, -50%) scale(1.14);
-  filter: brightness(1.08) drop-shadow(0 0 3px #ffffff) drop-shadow(0 0 14px #ff7a00);
-  z-index: 11;
-}
-
-.inworld-icon-spot.done-spot {
-  filter: drop-shadow(0 0 2px #ffffff) drop-shadow(0 0 6px #28a745);
-  opacity: 0.82;
-  animation: none;
-}
-
-.inworld-icon-spot img {
-  width: 54px;
-  height: 54px;
-  object-fit: contain;
-  image-rendering: pixelated;
+  background: rgba(22, 163, 74, 0.92);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 900;
+  padding: 2px 6px;
+  border-radius: 99px;
+  border: 1.5px solid #ffffff;
   pointer-events: none;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
 }
 
-.inworld-emoji-fallback {
-  font-size: 36px;
-  line-height: 1;
-  pointer-events: none;
-}
-
-@keyframes pulseSpriteGlow {
+@keyframes pulseRoomSprite {
   0%, 100% {
-    filter: drop-shadow(0 0 1.5px rgba(255, 255, 255, 0.95)) drop-shadow(0 0 5px rgba(255, 122, 0, 0.65));
+    filter: drop-shadow(0 0 1.5px rgba(255, 255, 255, 0.75))
+            drop-shadow(0 0 5px rgba(255, 122, 0, 0.55));
   }
   50% {
-    filter: drop-shadow(0 0 2.5px #ffffff) drop-shadow(0 0 11px rgba(255, 122, 0, 0.98));
+    filter: brightness(1.04) drop-shadow(0 0 2.5px #ffffff)
+            drop-shadow(0 0 11px rgba(255, 136, 0, 0.95));
   }
 }
 
+/* Fallback Badge-Hotspots für Räume ohne lokale Sprite-Cuts */
+.room-hotspot.badge-hotspot {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.94);
+  border: 2.5px solid var(--orange-main);
+  border-radius: 14px;
+  padding: 5px 9px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), 0 0 10px rgba(255, 122, 0, 0.55);
+  animation: floatBadge 2.4s infinite ease-in-out;
+  z-index: 12;
+}
+
+.badge-hotspot-icon {
+  font-size: 20px;
+  line-height: 1.1;
+}
+
+.badge-hotspot-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--wood-dark);
+  white-space: nowrap;
+}
+
+@keyframes floatBadge {
+  0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+  50% { transform: translate(-50%, -50%) translateY(-4px); }
+}
+
 /* ============================================================================
-   MODALS / POPUPS (Weiß & Orange Theme)
+   4. INTERAKTIVE WOHNUNGS-KARTE (MIT 6 FREIGESTELLTEN RAUM-SPRITES!)
    ============================================================================ */
 .modal-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(15, 23, 42, 0.58);
-  backdrop-filter: blur(2px);
+  background: rgba(15, 23, 42, 0.74);
   display: none;
   justify-content: center;
   align-items: center;
-  padding: 16px;
-  z-index: 50;
+  padding: 12px;
+  z-index: 100;
 }
 
 .modal-backdrop.active {
@@ -437,323 +383,65 @@ body {
 }
 
 .modal-card {
-  background: var(--panel-white);
+  background: #ffffff;
   border: 3px solid var(--orange-main);
   border-radius: 18px;
   width: 100%;
-  max-height: 92%;
+  max-width: 368px;
+  max-height: 86%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28);
-  animation: popIn 0.18s ease-out;
-}
-
-@keyframes popIn {
-  from { transform: scale(0.92); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
 }
 
 .modal-header {
-  background: var(--orange-main);
-  color: #fff;
-  padding: 12px 16px;
+  background: var(--wood-dark);
+  color: #ffffff;
+  padding: 10px 14px;
+  font-weight: 800;
+  font-size: 14px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-weight: 800;
-  font-size: 15px;
 }
 
 .modal-close {
-  background: rgba(255, 255, 255, 0.22);
+  background: var(--orange-main);
   color: #fff;
   border: none;
-  border-radius: 8px;
-  width: 28px;
-  height: 28px;
-  font-weight: 800;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-weight: 900;
   cursor: pointer;
-}
-
-.modal-close:hover {
-  background: rgba(255, 255, 255, 0.38);
 }
 
 .modal-body {
-  padding: 16px;
+  padding: 14px;
   overflow-y: auto;
-  font-size: 14px;
 }
 
-/* Charakterbogen-Styling */
-.char-sheet-top {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  background: var(--orange-soft);
-  border: 2px solid var(--orange-border);
-  border-radius: 14px;
-  padding: 12px;
-  margin-bottom: 14px;
-}
-
-.char-sheet-avatar {
-  width: 104px;
-  height: 104px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 50% 32%, #ffe082 0%, #ffb300 58%, #fb8c00 100%);
-  border: 3px solid var(--orange-main);
-  box-shadow: 0 0 0 2px #ffffff, 0 6px 14px rgba(0, 0, 0, 0.2);
-  object-fit: contain;
-  flex-shrink: 0;
-}
-
-.char-stats-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 14px;
-}
-
-.char-stat-card {
-  background: var(--panel-white);
-  border: 2px solid var(--orange-border);
-  border-top: 4px solid var(--orange-main);
-  border-radius: 10px;
-  padding: 8px 10px;
-  text-align: center;
-}
-
-.char-stat-label {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  display: block;
-}
-
-.char-stat-val {
-  font-size: 16px;
-  font-weight: 800;
-  color: var(--text-main);
-  margin-top: 2px;
-  display: block;
-}
-
-.char-bar-wrap {
-  margin-bottom: 10px;
-}
-
-.char-bar-label {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  font-weight: 700;
-  margin-bottom: 4px;
-}
-
-.char-bar-bg {
-  width: 100%;
-  height: 10px;
-  background: var(--orange-soft);
-  border: 1px solid var(--orange-border);
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.char-bar-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--orange-main), var(--green-bar));
-  transition: width 0.3s ease;
-}
-
-/* Wohnungs-Grundriss mit bg_map.png Vorschau */
-.map-preview-banner {
-  width: 100%;
-  height: 150px;
-  background-image: url('https://raw.githubusercontent.com/SokratesSchmitt/ADHD-Quest/main/backgrounds/bg_map.png');
-  background-size: cover;
-  background-position: center;
-  border: 2px solid var(--orange-border);
-  border-radius: 12px;
-  margin-bottom: 10px;
-}
-
-.floorplan-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  background: var(--orange-soft);
-  border: 2px dashed var(--orange-main);
-  padding: 10px;
-  border-radius: 12px;
-}
-
-.floor-room {
-  background: var(--panel-white);
-  border: 2px solid var(--orange-border);
-  border-radius: 10px;
-  padding: 10px 8px;
-  text-align: center;
-  cursor: pointer;
-  font-weight: 700;
-  transition: all 0.15s;
-}
-
-.floor-room.active {
-  background: var(--orange-main);
-  color: #fff;
-  border-color: var(--orange-dark);
-}
-
-.floor-room.active .floor-room-desc {
-  color: #fff !important;
-}
-
-.floor-room:hover:not(.active) {
-  border-color: var(--orange-main);
-  background: #fff9f2;
-}
-
-/* Großes Item-Vorschaubild im Hero-Popup */
-.popup-hero-icon {
-  width: 96px;
-  height: 96px;
-  object-fit: contain;
-  margin: 0 auto 10px auto;
-  display: block;
-  image-rendering: pixelated;
-  filter: drop-shadow(0 4px 12px rgba(255, 122, 0, 0.3));
-}
-
-.reward-pills {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin: 14px 0;
-  flex-wrap: wrap;
-}
-
-.reward-pill {
-  background: var(--orange-soft);
-  color: var(--orange-dark);
-  border: 1.5px solid var(--orange-main);
-  padding: 5px 12px;
-  border-radius: 20px;
-  font-weight: 700;
-  font-size: 13px;
-}
-
-/* Duolingo-Stil Chunky 3D-Button mit physischem Eindrück-Effekt */
-.primary-cta {
-  width: 100%;
-  background: linear-gradient(180deg, #ff8c1a 0%, #ff7a00 100%);
-  color: #fff;
-  border: 2px solid #ffffff;
-  border-bottom: 5px solid #c2410c;
-  border-radius: 16px;
-  padding: 13px 16px;
-  font-size: 15px;
-  font-weight: 800;
-  font-family: inherit;
-  cursor: pointer;
-  box-shadow: 0 6px 16px rgba(255, 122, 0, 0.35);
-  margin-top: 6px;
-  transition: transform 0.08s ease, border-bottom-width 0.08s ease, filter 0.15s ease;
-}
-
-.primary-cta:hover {
-  filter: brightness(1.06);
-}
-
-.primary-cta:active {
-  transform: translateY(3px);
-  border-bottom-width: 2px;
-}
-
-.mini-btn {
-  background: var(--orange-main);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 5px 10px;
-  font-size: 11px;
-  font-weight: 700;
-  font-family: inherit;
-  cursor: pointer;
-}
-
-.mini-btn:hover {
-  background: var(--orange-dark);
-}
-
-.list-item-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: var(--panel-white);
-  border: 1.5px solid var(--border-subtle);
-  border-left: 4px solid var(--orange-main);
-  border-radius: 10px;
-  padding: 10px 12px;
-  margin-bottom: 8px;
-  gap: 8px;
-}
-
-/* Schwebendes Belohnungs-Feedback */
-.floating-loot {
-  position: absolute;
-  left: 50%;
-  top: 45%;
-  transform: translate(-50%, -50%);
-  background: var(--panel-white);
-  color: var(--orange-dark);
-  border: 3px solid var(--orange-main);
-  border-radius: 14px;
-  padding: 12px 18px;
-  font-weight: 800;
-  font-size: 14px;
-  text-align: center;
-  z-index: 80;
-  pointer-events: none;
-  animation: floatUpFade 1.6s ease-out forwards;
-  box-shadow: 0 10px 28px rgba(255, 122, 0, 0.28);
-}
-
-@keyframes floatUpFade {
-  0% { opacity: 0; transform: translate(-50%, -30%) scale(0.85); }
-  20% { opacity: 1; transform: translate(-50%, -50%) scale(1.04); }
-  80% { opacity: 1; transform: translate(-50%, -75%) scale(1); }
-  100% { opacity: 0; transform: translate(-50%, -95%) scale(0.95); }
-}
-
-/* ============================================================================
-   INTERAKTIVE KARTE (NUR bg_map_orig.png MIT FREIGESTELLTEN RAUM-SPRITES!)
-   ============================================================================ */
 .map-only-card {
-  max-width: 390px;
+  max-width: 382px;
 }
 
 .map-only-body {
-  padding: 10px !important;
-  background: #fffdf9;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  padding: 8px !important;
+  background: #0d0a12;
 }
 
 .interactive-map-canvas {
   position: relative;
   width: 100%;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 1376 / 768;
   background-image: url('assets/bg_map_orig.png');
   background-size: 100% 100%;
   background-position: center;
   background-repeat: no-repeat;
-  border-radius: 12px;
+  border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
 .map-room-sprite {
@@ -772,160 +460,92 @@ body {
   pointer-events: none;
 }
 
-/* Das L-förmige Wohnzimmer-Sprite liegt auf z-index 2 und hat pointer-events: none auf der Box,
-   aber wir legen präzise Klick-Polygone/Zonen für das Wohnzimmer und die 4 Nachbarräume auf z-index 5! */
 .map-room-sprite:hover,
-.map-room-sprite.hovered-room {
-  filter: brightness(1.04) sepia(0.28) saturate(2.6) hue-rotate(-12deg)
-          drop-shadow(0 0 3px #ffffff) drop-shadow(0 0 10px #ff7a00);
-  z-index: 8 !important;
-}
-
 .map-room-sprite.active-room {
-  filter: sepia(0.22) saturate(2.2) hue-rotate(-10deg)
-          drop-shadow(0 0 2px #ffffff) drop-shadow(0 0 8px #ff7a00);
-  animation: pulseMapRoom 2.2s infinite ease-in-out;
+  filter: brightness(1.06) sepia(0.26) saturate(2.5) hue-rotate(-10deg)
+          drop-shadow(0 0 3px #ffffff) drop-shadow(0 0 11px #ff7a00);
+  z-index: 10 !important;
 }
 
-@keyframes pulseMapRoom {
-  0%, 100% {
-    filter: sepia(0.18) saturate(1.9) hue-rotate(-10deg)
-            drop-shadow(0 0 2px #ffffff) drop-shadow(0 0 6px rgba(255, 122, 0, 0.75));
-  }
-  50% {
-    filter: brightness(1.04) sepia(0.32) saturate(2.8) hue-rotate(-12deg)
-            drop-shadow(0 0 3px #ffffff) drop-shadow(0 0 12px #ff7a00);
-  }
-}
-
-/* ============================================================================
-   NEU IN v0.25: 1) HALB-HOHES BOTTOM-SHEET (Lässt Porträt oben sichtbar!)
-   ============================================================================ */
-.bottom-sheet-backdrop {
-  align-items: flex-end !important;
-  padding: 0 !important;
-  background: linear-gradient(to bottom, rgba(15, 23, 42, 0.12) 0%, rgba(15, 23, 42, 0.55) 45%) !important;
-  backdrop-filter: none !important;
-}
-
-.bottom-sheet-card {
-  border-radius: 24px 24px 0 0 !important;
-  border-bottom: none !important;
-  max-height: 68% !important;
-  animation: slideUpSheet 0.24s cubic-bezier(0.22, 1, 0.36, 1) !important;
-  box-shadow: 0 -10px 32px rgba(0, 0, 0, 0.28) !important;
-}
-
-.bottom-sheet-handle {
-  width: 44px;
-  height: 5px;
-  background: #cbd5e1;
-  border-radius: 4px;
-  margin: 8px auto 4px auto;
-}
-
-@keyframes slideUpSheet {
-  from { transform: translateY(100%); opacity: 0.6; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-/* ============================================================================
-   NEU IN v0.25: 2) DEZENT SCHWEBENDE SPARZIEL-PILLE UNTEN MITTIG (Spotify-Stil)
-   ============================================================================ */
-.goal-pill-widget {
-  position: absolute;
-  bottom: 14px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 72%;
-  max-width: 270px;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(6px);
-  border: 2px solid var(--orange-main);
-  border-radius: 22px;
-  padding: 6px 14px 7px 14px;
-  cursor: pointer;
-  z-index: 14;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
-  transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
-}
-
-.goal-pill-widget:hover {
-  transform: translateX(-50%) scale(1.04) translateY(-2px);
-  background: #ffffff;
-  box-shadow: 0 8px 22px rgba(255, 122, 0, 0.45);
-}
-
-.goal-pill-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--text-main);
-  margin-bottom: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.goal-pill-pct {
-  color: var(--orange-dark);
-  margin-left: 6px;
-  flex-shrink: 0;
-}
-
-.goal-pill-bar-bg {
-  width: 100%;
-  height: 5px;
-  background: var(--orange-soft);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.goal-pill-bar-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--orange-main), var(--green-bar));
-  transition: width 0.35s ease;
-}
-
-/* ============================================================================
-   NEU IN v0.25: 3) FLIEGENDE LOOT-PARTIKEL ZUM PORTRÄT & DONE-CHECKMARK
-   ============================================================================ */
-.loot-particle {
-  position: absolute;
-  font-size: 22px;
-  pointer-events: none;
-  z-index: 95;
-  filter: drop-shadow(0 2px 6px rgba(255, 122, 0, 0.6));
-  transition: transform 0.78s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.78s ease;
-}
-
-.done-check-badge {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  background: rgba(40, 167, 69, 0.92);
-  color: #ffffff;
-  border: 1.5px solid #ffffff;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  font-size: 11px;
-  font-weight: 900;
+.reward-badges-row {
   display: flex;
   justify-content: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.reward-pill {
+  background: #fff7ed;
+  border: 1.5px solid var(--orange-main);
+  color: var(--wood-dark);
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.primary-action-btn {
+  width: 100%;
+  background: linear-gradient(180deg, #ff922b 0%, #ff7a00 100%);
+  color: #fff;
+  border: 2px solid var(--wood-dark);
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.secondary-btn {
+  background: #f1f5f9;
+  border: 2px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.loot-toast {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--wood-dark);
+  color: #ffcc33;
+  border: 2px solid var(--orange-main);
+  padding: 8px 16px;
+  border-radius: 99px;
+  font-weight: 800;
+  font-size: 13px;
+  z-index: 60;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.45);
+  white-space: nowrap;
+}
+
+.loot-toast.hidden {
+  display: none;
+}
+
+
+/* --- SPIELERFIGUR IM RAUM DEAKTIVIERT (v0.28: Ruhiger Hintergrund ohne Figur) --- */
+.room-player-container {
+  display: none !important;
+}
+
+/* ============================================================================
+   5. UPDATE v0.27: 44x44px TOUCH-TARGETS & ENHANCED SPRITE HOVER GLOW
+   ============================================================================ */
+.top-btn {
+  min-height: 38px;
+  min-width: 38px;
+  display: inline-flex;
   align-items: center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
-  pointer-events: none;
+  justify-content: center;
+  gap: 4px;
+  transition: transform 0.12s ease, background-color 0.15s ease;
 }
-
-/* Goldenes Aufblitzen bei einem 15% Dopamin-Surge (Critical Hit) */
-.surge-flash {
-  animation: goldenSurgeFlash 0.8s ease-out;
-}
-
-@keyframes goldenSurgeFlash {
-  0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.9), inset 0 0 40px rgba(255, 215, 0, 0.85); }
-  100% { box-shadow: 0 0 0 24px rgba(255, 215, 0, 0), inset 0 0 0 rgba(255, 215, 0, 0); }
+.top-btn:active {
+  transform: scale(0.95);
 }

@@ -1,0 +1,74 @@
+Raum,Repräsentiert durch,Adresse Grafik
+Flur,Pinnwand an der Zimmertür,,,,,,,,,,,,,assets/flur_sprites/sprite_flu_pinnwand_tuer.png
+Flur,Garderobenhaken mit Ronjas Jacke,,,,,,,,,,,,,assets/icons/icon_flu_kinderjacke.png
+Badezimmer,Waschmaschine & Waschpulver,,,,,,,,,,,,,assets/icons/icon_bad_waschmaschine.png
+Badezimmer,Wäschekorb vor der Waschmaschine,,,,,,,,,,,,,assets/icons/icon_bad_waeschekorb.png
+Badezimmer,Wäschetrockner & zusammengelegte Handtücher,,,,,,,,,,,,,assets/icons/icon_bad_trockner.png
+Küche,Putzmittel-Eimer & Schwamm auf der Arbeitsplatte,,,,,,,,,,,,,assets/icons/icon_kue_putzeimer.png
+Wohnzimmer,Staubsauger & Mikrofasertuch,,,,,,,,,,,,,assets/icons/icon_woh_staubsauger.png
+Schlafzimmer,Frisch bezogenes Bett & Staubwedel,,,,,,,,,,,,,assets/icons/icon_sch_samstagsputz.png
+Badezimmer,Badreiniger & Bodenwischer,,,,,,,,,,,,,assets/icons/icon_bad_badreiniger.png
+Küche,Großes Schneidebrett mit Kochmesser & Kochtopf,,,,,,,,,,,,,assets/icons/icon_kue_schneidebrett_topf.png
+Flur,Einkaufstasche an der Flurgarderobe,,,,,,,,,,,,,assets/icons/icon_flu_einkaufstasche.png
+Küche,Geschirrspüler,https://raw.githubusercontent.com/SokratesSchmitt/ADHD-Quest/main/icons/icon_kue_001.png,,,,,,,,,,,,assets/icons/icon_kue_001.png
+Küche,Mülleimer-Trennsystem unter der Spüle,,,,,,,,,,,,,assets/icons/icon_kue_muelleimer.png
+Flur,Kommoden-Schubladen ordentlich einräumen,,,,,,,,,,,,,assets/flur_sprites/sprite_flu_schubladen.png
+Kinderzimmer,Gute-Nacht-Buch auf dem Kinderbett,,,,,,,,,,,,,assets/icons/icon_kin_gutenachtbuch.png
+Flur,Holzbrett der Kommode komplett frei halten,,,,,,,,,,,,,assets/flur_sprites/sprite_flu_holzbrett.png
+Flur,Gartenhandschuhe & Unkrautstecher,,,,,,,,,,,,,assets/icons/icon_flu_gartenhandschuhe.png
+Dashboard,Dashboard,Dashboard,Schlafzimmer,Dashboard,Wohnzimmer,Dashboard,Flur
+Schreibtisch-Organizer & AfA-Unterlagen,Laptop auf dem Schreibtisch mit Jobbörsen-Tabs,ISTQB-Lehrbuch & Textmarker am Schreibtisch,Ausgerollte Fitnessmatte auf dem Boden,Klemmbrett mit Fragen & Notizblock,Leere weiße Wand gegenüber dem Sessel,Versandbereite Bewerbungsmappe am Schreibtisch,"Werkzeugkasten mit Bauplan, Zollstock & Akkuschrauber"
+Aufgaben im Haushalt,MB-Heilung,XP,Spaß,Kompetenz,Soziales,Selbstwert,Gold,Aktionspunkte,Status
+Ronja zum Kindergarten bringen,0,10,FALSE,FALSE,FALSE,FALSE,1,1,FALSE
+Ronja vom Kindergarten abholen,0,15,FALSE,FALSE,FALSE,FALSE,1,1,FALSE
+Wäsche waschen,0,50,FALSE,FALSE,FALSE,FALSE,25,1,FALSE
+Gewaschene Wäsche ausräumen und zum Trockner bringen,0,50,FALSE,FALSE,FALSE,FALSE,25,1,FALSE
+Trockner ausräumen und Wäsche zusammenlegen,0,50,FALSE,FALSE,FALSE,FALSE,25,2,FALSE
+Samstagsputz (Küche),0,100,FALSE,FALSE,FALSE,FALSE,50,2,FALSE
+Samstagsputz (Wohnzimmer),0,125,FALSE,FALSE,FALSE,FALSE,50,2,FALSE
+Samstagsputz (Schlafzimmer),0,150,FALSE,FALSE,FALSE,FALSE,50,2,TRUE
+Samstagsputz (Bad),0,125,FALSE,FALSE,FALSE,FALSE,50,2,FALSE
+Mittagessen vorbereiten,0,125,FALSE,FALSE,FALSE,FALSE,1,1,FALSE
+Einkaufen gehen,0,125,FALSE,FALSE,FALSE,FALSE,10,1,TRUE
+Geschirrspüler ausräumen und einräumen,0,125,FALSE,FALSE,FALSE,FALSE,10,1,TRUE
+Müll rausbringen,0,125,FALSE,FALSE,FALSE,FALSE,10,1,FALSE
+Wäsche zusammenlegen,0,50,FALSE,FALSE,FALSE,FALSE,10,1,FALSE,,,,,assets/icons/icon_dash_afa_check.png
+Ronja ins Bett bringen,0,10,FALSE,FALSE,FALSE,FALSE,1,1,FALSE,,,,,assets/icons/icon_dash_jobboersen.png
+Tisch abwischen,0,5,FALSE,FALSE,FALSE,FALSE,5,1,FALSE,,,,,assets/icons/icon_dash_istqb_buch.png
+Unkraut jähten,0,100,FALSE,FALSE,FALSE,FALSE,100,1,FALSE,,,,,assets/icons/icon_sch_yogamatte.png
+,,,FALSE,FALSE,FALSE,FALSE,,1,FALSE,,,,,assets/icons/icon_dash_interview_prep.png
+,,,FALSE,FALSE,FALSE,FALSE,,1,FALSE,,,,,assets/wohnzimmer_sprites/sprite_woh_wandfokus.png
+,,,FALSE,FALSE,FALSE,FALSE,,1,FALSE,,,,,assets/icons/icon_dash_bewerbungsmappe.png
+,,,FALSE,FALSE,FALSE,FALSE,,1,FALSE,,,,,assets/icons/icon_flu_bauprojekt.png
+,,,FALSE,FALSE,FALSE,FALSE,,1,FALSE
+,,,FALSE,FALSE,FALSE,FALSE,,1,FALSE
+,,,FALSE,FALSE,FALSE,FALSE,,1,FALSE
+,,,FALSE,FALSE,FALSE,FALSE,,1,FALSE
+,,,FALSE,FALSE,FALSE,FALSE,,1,FALSE
+,,,FALSE,FALSE,FALSE,FALSE,,1,FALSE
+,,,FALSE,FALSE,FALSE,FALSE,,1,FALSE
+,,,FALSE,FALSE,FALSE,FALSE,,1,FALSE
+,,,FALSE,FALSE,FALSE,FALSE,,1,FALSE
+,,,FALSE,FALSE,FALSE,FALSE,,1,FALSE
+,,,FALSE,FALSE,FALSE,FALSE,,1,FALSE
+,,,FALSE,FALSE,FALSE,FALSE,,1,FALSE
+Täglicher Check AfA Bewerbungen,1,25,FALSE,TRUE,FALSE,TRUE,50,1,FALSE
+Tägliche Recherche Jobbörsen (20 min),1,25,FALSE,TRUE,FALSE,TRUE,50,1,FALSE
+Lernen für ISTQB (Softwaretesting) 30 min,0,50,FALSE,TRUE,FALSE,TRUE,100,3,FALSE
+Planking (10 min),1,50,FALSE,FALSE,FALSE,TRUE,50,1,FALSE
+Vorbereitung auf Vorstellungsgespräch,0,50,FALSE,TRUE,TRUE,TRUE,125,1,FALSE
+Stare at the Wall (10 min),2,125,FALSE,TRUE,FALSE,TRUE,100,1,FALSE
+Bewerbung geschrieben und abgeschickt,2,500,FALSE,TRUE,FALSE,TRUE,300,3,FALSE
+Bauprojekt Schlafzimmerempore und Flurebene,3,1000,FALSE,FALSE,FALSE,FALSE,1000,2,FALSE
+,,,FALSE,FALSE,FALSE,FALSE,,1,FALSE
+,,,FALSE,FALSE,FALSE,FALSE,,1,FALSE
+,,,FALSE,FALSE,FALSE,FALSE,,1,FALSE
+,,,FALSE,FALSE,FALSE,FALSE,,1,FALSE
+,,,FALSE,FALSE,FALSE,FALSE,,1,FALSE
+,,,FALSE,FALSE,FALSE,FALSE,,1,
+,,,FALSE,FALSE,FALSE,FALSE,,1,
+,,,FALSE,FALSE,FALSE,FALSE,,1,
+,,,FALSE,FALSE,FALSE,FALSE,,1,
+,,,FALSE,FALSE,FALSE,FALSE,,1,
+,,,FALSE,FALSE,FALSE,FALSE,,1,
+,,,FALSE,FALSE,FALSE,FALSE,,1,

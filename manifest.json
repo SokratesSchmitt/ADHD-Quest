@@ -1,16 +1,16 @@
 {
   "name": "ADHD QUEST",
   "short_name": "ADHD Quest",
-  "description": "ADHD Quest - Gamifiziertes Point & Click Alltags-Abenteuer",
+  "description": "ADHD Quest - Gamifiziertes Point & Click Alltags-Abenteuer (v0.28)",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#ffffff",
+  "background_color": "#120d16",
   "theme_color": "#ff7a00",
   "icons": [
     {
-      "src": "assets/avatar/avatar_happy_center.png",
+      "src": "assets/avatar/avatar_happy.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"

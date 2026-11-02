@@ -1,0 +1,45 @@
+Aktivitaet,MB-Heilung,XP,Spaß,Kompetenz,Soziales,Selbstwert,Aktionspunkte,Status,,,,Raum,Repräsentiert durch,Adresse Grafik
+Schöne Musik hören,1,5,TRUE,FALSE,FALSE,FALSE,0,FALSE,,,,Wohnzimmer,"Schallplattenspieler, Kopfhörer oder Monitor-Boxen",assets/wohnzimmer_sprites/sprite_woh_monitorboxen.png
+Eine Massage bekommen oder jemanden massieren,2,5,TRUE,FALSE,FALSE,FALSE,0,TRUE,,,,Schlafzimmer,Fläschchen Massageöl auf dem Nachttisch,assets/icons/icon_sch_massageoel.png
+Leckeres Essen zubereiten,1,15,TRUE,TRUE,FALSE,FALSE,0,TRUE,,,,Küche,Holz-Schneidebrett mit Messer oder Kochtopf,assets/icons/icon_kue_schneidebrett_topf.png
+Schwimmen,5,25,TRUE,FALSE,FALSE,FALSE,0,FALSE,,,,Badezimmer,Fertig gepackte Badetasche mit Handtuch,assets/icons/icon_bad_badetasche.png
+Witze anhören oder einfach nur so lachen,1,5,TRUE,FALSE,FALSE,FALSE,0,TRUE,,,,Flur,Großes Bücher- & Brettspielregal (Star Wars & Witzebuch),assets/flur_sprites/sprite_flu_buecherregal.png
+"In ein Café gehen, etwas essen/trinken oder einfach nur Leute beobachten",1,5,TRUE,FALSE,FALSE,FALSE,0,TRUE,,,,Küche,Coffee-to-go Becher auf der Arbeitsplatte,assets/icons/icon_kue_coffeetogo.png
+Mit jemandem zärtlich sein,2,25,TRUE,FALSE,FALSE,FALSE,0,TRUE,,,,Schlafzimmer,Besonderes Kissen auf dem Bett,assets/icons/icon_sch_kissen.png
+Barfuß auf Gras oder Sand gehen...um die Füße richtig zu spüren,1,5,TRUE,FALSE,FALSE,FALSE,0,FALSE,,,,Flur,Abgestelltes Paar Schuhe neben der Wohnungstür,assets/icons/icon_flu_schuhe.png
+Trommeln oder ein anderes Instrument spielen,2,25,TRUE,TRUE,FALSE,FALSE,0,TRUE,,,,Wohnzimmer,Ukulele an der Wand oder Trommel,assets/wohnzimmer_sprites/sprite_woh_ukulelen.png
+Einen guten Film angucken,1,5,TRUE,FALSE,FALSE,FALSE,0,FALSE,,,,Wohnzimmer,Fernseher oder Popcorn-Schüssel,assets/wohnzimmer_sprites/sprite_woh_fernseher.png
+In ein Restaurant gehen und gut essen,1,25,TRUE,FALSE,FALSE,FALSE,0,FALSE,,,,Flur,Portemonnaie auf der Flur-Kommode oder Ausgeh-Kleidung,assets/icons/icon_flu_portemonnaie.png
+Nachts ganz bewusst den Mond und die Sterne betrachten,2,5,TRUE,FALSE,FALSE,FALSE,0,FALSE,,,,Schlafzimmer,Teleskop am Fenster,assets/icons/icon_sch_teleskop.png
+Mit Kindern spielen,1,25,TRUE,FALSE,FALSE,FALSE,0,FALSE,,,,Kinderzimmer,Bunte Spielzeug-Eisenbahn oder Plüsch-Einhorn,assets/icons/icon_kin_eisenbahn_einhorn.png
+Auf einer Bank sitzen.,1,5,TRUE,FALSE,FALSE,FALSE,0,FALSE,,,,Wohnzimmer,Gemütliches Kissen auf der Fensterbank,assets/wohnzimmer_sprites/sprite_woh_sofakissen.png
+10000 Schritte gehen,2,50,TRUE,FALSE,FALSE,FALSE,0,FALSE,,,,Schlafzimmer,Paar Laufschuhe im Vordergrund,assets/icons/icon_sch_laufschuhe.png
+10000 Schritte um 5 Uhr gehen,5,100,TRUE,FALSE,FALSE,FALSE,3,FALSE,,,,Flur,Oranger Eulen-Wecker im Flurregal,assets/flur_sprites/sprite_flu_eule.png
+Zimmer oder Wohnung aufräumen (30 min),1,50,FALSE,TRUE,FALSE,FALSE,0,FALSE,,,,Flur,Freies braunes Holzbrett auf der Flur-Kommode,assets/flur_sprites/sprite_flu_holzbrett.png
+Ein Instrument spielen oder neu lernen (30 min),1,25,TRUE,TRUE,FALSE,FALSE,0,FALSE,,,,Wohnzimmer,Stage Piano & Synthesizer,assets/wohnzimmer_sprites/sprite_woh_synth_piano.png
+Etwas basteln oder bauen (30 min),1,5,FALSE,TRUE,FALSE,FALSE,0,FALSE,,,,Kinderzimmer,Kleiner Mal- & Basteltisch,assets/icons/icon_kin_basteltisch.png
+Rechnungen bezahlen oder Formulare richtig ausfüllen und abschicken,-2,300,FALSE,TRUE,FALSE,FALSE,3,FALSE,,,,Dashboard,Briefstapel & Taschenrechner am Schreibtisch,assets/icons/icon_dash_rechnungen.png
+"Sich mit einem Menschen, den man mag, unterhalten",1,5,TRUE,FALSE,TRUE,FALSE,0,FALSE,,,,Wohnzimmer,Zwei dampfende Teetassen auf dem Couchtisch,assets/wohnzimmer_sprites/sprite_woh_teetassen.png
+Gemeinsam mit jemandem lachen,1,5,TRUE,FALSE,TRUE,FALSE,0,FALSE,,,,Wohnzimmer,Geöffnetes Fotoalbum auf dem Couchtisch,assets/wohnzimmer_sprites/sprite_woh_fotoalbum.png
+Mit jemandem Sex haben,2,25,TRUE,FALSE,TRUE,FALSE,0,FALSE,,,,Schlafzimmer,Kerzen auf der Kommode,assets/icons/icon_sch_kerzen.png
+"Jemandem sagen, dass man ihm oder ihr dankbar ist oder sie/ihn gern hat",1,15,FALSE,FALSE,TRUE,FALSE,0,FALSE,,,,Flur,Erinnerungs-Postkarten & Notizen an der Zimmertür,assets/flur_sprites/sprite_flu_pinnwand_tuer.png
+Eigene Stärken und Talente bewusst machen... Liste oder Test absolvieren,1,15,FALSE,FALSE,FALSE,FALSE,0,FALSE,,,,Schlafzimmer,Aufgeschlagenes Journal auf dem Bett,assets/icons/icon_sch_journal.png
+"Sich bewusst werden, dass die eigenen Schwächen oder Fehler auch nur menschlich sind.",1,15,FALSE,FALSE,FALSE,TRUE,0,FALSE,,,,Badezimmer,Spiegel über dem Waschbecken,assets/icons/icon_bad_spiegel.png
+"Etwas tun, worauf ich stolz bin (auch wenn es nur eine kleine Sache ist)",1,15,FALSE,FALSE,FALSE,TRUE,0,FALSE,,,,Kinderzimmer,Bunte Bücherregale & gerahmte Kinderzeichnung,assets/icons/icon_kin_kinderzeichnung.png
+Sich sportlich betätigen,2,25,FALSE,FALSE,FALSE,TRUE,0,FALSE,,,,Schlafzimmer,Ausgerollte Yogamatte & Hanteln,assets/icons/icon_sch_yogamatte.png
+"Etwas tun, was man besonders gut kann",1,5,TRUE,FALSE,FALSE,TRUE,0,TRUE,,,,Küche,Lieblings-Kaffeetasse neben der Siebträgermaschine,assets/icons/icon_kue_siebtraeger.png
+"Etwas probieren, was man noch nicht besonders gut kann",1,15,FALSE,FALSE,FALSE,TRUE,0,FALSE,,,,Flur,Unfertiges Puzzle oder Brettspiel-Box im Regal,assets/icons/icon_flu_puzzlebox.png
+"Etwas tun, was einem sonst nicht leicht fällt",1,300,FALSE,FALSE,FALSE,TRUE,1,FALSE,,,,Dashboard,Klemmbrett mit abgehakter To-Do-Liste an der Korkwand,assets/icons/icon_dash_klemmbrett_todo.png
+Klavier spielen (20 min),3,15,TRUE,TRUE,FALSE,TRUE,1,FALSE,,,,Wohnzimmer,Stage Piano in der Musikecke,assets/wohnzimmer_sprites/sprite_woh_stagepiano.png
+Kalt duschen,1,5,TRUE,FALSE,FALSE,TRUE,0,FALSE,,,,Badezimmer,Regenduschkopf mit blauen Wassertropfen,assets/icons/icon_bad_kaltduschen.png
+Deprexis,2,25,FALSE,FALSE,FALSE,TRUE,0,FALSE,,,,Dashboard,Deprexis Online-Therapie am Laptop,assets/icons/icon_dash_deprexis.png
+Atemübung durchführen (1 Min),5,50,FALSE,FALSE,FALSE,TRUE,0,FALSE,,,,Flur,Oranger Eulen-Buddy im Regal,assets/flur_sprites/sprite_flu_eule.png
+Zentangle (10 min),1,50,FALSE,FALSE,FALSE,TRUE,0,TRUE,,,,Küche,Skizzenblock und schwarzer Fineliner,assets/icons/icon_kue_zentangle.png
+Venla,2,50,FALSE,FALSE,FALSE,TRUE,0,FALSE,,,,Badezimmer,Pillendose auf der Bad-Ablage,assets/icons/icon_bad_venla.png
+Mit Pia Rimworld spielen,2,125,TRUE,FALSE,TRUE,TRUE,0,FALSE,,,,Wohnzimmer,Zwei Gamepads am Kallax-Regal,assets/wohnzimmer_sprites/sprite_woh_gamepads.png
+ADHD Quest programmieren,1,500,TRUE,TRUE,FALSE,TRUE,1,FALSE,,,,Dashboard,Offener Laptop & Roboter-Figur auf dem Schreibtisch,assets/icons/icon_dash_adhdquest_code.png
+,1,,FALSE,FALSE,FALSE,FALSE,0,FALSE,,,,,,
+Mittagsspaziergang,2,125,TRUE,FALSE,TRUE,TRUE,1,FALSE,,,,Flur,Sonnenbrille & Wohnungsschlüssel auf der Kommode,assets/icons/icon_flu_sonnenbrille_schluessel.png
+,1,,FALSE,FALSE,FALSE,FALSE,0,FALSE,,,,,,
+Handwerken (Holz),3,500,TRUE,TRUE,FALSE,TRUE,1,FALSE,,,,Kinderzimmer,Holz-Werkzeugkasten mit Japansäge & Stecheisen,assets/icons/icon_kin_holzwerkzeug.png
+Vibe Coding,2,500,TRUE,TRUE,FALSE,TRUE,1,FALSE,,,,Dashboard,Coding-Kopfhörer & beleuchtete mechanische Tastatur,assets/icons/icon_dash_vibecoding.png

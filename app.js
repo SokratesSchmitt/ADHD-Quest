@@ -1,435 +1,238 @@
-/**
- * ============================================================================
- * ADHD-QUEST VISUAL POINT & CLICK CONTROLLER v0.25
- * (Puristisches Avatar-Porträt mit Gefühlszuständen & Blick-Loop + In-World Tür
- *  + Arbeitszimmer als Startraum mit Sparschwein & Tageschronik)
- * ============================================================================
- */
-let pendingAction = null;
-let lookPhase = "center"; // "center", "right", "left"
+let selectedObject = null;
 let isExcitedOverride = false;
+let lookPhase = "center";
+let introTimer = null;
 
-function dismissIntroScreen() {
-  const intro = document.getElementById("intro-screen");
-  if (intro) intro.classList.add("hidden");
+document.addEventListener("DOMContentLoaded", async () => {
+  initDailyIntroScreen(false);
+  renderAll();
+
+  // Beim Start live die aktuellen Werte (MB, XP, Gold, AP) aus deinem Google Sheet abrufen (falls online)
+  const syncRes = await Engine.fetchFromGoogleSheet();
+  if (syncRes && syncRes.ok) {
+    renderAll();
+    showLootToast("☁️ Charakterbogen live mit Google Sheet synchronisiert!");
+  }
+
+  // Lebendiger Idle-Blick-Loop für den Pop-Out-Avatar oben links
+  setInterval(() => {
+    const phases = ["center", "left", "center", "right"];
+    lookPhase = phases[Math.floor(Math.random() * phases.length)];
+    updateAvatarSprite();
+  }, 4500);
+});
+
+// --- 1. TÄGLICHER 5-SEKUNDEN INTRO-SPLASH-SCREEN (1x pro Tag) ---
+function initDailyIntroScreen(forceShow = false) {
+  const introEl = document.getElementById("intro-screen");
+  const splashImg = document.getElementById("intro-splash-img");
+  if (!introEl || !splashImg) return;
+
+  if (forceShow || Engine.shouldShowDailySplash()) {
+    clearTimeout(introTimer);
+    introEl.classList.remove("hidden");
+    splashImg.classList.remove("animate-zoom");
+    void splashImg.offsetWidth;
+    splashImg.classList.add("animate-zoom");
+
+    introTimer = setTimeout(() => {
+      dismissIntroScreen();
+    }, 5000);
+  } else {
+    introEl.classList.add("hidden");
+  }
 }
 
-// Bestimmt anhand von Geisteskraft (MB) das aktuelle Gefühls-Porträt (2-Ebenen Pop-Out mit Schiebermütze)
-function getAvatarFrameUrl() {
+function dismissIntroScreen() {
+  clearTimeout(introTimer);
+  const introEl = document.getElementById("intro-screen");
+  if (introEl) introEl.classList.add("hidden");
+}
+
+function replayDailyIntro() {
+  closeModal("log-modal");
+  Engine.resetDailySplashLock();
+  initDailyIntroScreen(true);
+}
+
+// --- 2. AVATAR & SPIELERFIGUR ZUSTANDS-STEUERUNG (10 STATES + PROFILBILD-REFERENZ) ---
+let pinnedStateId = null; // Optional: Vom Nutzer im Charakter-Modal manuell fixierter State
+
+function getActivePlayerStateObj() {
+  const ref = Engine.PLAYER_DESIGN_REF;
+  const states = ref.states;
+
   if (isExcitedOverride) {
-    return "assets/avatar/avatar_excited.png";
+    return states.find(s => s.id === "state_10_cheering") || states[9];
   }
+  if (pinnedStateId) {
+    const pinned = states.find(s => s.id === pinnedStateId);
+    if (pinned) return pinned;
+  }
+
   const s = Engine.getState();
   const mbPct = (s.character.mb / s.character.maxMb) * 100;
 
-  if (mbPct >= 75) {
-    if (lookPhase === "right") return "assets/avatar/avatar_neutral.png";
-    return "assets/avatar/avatar_happy.png";
-  } else if (mbPct >= 45) {
-    if (lookPhase === "left") return "assets/avatar/avatar_skeptical.png";
-    if (lookPhase === "right") return "assets/avatar/avatar_happy.png";
-    return "assets/avatar/avatar_neutral.png";
-  } else if (mbPct >= 20) {
-    return "assets/avatar/avatar_tired.png";
+  // Exakt nach Tabellenblatt "Ideen (Frontend)": 80-100 Happy, 50-79 Neutral, 25-49 Müde, 0-24 Erschöpft
+  if (mbPct >= 80) {
+    if (lookPhase === "left") return states[2];  // state_03_waving
+    if (lookPhase === "right") return states[5]; // state_06_laughing
+    return states[1];                            // state_02_thumbsup
+  } else if (mbPct >= 65) {
+    if (lookPhase === "left") return states[7];  // state_08_sipping
+    if (lookPhase === "right") return states[6]; // state_07_action
+    return states[0];                            // state_01_neutral
+  } else if (mbPct >= 50) {
+    if (lookPhase === "right") return states[8]; // state_09_cozy_mug
+    return states[3];                            // state_04_thinking (?)
+  } else if (mbPct >= 25) {
+    return states[4];                            // state_05_yawning
   } else {
-    return "assets/avatar/avatar_grumpy.png";
+    return states[10];                           // state_11_armchair
   }
 }
 
-function getMoodDescription(mbPct) {
-  if (mbPct >= 75) return "😄 Glücklich & Voller Fokus (Geisteskraft hoch)";
-  if (mbPct >= 45) return "🙂 Entspannt & Aufmerksam (Neutral)";
-  if (mbPct >= 20) return "🥱 Müde – Zeit für eine MB-Erholung!";
-  return "😠 Grummelig & Erschöpft – Gönn dir dringend Ruhe!";
-}
-
-function updateAvatarVisual() {
-  const imgEl = document.getElementById("avatar-img");
-  const ringEl = document.getElementById("avatar-ring");
-  const lvlBadge = document.getElementById("avatar-lvl-badge");
-  if (!imgEl || !ringEl) return;
-
-  imgEl.src = getAvatarFrameUrl();
-
+function getAvatarFrameUrl() {
   const s = Engine.getState();
-  const c = s.character;
-  const mbPct = Math.max(0, Math.min(100, (c.mb / c.maxMb) * 100));
-
-  // Level-Fortschritt oder MB-Fortschritt als leuchtender Conic-Gradient-Ring (Instagram/Duolingo-Stil)
-  const nextLvlXp = Math.pow(c.level, 2) * 100;
-  const prevLvlXp = Math.pow(c.level - 1, 2) * 100;
-  const lvlPct = Math.min(100, Math.max(8, Math.round(((c.xp - prevLvlXp) / Math.max(1, nextLvlXp - prevLvlXp)) * 100)));
-  const ringDeg = Math.round((lvlPct / 100) * 360);
-
-  let ringColor = "#ff7a00";
-  if (isExcitedOverride) {
-    ringColor = "#28a745";
-  } else if (mbPct < 20) {
-    ringColor = "#dc3545";
-  } else if (mbPct >= 75) {
-    ringColor = "#ff7a00";
-  } else {
-    ringColor = "#ff9800";
+  if (s.settings && s.settings.useProfileBadgeInHud && !isExcitedOverride && !pinnedStateId) {
+    return Engine.PLAYER_DESIGN_REF.profileRef;
   }
-
-  ringEl.style.background = `conic-gradient(${ringColor} ${ringDeg}deg, rgba(255, 255, 255, 0.45) 0deg)`;
-  if (lvlBadge) {
-    lvlBadge.textContent = `Lv.${c.level}`;
-  }
+  const st = getActivePlayerStateObj();
+  return st ? st.portrait : "assets/avatar/avatar_happy.png";
 }
 
-function updateGoalPill() {
-  const pillText = document.getElementById("goal-pill-text");
-  const pillPct = document.getElementById("goal-pill-pct");
-  const pillBar = document.getElementById("goal-pill-bar");
-  if (!pillText || !pillPct || !pillBar) return;
-
-  const pinned = Engine.getPinnedShopProgress();
-  if (!pinned || pinned.length === 0) {
-    pillText.textContent = "🐷 Sparschwein-Shop";
-    pillPct.textContent = "";
-    pillBar.style.width = "100%";
-    return;
-  }
-  // Zeige das erste angepinnte Ziel, das noch nicht bei 100% ist (oder das erste überhaupt)
-  const activeGoal = pinned.find(p => p.percent < 100) || pinned[0];
-  pillText.innerHTML = `${activeGoal.icon} Ziel: <strong>${activeGoal.name}</strong> (${activeGoal.current}/${activeGoal.target} ${activeGoal.currency})`;
-  pillPct.textContent = `${activeGoal.percent}%`;
-  pillBar.style.width = `${activeGoal.percent}%`;
+function updateAvatarSprite() {
+  const img = document.getElementById("header-avatar-img");
+  if (img) img.src = getAvatarFrameUrl();
 }
 
-// Fliegende Loot-Partikel (Münzen, Sterne, Gehirn-Energie) zum Porträt oben links!
-function spawnLootParticlesToAvatar(xp, gold, mb) {
-  const shell = document.querySelector(".app-shell");
-  const ringEl = document.getElementById("avatar-ring");
-  if (!shell || !ringEl) return;
-
-  const icons = ["⭐", "✨"];
-  if (gold > 0) icons.push("🪙", "🪙");
-  if (mb > 0) icons.push("🧠", "💚");
-
-  icons.forEach((symbol, idx) => {
-    const p = document.createElement("div");
-    p.className = "loot-particle";
-    p.textContent = symbol;
-    const startX = 160 + (Math.random() * 80 - 40);
-    const startY = 480 + (Math.random() * 60 - 30);
-    p.style.left = `${startX}px`;
-    p.style.top = `${startY}px`;
-    shell.appendChild(p);
-
-    setTimeout(() => {
-      const targetX = 58 - startX + (Math.random() * 16 - 8);
-      const targetY = 58 - startY + (Math.random() * 16 - 8);
-      p.style.transform = `translate(${targetX}px, ${targetY}px) scale(0.45)`;
-      p.style.opacity = "0.15";
-    }, 30 + idx * 75);
-
-    setTimeout(() => p.remove(), 880 + idx * 75);
-  });
-
-  ringEl.classList.add("avatar-celebrate");
-  setTimeout(() => ringEl.classList.remove("avatar-celebrate"), 1400);
-}
-
-// Lebendiger Blick-Loop: Lässt dein Porträt alle paar Sekunden aufmerksam durch den Raum schauen
-function startAvatarLookLoop() {
-  setInterval(() => {
-    if (isExcitedOverride) return;
-    const roll = Math.random();
-    if (roll < 0.55) {
-      lookPhase = "center";
-    } else if (roll < 0.80) {
-      lookPhase = "right";
-    } else {
-      lookPhase = "left";
-    }
-    updateAvatarVisual();
+function triggerExcitedAvatar() {
+  isExcitedOverride = true;
+  updateAvatarSprite();
+  setTimeout(() => {
+    isExcitedOverride = false;
+    updateAvatarSprite();
   }, 2600);
 }
 
-function renderDashboard() {
+// --- 3. HUD (CHARAKTERBOGEN B3, B4, B6, B8, B10, D10) & RAUM RENDERN ---
+function renderAll() {
   const s = Engine.getState();
-  const currentRoom = s.settings.currentRoom || "Arbeitszimmer";
+  document.getElementById("hud-gold").textContent = s.character.gold;
+  document.getElementById("hud-streak").textContent = s.character.streak;
+  document.getElementById("hud-mb").textContent = s.character.mb;
+  document.getElementById("hud-level").textContent = s.character.level;
+  document.getElementById("hud-xp").textContent = s.character.xp;
+  document.getElementById("hud-ap").textContent = s.character.ap;
+  document.getElementById("hud-max-ap").textContent = s.character.maxAp;
+  document.getElementById("hud-hp").textContent = s.character.hp;
 
-  // 1. Avatar-Porträt & Sparziel-Pille aktualisieren
-  updateAvatarVisual();
-  updateGoalPill();
+  const ringEl = document.getElementById("avatar-progress-ring");
+  if (ringEl) {
+    const mbVal = Math.max(0, Math.min(100, Number(s.character.mb) || 0));
+    ringEl.style.background = `conic-gradient(#ff7a00 0% ${mbVal}%, #3b2314 ${mbVal}% 100%)`;
+  }
 
-  // 2. Raum-Kulisse & Dezenten Raum-Namen setzen
+  const roomName = s.settings.currentRoom || "Flur";
+  document.getElementById("header-room-label").textContent = roomName;
+
+  updateAvatarSprite();
+  renderCurrentRoom(roomName);
+}
+
+function renderCurrentRoom(roomName) {
   const canvas = document.getElementById("room-canvas");
-  canvas.setAttribute("data-room", currentRoom);
+  const layer = document.getElementById("room-hotspots-layer");
+  canvas.setAttribute("data-room", roomName);
 
-  const roomMeta = Engine.ROOMS.find(r => r.id === currentRoom) || Engine.ROOMS[0];
-  document.getElementById("room-banner").innerHTML = `${roomMeta.icon} <strong>${roomMeta.id}</strong>`;
+  const bgUrl = Engine.ASSETS.backgrounds[roomName] || Engine.ASSETS.backgrounds["Flur"];
+  canvas.style.backgroundImage = `url('${bgUrl}')`;
 
-  // 3. In-World Objekte des aktuellen Raums rendern (Nur Kontur-Schimmer, keine Textschilder!)
-  const roomTasks = s.catalog.tasks
-    .filter(t => t.raum === currentRoom)
-    .map(t => ({ ...t, spotType: "task" }));
+  const objects = Engine.ROOM_OBJECTS[roomName] || [];
+  const completed = Engine.getState().completedToday || {};
 
-  const roomMbs = s.catalog.mbActivities
-    .filter(m => m.raum === currentRoom)
-    .map(m => ({ ...m, spotType: "mb" }));
+  layer.innerHTML = objects.map(obj => {
+    const isDone = !!completed[obj.id];
+    const displayTitle = obj.anzeigeName || obj.name;
 
-  const allSpots = [...roomTasks, ...roomMbs];
-  const container = document.getElementById("hotspots-layer");
-
-  let spotsHtml = allSpots.map(spot => {
-    const isTask = spot.spotType === "task";
-
-    // A) Ausgeschnittenes Original-Sprite (Null-Naht-Trick + grünes Erledigt-Häkchen)
-    if (spot.isSceneSprite && spot.iconUrl) {
+    // 1. Null-Naht-Rendering für freigestellte Raum-Sprites (z. B. im neuen Flur)
+    if (obj.spriteUrl && obj.widthPct !== undefined) {
+      const clipStyle = obj.clipPath ? `clip-path: ${obj.clipPath}; -webkit-clip-path: ${obj.clipPath};` : "";
       return `
-        <div class="scene-sprite-spot ${isTask ? 'task-spot' : 'mb-spot'} ${spot.completedToday ? 'done-spot' : ''}"
-             style="left: ${spot.leftPct}%; top: ${spot.topPct}%; width: ${spot.widthPct}%; height: ${spot.heightPct}%;"
-             title="${spot.objekt}: ${spot.name}${spot.completedToday ? ' (Heute bereits erledigt ✓)' : ''}"
-             onclick="openSpotPopup('${spot.spotType}', '${spot.id}')">
-          <img src="${spot.iconUrl}" alt="${spot.objekt}">
-          ${spot.completedToday ? '<span class="done-check-badge">✓</span>' : ''}
+        <div class="room-sprite-hotspot ${isDone ? 'done-today' : ''}"
+             style="left: ${obj.leftPct}%; top: ${obj.topPct}%; width: ${obj.widthPct}%; height: ${obj.heightPct}%; z-index: ${obj.zIndex || 12}; ${clipStyle}"
+             title="${displayTitle}"
+             onclick="handleHotspotClick('${roomName}', '${obj.id}')">
+          <img src="${obj.spriteUrl}" alt="${displayTitle}">
+          ${isDone ? '<span class="sprite-done-badge">✓</span>' : ''}
         </div>
       `;
     }
 
-    // B) Freistehendes In-World-Objekt (Komplett ohne Text-Badge, nur Kontur-Glow!)
-    let visualHtml = `<span class="inworld-emoji-fallback">${spot.completedToday ? '✅' : spot.icon}</span>`;
-    if (spot.iconUrl) {
-      visualHtml = `
-        <img src="${spot.iconUrl}" alt="${spot.objekt}"
-             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-        <span class="inworld-emoji-fallback" style="display:none;">${spot.icon}</span>
-      `;
-    }
+    // 2. Hotspot-Rendering für Objekte aus "Frontend_Raum_Objekte" (inkl. iconUrl aus Spalte G)
+    const iconHtml = obj.iconUrl
+      ? `<img src="${obj.iconUrl}" alt="${obj.iconName || displayTitle}" style="width:28px; height:28px; object-fit:contain; image-rendering:pixelated;" onerror="this.outerHTML='<span class=\'badge-hotspot-icon\'>${obj.icon || '✨'}</span>'">`
+      : `<span class="badge-hotspot-icon">${isDone ? '✅' : (obj.icon || '✨')}</span>`;
 
     return `
-      <div class="inworld-icon-spot ${isTask ? 'task-spot' : 'mb-spot'} ${spot.completedToday ? 'done-spot' : ''}"
-           style="left: ${spot.x}%; top: ${spot.y}%;"
-           title="${spot.objekt}: ${spot.name}"
-           onclick="openSpotPopup('${spot.spotType}', '${spot.id}')">
-        ${visualHtml}
+      <div class="room-hotspot badge-hotspot ${isDone ? 'done-today' : ''}"
+           style="left: ${obj.xPct}%; top: ${obj.yPct}%;"
+           title="${displayTitle}"
+           onclick="handleHotspotClick('${roomName}', '${obj.id}')">
+        ${iconHtml}
+        <span class="badge-hotspot-label">${displayTitle.split(' ')[0]}</span>
       </div>
     `;
   }).join("");
-
-  // 4. NAHTLOSE ORIGINAL-SPRITES IM STARTRAUM "ARBEITSZIMMER" (Null-Naht-Trick!):
-  //    - Originales rosa Sparschwein auf dem Tisch -> öffnet den Shop!
-  //    - Originales aufgeschlagenes Buch rechts auf dem Tisch -> öffnet Tageschronik & Statistik!
-  //    - Originale Zimmertür rechts im Bild -> öffnet den Wohnungs-Grundriss (Map)!
-  if (currentRoom === "Arbeitszimmer") {
-    spotsHtml += `
-      <div class="scene-sprite-spot"
-           style="left: 39.03%; top: 54.39%; width: 21.10%; height: 8.69%; z-index: 9;"
-           title="Sparschwein: Belohnungs-Shop öffnen"
-           onclick="openShopModal()">
-        <img src="assets/arbeitszimmer_sprites/sprite_arb_sparschwein.png" alt="Sparschwein-Shop">
-      </div>
-      <div class="scene-sprite-spot"
-           style="left: 58.23%; top: 61.33%; width: 23.00%; height: 3.32%; z-index: 8;"
-           title="Aufgeschlagenes Buch: Tageschronik & Statistik öffnen"
-           onclick="openLogModal()">
-        <img src="assets/arbeitszimmer_sprites/sprite_arb_chronik_buch.png" alt="Tageschronik & Statistik">
-      </div>
-      <div class="scene-sprite-spot"
-           style="left: 78.69%; top: 27.25%; width: 21.31%; height: 47.56%; z-index: 5;"
-           title="Zimmertür: Wohnungs-Grundriss (Raum wechseln)"
-           onclick="openMapModal()">
-        <img src="assets/arbeitszimmer_sprites/sprite_arb_tuer.png" alt="Tür zur Map">
-      </div>
-    `;
-  }
-
-  // 5. NAHTLOSE ZIMMERTÜR IM WOHNZIMMER (Null-Naht-Trick!):
-  //    - Originale Holztür links oben im Wohnzimmer -> öffnet den Wohnungs-Grundriss (Map)!
-  if (currentRoom === "Wohnzimmer") {
-    spotsHtml += `
-      <div class="scene-sprite-spot"
-           style="left: 0.0%; top: 16.21%; width: 16.24%; height: 31.15%; z-index: 5;"
-           title="Wohnzimmertür: Wohnungs-Grundriss (Raum wechseln)"
-           onclick="openMapModal()">
-        <img src="assets/wohnzimmer_sprites/sprite_woh_tuer.png" alt="Tür zur Map">
-      </div>
-    `;
-  }
-
-  // 6. NAHTLOSE ZIMMERTÜR IM BADEZIMMER (Null-Naht-Trick!):
-  //    - Originale Holztür am linken Rand im Badezimmer -> öffnet den Wohnungs-Grundriss (Map)!
-  if (currentRoom === "Badezimmer") {
-    spotsHtml += `
-      <div class="scene-sprite-spot"
-           style="left: 0.0%; top: 27.63%; width: 5.68%; height: 54.34%; z-index: 5;"
-           title="Badezimmertür: Wohnungs-Grundriss (Raum wechseln)"
-           onclick="openMapModal()">
-        <img src="assets/badezimmer_sprites/sprite_bad_tuer.png" alt="Tür zur Map">
-      </div>
-    `;
-  }
-
-  // 7. NAHTLOSE ZIMMERTÜR IM SCHLAFZIMMER (Null-Naht-Trick!):
-  //    - Originale Holztür an der linken Wand im Schlafzimmer -> öffnet den Wohnungs-Grundriss (Map)!
-  if (currentRoom === "Schlafzimmer") {
-    spotsHtml += `
-      <div class="scene-sprite-spot"
-           style="left: 0.0%; top: 24.56%; width: 16.93%; height: 40.26%; z-index: 5;"
-           title="Schlafzimmertür: Wohnungs-Grundriss (Raum wechseln)"
-           onclick="openMapModal()">
-        <img src="assets/schlafzimmer_sprites/sprite_sch_tuer.png" alt="Tür zur Map">
-      </div>
-    `;
-  }
-
-  container.innerHTML = spotsHtml;
 }
 
-// --- MODAL 1: CHARAKTERBOGEN & AUSFÜHRLICHE WERTE (Klick auf dein Porträt oben links) ---
-function openCharacterModal() {
-  const s = Engine.getState();
-  const c = s.character;
-  const mbPct = Math.round((c.mb / c.maxMb) * 100);
-  const hpPct = Math.round((c.hp / c.maxHp) * 100);
-  const nextLvlXp = Math.pow(c.level, 2) * 100;
-  const prevLvlXp = Math.pow(c.level - 1, 2) * 100;
-  const lvlProgress = Math.min(100, Math.max(0, Math.round(((c.xp - prevLvlXp) / Math.max(1, nextLvlXp - prevLvlXp)) * 100)));
+function handleHotspotClick(roomName, objId) {
+  const objects = Engine.ROOM_OBJECTS[roomName] || [];
+  const obj = objects.find(o => o.id === objId);
+  if (!obj) return;
 
-  document.getElementById("char-modal-body").innerHTML = `
-    <div class="char-sheet-top">
-      <img src="${getAvatarFrameUrl()}" class="char-sheet-avatar" alt="Porträt">
-      <div>
-        <div style="font-weight:800; font-size:16px; color:#e65100;">Stufe ${c.level} Abenteurer</div>
-        <div style="font-size:12px; font-weight:700; color:#1e293b; margin-top:2px;">${getMoodDescription(mbPct)}</div>
-        <div style="font-size:11px; color:#64748b; margin-top:3px;">🔥 Aktueller Streak: <strong>${c.streak} Tage</strong></div>
-      </div>
-    </div>
+  if (obj.isMapDoor) {
+    openMapModal();
+    return;
+  }
+  if (obj.isShopTrigger) {
+    openShopModal();
+    return;
+  }
 
-    <div class="char-bar-wrap">
-      <div class="char-bar-label">
-        <span>🧠 Geisteskraft (MB)</span>
-        <span>${c.mb} / ${c.maxMb} MB (${mbPct}%)</span>
-      </div>
-      <div class="char-bar-bg">
-        <div class="char-bar-fill" style="width:${mbPct}%;"></div>
-      </div>
-    </div>
+  selectedObject = obj;
+  document.getElementById("obj-modal-title").textContent = `${obj.zielTabelle}: ${obj.name}`;
 
-    <div class="char-bar-wrap">
-      <div class="char-bar-label">
-        <span>❤️ Lebensenergie (HP)</span>
-        <span>${c.hp} / ${c.maxHp} HP</span>
-      </div>
-      <div class="char-bar-bg">
-        <div class="char-bar-fill" style="width:${hpPct}%; background:#28a745;"></div>
-      </div>
-    </div>
+  const previewWrap = document.getElementById("obj-modal-preview-wrap");
+  if (obj.spriteUrl) {
+    previewWrap.innerHTML = `<img src="${obj.spriteUrl}" alt="${obj.name}" style="max-height:96px; max-width:180px; object-fit:contain; image-rendering:pixelated; filter:drop-shadow(0 4px 10px rgba(0,0,0,0.25));">`;
+  } else if (obj.iconUrl) {
+    previewWrap.innerHTML = `<img src="${obj.iconUrl}" alt="${obj.name}" style="width:64px; height:64px; object-fit:contain; image-rendering:pixelated;" onerror="this.outerHTML='<div style=\'font-size:42px;\'>${obj.icon || '✨'}</div>'">`;
+  } else {
+    previewWrap.innerHTML = `<div id="obj-modal-icon" style="font-size:42px;">${obj.icon || "✨"}</div>`;
+  }
 
-    <div class="char-bar-wrap" style="margin-bottom:14px;">
-      <div class="char-bar-label">
-        <span>⭐ Erfahrung (Level ${c.level})</span>
-        <span>${c.xp} / ${nextLvlXp} XP</span>
-      </div>
-      <div class="char-bar-bg">
-        <div class="char-bar-fill" style="width:${lvlProgress}%; background:#ff7a00;"></div>
-      </div>
-    </div>
-
-    <div class="char-stats-grid">
-      <div class="char-stat-card">
-        <span class="char-stat-label">🪙 Goldmünzen</span>
-        <span class="char-stat-val">${c.gold} G</span>
-      </div>
-      <div class="char-stat-card">
-        <span class="char-stat-label">🐾 Aktionspunkte</span>
-        <span class="char-stat-val">${c.ap} AP</span>
-      </div>
-      <div class="char-stat-card">
-        <span class="char-stat-label">📈 Heute verdient</span>
-        <span class="char-stat-val">+${s.meta.dailyEarned.xp} XP / +${s.meta.dailyEarned.gold} G</span>
-      </div>
-      <div class="char-stat-card">
-        <span class="char-stat-label">🌿 Heutige MB</span>
-        <span class="char-stat-val">+${s.meta.dailyEarned.mb} MB</span>
-      </div>
-    </div>
-
-    <div style="display:flex; gap:8px;">
-      <button class="primary-cta" style="flex:1; padding:10px; font-size:13px;" onclick="closeModal('char-modal'); selectRoom('Arbeitszimmer');">
-        🏠 Ins Arbeitszimmer
-      </button>
-      <button class="primary-cta" style="flex:1; padding:10px; font-size:13px; background:#1e293b;" onclick="closeModal('char-modal')">
-        Weiter im Raum
-      </button>
-    </div>
+  const sheetInfo = obj.verknuepfung ? ` (Tabellen-Zelle: ${obj.zielTabelle}!${obj.verknuepfung})` : "";
+  document.getElementById("obj-modal-desc").textContent = `${obj.anzeigeName || obj.name}${sheetInfo}`;
+  document.getElementById("obj-modal-rewards").innerHTML = `
+    <span class="reward-pill">+${obj.xp || 0} XP</span>
+    <span class="reward-pill">+${obj.gold || 0} Gold</span>
+    <span class="reward-pill">+${obj.mb || 0} MB</span>
+    <span class="reward-pill">+${obj.ap || 0} AP</span>
   `;
-  openModal("char-modal");
+  openModal("object-modal");
 }
 
-// --- MODAL 2: ZENTRIERTE QUEST-KARTE / HERO-POPUP (Antwort 5B) ---
-function openSpotPopup(type, id) {
-  const s = Engine.getState();
-  const list = type === "task" ? s.catalog.tasks : s.catalog.mbActivities;
-  const item = list.find(entry => entry.id === id);
-  if (!item) return;
-
-  pendingAction = { type, id };
-  const goldTxt = Array.isArray(item.gold) ? `${item.gold[0]}–${item.gold[1]}` : item.gold;
-
-  const heroVisual = item.iconUrl
-    ? `<img src="${item.iconUrl}" class="popup-hero-icon" alt="${item.objekt}" onerror="this.style.display='none'">`
-    : `<div style="font-size:48px; margin-bottom:6px;">${item.icon}</div>`;
-
-  document.getElementById("spot-modal-title").innerHTML = `${item.icon} ${item.objekt}`;
-  document.getElementById("spot-modal-body").innerHTML = `
-    <div style="text-align:center;">
-      ${heroVisual}
-      <p style="font-size:16px; font-weight:800; margin:4px 0 6px 0;">${item.name}</p>
-      <p style="font-size:12px; color:#64748b; margin:0 0 10px 0;">
-        Raum: <strong>${item.raum}</strong> | Typ: <strong>${type === 'task' ? '🧹 Aufgabe' : '🌿 Erholung (MB)'}</strong>
-      </p>
-      <div class="reward-pills">
-        ${item.xp > 0 ? `<span class="reward-pill">⭐ +${item.xp} XP</span>` : ''}
-        ${item.mb > 0 ? `<span class="reward-pill">🧠 +${item.mb} MB</span>` : ''}
-        ${goldTxt !== 0 && goldTxt !== "0" ? `<span class="reward-pill">🪙 +${goldTxt} Gold</span>` : ''}
-        ${item.ap > 0 ? `<span class="reward-pill">⚡ +${item.ap} AP</span>` : ''}
-      </div>
-      <button class="primary-cta" onclick="confirmSpotAction()">✨ LOOT SAMMELN & ABHAKEN!</button>
-    </div>
-  `;
-  openModal("spot-modal");
+function confirmObjectAction() {
+  if (!selectedObject) return;
+  Engine.completeObject(selectedObject);
+  closeModal("object-modal");
+  triggerExcitedAvatar();
+  renderAll();
+  showLootToast(`✅ "${selectedObject.name}" verbucht (+${selectedObject.xp} XP, +${selectedObject.gold} G, +${selectedObject.mb} MB)`);
 }
 
-function confirmSpotAction() {
-  if (!pendingAction) return;
-  const { type, id } = pendingAction;
-  closeModal("spot-modal");
-
-  const res = type === "task" ? Engine.completeTask(id) : Engine.completeMB(id);
-  if (res.status === "success") {
-    const e = res.logEntry;
-    // Porträt jubelt für 2,5 Sekunden mit Sternchen in den Augen + Partikel fliegen zum Porträt!
-    isExcitedOverride = true;
-    updateAvatarVisual();
-    spawnLootParticlesToAvatar(e.xp, e.gold, e.mb);
-    if (res.isDopamineSurge) {
-      const canvasEl = document.getElementById("room-canvas");
-      if (canvasEl) {
-        canvasEl.classList.add("surge-flash");
-        setTimeout(() => canvasEl.classList.remove("surge-flash"), 850);
-      }
-    }
-    setTimeout(() => {
-      isExcitedOverride = false;
-      updateAvatarVisual();
-    }, 2500);
-
-    showFloatingLoot(`${res.isDopamineSurge ? '💎 CRITICAL DOPAMIN-SURGE!<br>' : ''}✅ +${e.xp} XP | ${e.gold > 0 ? '+'+e.gold+' G | ' : ''}${e.mb > 0 ? '+'+e.mb+' MB | ' : ''}+${e.ap} AP`);
-    if (res.levelResult && res.levelResult.leveledUp) {
-      setTimeout(() => {
-        alert(`🎉 LEVEL UP! Du hast Level ${res.levelResult.newLevel} erreicht! (+${res.levelResult.goldBonus} Gold Bonus)`);
-      }, 300);
-    }
-  }
-  pendingAction = null;
-}
-
-// --- MODAL 3: INTERAKTIVE KARTE (NUR bg_map_orig.png MIT FREIGESTELLTEN RAUM-SPRITES!) ---
+// --- 4. NEUE INTERAKTIVE WOHNUNGS-MAP ---
 function openMapModal() {
   const currentRoom = Engine.getState().settings.currentRoom;
   const mapCanvas = document.getElementById("interactive-map-canvas");
@@ -439,8 +242,8 @@ function openMapModal() {
       return `
         <div class="map-room-sprite ${r.id === currentRoom ? 'active-room' : ''}"
              style="left: ${r.leftPct}%; top: ${r.topPct}%; width: ${r.widthPct}%; height: ${r.heightPct}%; z-index: ${r.zIndex || 5}; ${clipStyle}"
-             title="${r.id} betreten (${r.desc})"
-             onclick="selectRoom('${r.id}')">
+             onclick="selectRoom('${r.id}')"
+             title="${r.id} betreten (${r.desc})">
           <img src="${r.mapSprite}" alt="${r.id}">
         </div>
       `;
@@ -449,160 +252,242 @@ function openMapModal() {
   openModal("map-modal");
 }
 
-function selectRoom(roomName) {
-  Engine.setRoom(roomName);
+function selectRoom(roomId) {
+  const s = Engine.getState();
+  s.settings.currentRoom = roomId;
+  Engine.saveState();
   closeModal("map-modal");
+  renderAll();
 }
 
-// --- MODAL 4: SPARSCHWEIN-SHOP (Über das Sparschwein im Arbeitszimmer) ---
+// --- 5. SHOP MODAL (EXAKT DEINE 6 ITEMS AUS TABELLENBLATT "Shop") ---
 function openShopModal() {
-  const s = Engine.getState();
-  const pinned = Engine.getPinnedShopProgress();
-
-  document.getElementById("shop-pinned-section").innerHTML = `
-    <div style="font-size:11px; font-weight:800; color:#e65100; text-transform:uppercase; margin-bottom:6px;">
-      🎯 Deine 3 Haupt-Belohnungsziele (Gold: ${s.character.gold} G | AP: ${s.character.ap} AP)
+  const body = document.getElementById("shop-modal-body");
+  body.innerHTML = Engine.SHOP_ITEMS.map(item => `
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border:2px solid #fed7aa; border-radius:12px; margin-bottom:8px;">
+      <div>
+        <div style="font-weight:800; font-size:14px;">🛒 ${item.name}</div>
+        <div style="font-size:12px; color:#64748b;">Preis: <strong>${item.preisGold} Gold</strong> • AP-Kosten: <strong>${item.kostenAp} AP</strong></div>
+      </div>
+      <button class="top-btn" onclick="redeemShopItem('${item.id}')">Kaufen</button>
     </div>
-    ${pinned.map(p => `
-      <div style="background:#fff3e0; border:1.5px solid #ffb74d; border-radius:10px; padding:8px 10px; margin-bottom:6px;">
-        <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:800;">
-          <span>${p.icon} ${p.name}</span>
-          <span>${p.percent}%</span>
-        </div>
-        <div class="char-bar-bg" style="margin:5px 0;">
-          <div class="char-bar-fill" style="width:${p.percent}%;"></div>
-        </div>
-        <div style="font-size:10px; color:#64748b; font-weight:700;">
-          Fortschritt: ${p.current} / ${p.target} ${p.currency}${p.apCost ? ' (+ ' + p.apCost + ' AP)' : ''}
-        </div>
-      </div>
-    `).join("")}
-  `;
-
-  document.getElementById("shop-list").innerHTML = s.catalog.shop.map(item => {
-    const costLabel = `${item.goldCost > 0 ? item.goldCost + ' G ' : ''}${item.apCost > 0 ? '+ ' + item.apCost + ' AP' : ''}`;
-    return `
-      <div class="list-item-row">
-        <div>
-          <strong>${item.icon || '🛒'} ${item.name}</strong><br>
-          <span style="font-size:11px; color:#64748b;">Kosten: ${costLabel}</span>
-        </div>
-        <button class="mini-btn" style="padding:6px 12px; font-size:12px;" onclick="handleDirectPurchase('${item.id}')">
-          Einlösen
-        </button>
-      </div>
-    `;
-  }).join("");
+  `).join("");
   openModal("shop-modal");
 }
 
-function handleDirectPurchase(id) {
-  const res = Engine.buyShopItem(id);
-  if (res.status === "denied") {
-    showFloatingLoot(`🔒 ${res.message}`);
-  } else if (res.status === "success") {
-    isExcitedOverride = true;
-    updateAvatarVisual();
-    setTimeout(() => { isExcitedOverride = false; updateAvatarVisual(); }, 2500);
-    showFloatingLoot(`🎉 Eingelöst: ${res.item.name}${res.extraInfo || ''}`);
-    if (document.getElementById("shop-modal").classList.contains("active")) {
-      openShopModal();
-    }
+function redeemShopItem(itemId) {
+  const item = Engine.SHOP_ITEMS.find(i => i.id === itemId);
+  if (!item) return;
+  const res = Engine.buyShopItem(item);
+  showLootToast(res.msg);
+  if (res.ok) {
+    triggerExcitedAvatar();
+    closeModal("shop-modal");
+    renderAll();
   }
 }
 
-// --- MODAL 5: TAGESCHRONIK & STATISTIK (Über das Chronik-Buch im Arbeitszimmer) ---
+// --- 6. QUESTLOG, ACHIEVEMENTS & GOOGLE SHEET SYNC MODAL ---
 function openLogModal() {
   const s = Engine.getState();
-  const d = s.meta.dailyEarned;
+  const list = document.getElementById("log-entries-list");
+  const logs = s.questlog || [];
 
-  document.getElementById("log-stats-summary").innerHTML = `
-    <div style="background:#fff3e0; border:1.5px solid #ffb74d; border-radius:10px; padding:10px; font-size:12px;">
-      <strong>📊 Heutige Tagesbilanz (${s.meta.lastActiveDate}):</strong><br>
-      ⭐ <strong>+${d.xp} XP</strong> &nbsp;|&nbsp; 🪙 <strong>+${d.gold} Gold</strong> &nbsp;|&nbsp; 🧠 <strong>+${d.mb} MB</strong> &nbsp;|&nbsp; ⚡ <strong>+${d.ap} AP</strong>
+  const achHtml = Engine.ACHIEVEMENTS.map(a => `
+    <div style="font-size:12px; padding:4px 0;">
+      ${a.status === "JA" ? "🏆" : "🔒"} <strong>${a.name}</strong> (${a.bedingung}) – Bonus: +${a.goldBonus} G / +${a.xpBonus} XP
     </div>
+  `).join("");
+
+  const logHtml = logs.map(l => `
+    <div style="padding:6px 0; border-bottom:1px solid #e2e8f0; font-size:12px;">
+      <strong>[${l.datum} ${l.uhrzeit}]</strong> ${l.aktivitaet} <em>(${l.typ})</em>
+      <span style="color:#ea580c; font-weight:700;">[XP: ${l.xp} | MB: ${l.mb} | G: ${l.gold} | AP: ${l.ap}]</span>
+    </div>
+  `).join("");
+
+  list.innerHTML = `
+    <div style="background:#fff7ed; border:1.5px solid #ff7a00; border-radius:10px; padding:8px; margin-bottom:10px; font-size:12px;">
+      <strong>🎯 Aktives Hauptziel (C14):</strong> ${s.character.aktuelleQuest} (${s.character.levelProgressText})<br>
+      <strong>🏅 Achievements (Tabellenblatt):</strong>
+      ${achHtml}
+    </div>
+    <div style="font-weight:800; font-size:13px; margin-bottom:4px;">📜 Questlog (Spalten A–H):</div>
+    ${logHtml}
   `;
-
-  document.getElementById("log-list").innerHTML = s.questlog.slice(0, 25).map(q => `
-    <div class="list-item-row" style="font-size:11px;">
-      <div>
-        <strong>${q.name}</strong><br>
-        <span style="color:#64748b;">${q.date} ${q.time} (${q.category})</span>
-      </div>
-      <div style="text-align:right; font-weight:bold;">
-        ${q.xp ? `+${q.xp}XP ` : ''}${q.gold ? `${q.gold > 0 ? '+' : ''}${q.gold}G ` : ''}${q.mb ? `+${q.mb}MB ` : ''}${q.ap ? `${q.ap > 0 ? '+' : ''}${q.ap}AP` : ''}
-      </div>
-    </div>
-  `).join("") || "<p style='color:#64748b; font-size:12px;'>Noch keine Einträge in der heutigen Chronik.</p>";
   openModal("log-modal");
 }
 
+async function manualSheetSync() {
+  showLootToast("🔄 Synchronisiere mit Google Sheet...");
+  const res = await Engine.fetchFromGoogleSheet();
+  if (res && res.ok) {
+    renderAll();
+    showLootToast("✅ Charakterbogen-Werte erfolgreich aus Google Sheet geladen!");
+  } else {
+    showLootToast("ℹ️ Lokale Tabellen-Werte aktiv (Level 25 | 9424 Gold | 94% MB).");
+  }
+}
+
+function openCharacterModal() {
+  const s = Engine.getState();
+  const ref = Engine.PLAYER_DESIGN_REF;
+  const activeSt = getActivePlayerStateObj();
+  const useBadge = !!(s.settings && s.settings.useProfileBadgeInHud);
+
+  const statesGridHtml = ref.states.map(st => {
+    const isSelected = (pinnedStateId === st.id) || (!pinnedStateId && activeSt.id === st.id);
+    return `
+      <div onclick="selectPlayerStatePreview('${st.id}')"
+           style="cursor:pointer; border:2px solid ${isSelected ? '#ff7a00' : '#e2e8f0'}; background:${isSelected ? '#fff7ed' : '#ffffff'}; border-radius:12px; padding:8px; text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:space-between;">
+        <img src="${st.portrait}" alt="${st.label}" style="height:78px; object-fit:contain; image-rendering:pixelated; margin-bottom:4px;">
+        <div style="font-size:11px; font-weight:800; color:#1e293b;">#${st.nr} ${st.label}</div>
+        <div style="font-size:10px; color:#64748b;">${st.mbRange}</div>
+      </div>
+    `;
+  }).join("");
+
+  const body = document.getElementById("character-modal-body");
+  if (body) {
+    body.innerHTML = `
+      <div style="display:flex; align-items:center; gap:14px; background:#fff7ed; border:2px solid #fed7aa; border-radius:14px; padding:12px; margin-bottom:12px;">
+        <img src="${ref.profileRef}" alt="Profilbild Referenz" style="width:96px; height:96px; border-radius:50%; object-fit:contain; object-position:center bottom; padding-top:4px; border:3.5px solid #ff7a00; image-rendering:pixelated; background:radial-gradient(circle at 50% 40%, #fff9db 0%, #ffd43b 70%, #f76707 100%); flex-shrink:0;">
+        <div style="flex:1;">
+          <div style="font-weight:900; font-size:15px; color:#9a3412;">Offizielle Designreferenz (Paddy)</div>
+          <div style="font-size:12px; color:#475569; margin-top:2px;">
+            Schiebermütze • Brille • Vollbart • Blau-braunes Karohemd<br>
+            <strong>Aktueller State:</strong> ${activeSt.label} (${s.character.mb}% MB)
+          </div>
+          <div style="margin-top:6px; display:flex; gap:6px; flex-wrap:wrap;">
+            <button class="secondary-btn" style="font-size:11px; padding:4px 8px;" onclick="toggleHudProfileBadge()">
+              ${useBadge ? '🔄 HUD: Dynamische 10 States nutzen' : '🖼️ HUD: Rundes Profilbild fixieren'}
+            </button>
+            <button class="secondary-btn" style="font-size:11px; padding:4px 8px;" onclick="selectPlayerStatePreview(null)">
+              ⚡ Auto-Modus (nach MB%)
+            </button>
+          </div>
+        </div>
+      </div>
+      <div style="font-weight:800; font-size:12px; color:#475569; margin-bottom:8px;">
+        🎭 ALLE 10+1 AVATAR-STATES (ANTIPPEN ZUM TESTEN IM PROFILRAHMEN):
+      </div>
+      <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(125px, 1fr)); gap:8px;">
+        ${statesGridHtml}
+      </div>
+    `;
+  }
+  openModal("character-modal");
+}
+
+function selectPlayerStatePreview(stateId) {
+  pinnedStateId = stateId;
+  updateAvatarSprite();
+  openCharacterModal();
+  if (stateId) {
+    const st = Engine.PLAYER_DESIGN_REF.states.find(x => x.id === stateId);
+    if (st) showLootToast(`🧢 Spielerfigur-State aktiviert: #${st.nr} ${st.label}`);
+  } else {
+    showLootToast("⚡ Spielerfigur wieder im automatischen MB%-Modus!");
+  }
+}
+
+function toggleHudProfileBadge() {
+  const s = Engine.getState();
+  s.settings.useProfileBadgeInHud = !s.settings.useProfileBadgeInHud;
+  Engine.saveState();
+  updateAvatarSprite();
+  openCharacterModal();
+}
+
 function openModal(id) {
-  document.getElementById(id).classList.add("active");
+  const el = document.getElementById(id);
+  if (el) el.classList.add("active");
 }
 
 function closeModal(id) {
-  document.getElementById(id).classList.remove("active");
+  const el = document.getElementById(id);
+  if (el) el.classList.remove("active");
 }
 
-function showFloatingLoot(htmlText) {
-  const shell = document.querySelector(".app-shell");
-  const el = document.createElement("div");
-  el.className = "floating-loot";
-  el.innerHTML = htmlText;
-  shell.appendChild(el);
-  setTimeout(() => el.remove(), 1600);
+function showLootToast(text) {
+  const t = document.getElementById("loot-toast");
+  if (!t) return;
+  t.textContent = text;
+  t.classList.remove("hidden");
+  setTimeout(() => t.classList.add("hidden"), 2800);
 }
 
-function handleImportFile(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const res = Engine.importBackup(e.target.result);
-    if (res.status === "success") {
-      showFloatingLoot("📥 Spielstand erfolgreich geladen!");
-      closeModal("log-modal");
-    } else {
-      alert(res.message);
-    }
+
+// --- 7. RAUM-AUFGABENBUCH (ALLE EINTRAEGE AUS SPALTE M "Raum" & SPALTE N "Repräsentiert durch") ---
+function openRoomBookModal(filterRoom) {
+  const currentRoom = filterRoom || Engine.getState().settings.currentRoom || "Flur";
+  const allRooms = ["Flur", "Wohnzimmer", "Schlafzimmer", "Küche", "Badezimmer", "Kinderzimmer", "Dashboard", "Alle"];
+  const catalog = Engine.getRoomCatalog(currentRoom);
+  const completed = Engine.getState().completedToday || {};
+
+  document.getElementById("room-book-title").textContent = `📋 Raum-Buch: ${currentRoom}`;
+
+  const tabsHtml = `
+    <div style="display:flex; gap:5px; flex-wrap:wrap; margin-bottom:10px;">
+      ${allRooms.map(r => `
+        <button class="secondary-btn"
+                style="padding:4px 8px; font-size:11px; ${r === currentRoom ? 'background:#ff7a00; color:#fff; border-color:#ea580c;' : ''}"
+                onclick="openRoomBookModal('${r}')">
+          ${r}
+        </button>
+      `).join("")}
+    </div>
+  `;
+
+  const renderItemCard = (item) => {
+    const done = !!completed[item.id];
+    const badgeColor = item.zielTabelle === "Aufgaben" ? "#ea580c" : "#0284c7";
+    return `
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px 10px; border:1.5px solid ${done ? '#86efac' : '#fed7aa'}; background:${done ? '#f0fdf4' : '#ffffff'}; border-radius:10px; margin-bottom:6px;">
+        <div style="flex:1;">
+          <div style="font-size:11px; font-weight:800; color:${badgeColor};">
+            🪑 ${item.repraesentiertDurch} <span style="color:#94a3b8; font-weight:600;">(${item.zielTabelle}!${item.cellRef})</span>
+          </div>
+          <div style="font-size:13px; font-weight:700; color:#1e293b;">${done ? '✅ ' : ''}${item.name}</div>
+          <div style="font-size:11px; color:#64748b; margin-top:2px;">
+            +${item.xp} XP • +${item.mb} MB • +${item.gold || 0} Gold • +${item.ap || 0} AP
+          </div>
+        </div>
+        <button class="top-btn" style="padding:6px 10px; font-size:12px;" onclick="completeCatalogEntry('${item.zielTabelle}', '${item.cellRef}', '${currentRoom}')">
+          ${done ? 'Nochmal' : 'Erledigen'}
+        </button>
+      </div>
+    `;
   };
-  reader.readAsText(file);
+
+  const aufHtml = catalog.aufgaben.length
+    ? catalog.aufgaben.map(renderItemCard).join("")
+    : `<div style="font-size:12px; color:#64748b; margin-bottom:8px;">Keine Haushalts-/Fokus-Aufgaben in diesem Raum.</div>`;
+
+  const mbHtml = catalog.mbAktivitaeten.length
+    ? catalog.mbAktivitaeten.map(renderItemCard).join("")
+    : `<div style="font-size:12px; color:#64748b;">Keine MB-Aktivitäten in diesem Raum.</div>`;
+
+  document.getElementById("room-book-body").innerHTML = `
+    ${tabsHtml}
+    <div style="font-weight:800; font-size:12px; color:#9a3412; margin:8px 0 4px;">🧹 AUFGABEN IM RAUM (${catalog.aufgaben.length}):</div>
+    ${aufHtml}
+    <div style="font-weight:800; font-size:12px; color:#0369a1; margin:12px 0 4px;">🧠 MB-AKTIVITÄTEN & ERHOLUNG IM RAUM (${catalog.mbAktivitaeten.length}):</div>
+    ${mbHtml}
+  `;
+
+  openModal("room-book-modal");
 }
 
-window.onEngineUpdate = renderDashboard;
-function initRoomSwipeNavigation() {
-  const canvas = document.getElementById("room-canvas");
-  if (!canvas) return;
-  let touchStartX = 0;
-  let touchStartY = 0;
+function completeCatalogEntry(zielTabelle, cellRef, currentFilterRoom) {
+  const cat = Engine.getRoomCatalog("Alle");
+  const list = zielTabelle === "Aufgaben" ? cat.aufgaben : cat.mbAktivitaeten;
+  const item = list.find(x => x.cellRef === cellRef);
+  if (!item) return;
 
-  canvas.addEventListener("touchstart", (e) => {
-    if (e.touches.length === 1) {
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
-    }
-  }, { passive: true });
-
-  canvas.addEventListener("touchend", (e) => {
-    if (e.changedTouches.length === 1) {
-      const dx = e.changedTouches[0].clientX - touchStartX;
-      const dy = e.changedTouches[0].clientY - touchStartY;
-      // Horizontaler Swipe (> 75px) wechselt direkt ins Nachbarzimmer
-      if (Math.abs(dx) > 75 && Math.abs(dx) > Math.abs(dy) * 1.6) {
-        const rooms = Engine.ROOMS.map(r => r.id);
-        const cur = Engine.getState().settings.currentRoom || "Arbeitszimmer";
-        const idx = rooms.indexOf(cur);
-        const nextIdx = dx < 0 ? (idx + 1) % rooms.length : (idx - 1 + rooms.length) % rooms.length;
-        selectRoom(rooms[nextIdx]);
-      }
-    }
-  }, { passive: true });
+  Engine.completeObject(item);
+  triggerExcitedAvatar();
+  renderAll();
+  openRoomBookModal(currentFilterRoom);
+  showLootToast(`✅ "${item.name}" erledigt (+${item.xp} XP, +${item.gold || 0} G, +${item.mb} MB)`);
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-  renderDashboard();
-  startAvatarLookLoop();
-  initRoomSwipeNavigation();
-  setTimeout(dismissIntroScreen, 4200);
-});
