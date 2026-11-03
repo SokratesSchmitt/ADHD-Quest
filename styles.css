@@ -1,4 +1,4 @@
-/* ADHD QUEST - Version 0.30 Stylesheet (Null-Naht Sprites für Flur & neue Wohnungs-Map) */
+/* ADHD QUEST - Version 0.32 Stylesheet (Null-Naht Sprites für Flur & neue Wohnungs-Map) */
 :root {
   --orange-main: #ff7a00;
   --orange-glow: #ffb703;
@@ -102,7 +102,7 @@ body {
 }
 
 /* ============================================================================
-   2. SCHWEBENDER POP-OUT AVATAR-RING AUF VOLLBILD-KULISSE (v0.30)
+   2. SCHWEBENDER POP-OUT AVATAR-RING AUF VOLLBILD-KULISSE (v0.32)
    ============================================================================ */
 .floating-avatar-hud {
   position: absolute;
@@ -110,6 +110,34 @@ body {
   left: 12px;
   z-index: 35;
   pointer-events: auto;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.hint-magnifier-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(59, 35, 20, 0.92);
+  border: 2.5px solid var(--orange-main);
+  color: #fff;
+  font-size: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45);
+  transition: transform 0.15s ease, background-color 0.18s ease, box-shadow 0.18s ease;
+  margin-bottom: 2px;
+}
+
+.hint-magnifier-btn:hover,
+.hint-magnifier-btn:active,
+.hint-magnifier-btn.active-hint {
+  background: var(--orange-main);
+  transform: scale(1.08);
+  box-shadow: 0 0 14px rgba(255, 122, 0, 0.85);
 }
 
 .top-header,
@@ -273,15 +301,21 @@ body {
   inset: 0;
 }
 
-/* Null-Naht Original-Sprites: Liegen exakt über ihren Gegenstücken im Hintergrundbild */
+/* Null-Naht Original-Sprites: Komplett ruhig im Normalzustand (kein Dauer-Blinken!), leuchten nur bei Hover/Touch oder Lupen-Hinweis */
 .room-sprite-hotspot {
   position: absolute;
   cursor: pointer;
   display: block;
-  transition: filter 0.18s ease, transform 0.16s ease;
-  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.85))
-          drop-shadow(0 0 7px rgba(255, 122, 0, 0.72));
-  animation: pulseRoomSprite 2.5s infinite ease-in-out;
+  transition: filter 0.22s ease, transform 0.18s ease;
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.28));
+  animation: none;
+}
+
+.room-canvas.show-object-hints .room-sprite-hotspot:not(.done-today) {
+  filter: brightness(1.06)
+          drop-shadow(0 0 3px #ffffff)
+          drop-shadow(0 0 12px #ff7a00);
+  animation: pulseRoomSprite 1.2s infinite ease-in-out;
 }
 
 .room-sprite-hotspot img {
@@ -530,7 +564,7 @@ body {
 }
 
 
-/* --- SPIELERFIGUR IM RAUM DEAKTIVIERT (v0.30: Ruhiger Hintergrund ohne Figur) --- */
+/* --- SPIELERFIGUR IM RAUM DEAKTIVIERT (v0.32: Ruhiger Hintergrund ohne Figur) --- */
 .room-player-container {
   display: none !important;
 }

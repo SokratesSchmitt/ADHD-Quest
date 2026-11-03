@@ -175,7 +175,7 @@ function renderCurrentRoom(roomName) {
 
     // 2. Hotspot-Rendering für Objekte aus "Frontend_Raum_Objekte" (inkl. iconUrl aus Spalte G)
     const iconHtml = obj.iconUrl
-      ? `<img src="${obj.iconUrl}" alt="${obj.iconName || displayTitle}" style="width:28px; height:28px; object-fit:contain; image-rendering:pixelated;" onerror="this.outerHTML='<span class=\'badge-hotspot-icon\'>${obj.icon || '✨'}</span>'">`
+      ? `<img src="${obj.iconUrl}" alt="${obj.iconName || displayTitle}" style="width:28px; height:28px; object-fit:contain; image-rendering:auto;" onerror="this.outerHTML='<span class=\'badge-hotspot-icon\'>${obj.icon || '✨'}</span>'">`
       : `<span class="badge-hotspot-icon">${isDone ? '✅' : (obj.icon || '✨')}</span>`;
 
     return `
@@ -209,9 +209,9 @@ function handleHotspotClick(roomName, objId) {
 
   const previewWrap = document.getElementById("obj-modal-preview-wrap");
   if (obj.spriteUrl) {
-    previewWrap.innerHTML = `<img src="${obj.spriteUrl}" alt="${obj.name}" style="max-height:96px; max-width:180px; object-fit:contain; image-rendering:pixelated; filter:drop-shadow(0 4px 10px rgba(0,0,0,0.25));">`;
+    previewWrap.innerHTML = `<img src="${obj.spriteUrl}" alt="${obj.name}" style="max-height:96px; max-width:180px; object-fit:contain; image-rendering:auto; filter:drop-shadow(0 4px 10px rgba(0,0,0,0.25));">`;
   } else if (obj.iconUrl) {
-    previewWrap.innerHTML = `<img src="${obj.iconUrl}" alt="${obj.name}" style="width:64px; height:64px; object-fit:contain; image-rendering:pixelated;" onerror="this.outerHTML='<div style=\'font-size:42px;\'>${obj.icon || '✨'}</div>'">`;
+    previewWrap.innerHTML = `<img src="${obj.iconUrl}" alt="${obj.name}" style="width:64px; height:64px; object-fit:contain; image-rendering:auto;" onerror="this.outerHTML='<div style=\'font-size:42px;\'>${obj.icon || '✨'}</div>'">`;
   } else {
     previewWrap.innerHTML = `<div id="obj-modal-icon" style="font-size:42px;">${obj.icon || "✨"}</div>`;
   }
@@ -344,7 +344,7 @@ function openCharacterModal() {
     return `
       <div onclick="selectPlayerStatePreview('${st.id}')"
            style="cursor:pointer; border:2px solid ${isSelected ? '#ff7a00' : '#e2e8f0'}; background:${isSelected ? '#fff7ed' : '#ffffff'}; border-radius:12px; padding:8px; text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:space-between;">
-        <img src="${st.portrait}" alt="${st.label}" style="height:78px; object-fit:contain; image-rendering:pixelated; margin-bottom:4px;">
+        <img src="${st.portrait}" alt="${st.label}" style="height:78px; object-fit:contain; image-rendering:auto; margin-bottom:4px;">
         <div style="font-size:11px; font-weight:800; color:#1e293b;">#${st.nr} ${st.label}</div>
         <div style="font-size:10px; color:#64748b;">${st.mbRange}</div>
       </div>
@@ -355,7 +355,7 @@ function openCharacterModal() {
   if (body) {
     body.innerHTML = `
       <div style="display:flex; align-items:center; gap:14px; background:#fff7ed; border:2px solid #fed7aa; border-radius:14px; padding:12px; margin-bottom:12px;">
-        <img src="${ref.profileRef}" alt="Profilbild Referenz" style="width:96px; height:96px; border-radius:50%; object-fit:contain; object-position:center bottom; padding-top:4px; border:3.5px solid #ff7a00; image-rendering:pixelated; background:radial-gradient(circle at 50% 40%, #fff9db 0%, #ffd43b 70%, #f76707 100%); flex-shrink:0;">
+        <img src="${ref.profileRef}" alt="Profilbild Referenz" style="width:96px; height:96px; border-radius:50%; object-fit:contain; object-position:center bottom; padding-top:4px; border:3.5px solid #ff7a00; image-rendering:auto; background:radial-gradient(circle at 50% 40%, #fff9db 0%, #ffd43b 70%, #f76707 100%); flex-shrink:0;">
         <div style="flex:1;">
           <div style="font-weight:900; font-size:15px; color:#9a3412;">Offizielle Designreferenz (Paddy)</div>
           <div style="font-size:12px; color:#475569; margin-top:2px;">
@@ -502,3 +502,36 @@ function completeCatalogEntry(zielTabelle, cellRef, currentFilterRoom) {
   openRoomBookModal(currentFilterRoom);
   showLootToast(`✅ "${item.name}" erledigt (+${item.xp} XP, +${item.gold || 0} G, +${item.mb} MB)`);
 }
+
+
+// --- 2b. DEZENTER LUPEN-HINWEIS FÜR OFFENE GEGENSTÄNDE (v0.31: Kein Dauer-Blinken mehr!) ---
+let hintTimer = null;
+function triggerObjectHints(durationMs = 2600) {
+  const canvas = document.getElementById("room-canvas");
+  const btn = document.getElementById("hint-magnifier-btn");
+  if (!canvas) return;
+
+  clearTimeout(hintTimer);
+  canvas.classList.add("show-object-hints");
+  if (btn) btn.classList.add("active-hint");
+
+  hintTimer = setTimeout(() => {
+    canvas.classList.remove("show-object-hints");
+    if (btn) btn.classList.remove("active-hint");
+  }, durationMs);
+}
+
+// Optional: Auch langes Gedrückthalten auf den Raum-Hintergrund zeigt kurz die offenen Objekte
+document.addEventListener("DOMContentLoaded", () => {
+  const canvas = document.getElementById("room-canvas");
+  if (!canvas) return;
+  let pressTimer = null;
+  canvas.addEventListener("pointerdown", (e) => {
+    if (e.target === canvas || e.target.id === "room-hotspots-layer") {
+      pressTimer = setTimeout(() => triggerObjectHints(2600), 450);
+    }
+  });
+  ["pointerup", "pointerleave", "pointercancel"].forEach(evt => {
+    canvas.addEventListener(evt, () => clearTimeout(pressTimer));
+  });
+});
