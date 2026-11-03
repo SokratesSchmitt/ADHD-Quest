@@ -118,14 +118,18 @@ function triggerExcitedAvatar() {
 // --- 3. HUD (CHARAKTERBOGEN B3, B4, B6, B8, B10, D10) & RAUM RENDERN ---
 function renderAll() {
   const s = Engine.getState();
-  document.getElementById("hud-gold").textContent = s.character.gold;
-  document.getElementById("hud-streak").textContent = s.character.streak;
-  document.getElementById("hud-mb").textContent = s.character.mb;
-  document.getElementById("hud-level").textContent = s.character.level;
-  document.getElementById("hud-xp").textContent = s.character.xp;
-  document.getElementById("hud-ap").textContent = s.character.ap;
-  document.getElementById("hud-max-ap").textContent = s.character.maxAp;
-  document.getElementById("hud-hp").textContent = s.character.hp;
+  const setTxt = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  };
+  setTxt("hud-gold", s.character.gold);
+  setTxt("hud-streak", s.character.streak);
+  setTxt("hud-mb", s.character.mb);
+  setTxt("hud-level", s.character.level);
+  setTxt("hud-xp", s.character.xp);
+  setTxt("hud-ap", s.character.ap);
+  setTxt("hud-max-ap", s.character.maxAp);
+  setTxt("hud-hp", s.character.hp);
 
   const ringEl = document.getElementById("avatar-progress-ring");
   if (ringEl) {
@@ -134,7 +138,7 @@ function renderAll() {
   }
 
   const roomName = s.settings.currentRoom || "Flur";
-  document.getElementById("header-room-label").textContent = roomName;
+  setTxt("header-room-label", roomName);
 
   updateAvatarSprite();
   renderCurrentRoom(roomName);
@@ -355,8 +359,15 @@ function openCharacterModal() {
         <div style="flex:1;">
           <div style="font-weight:900; font-size:15px; color:#9a3412;">Offizielle Designreferenz (Paddy)</div>
           <div style="font-size:12px; color:#475569; margin-top:2px;">
-            Schiebermütze • Brille • Vollbart • Blau-braunes Karohemd<br>
-            <strong>Aktueller State:</strong> ${activeSt.label} (${s.character.mb}% MB)
+            <strong>Aktueller Raum:</strong> ${s.settings.currentRoom || "Flur"} • <strong>State:</strong> ${activeSt.label}<br>
+            🪙 <strong>${s.character.gold} Gold</strong> • 🧠 <strong>${s.character.mb}% MB</strong> • ⚡ <strong>${s.character.ap}/${s.character.maxAp} AP</strong><br>
+            ⭐ <strong>Lvl ${s.character.level}</strong> (${s.character.xp} XP) • ❤️ <strong>${s.character.hp} HP</strong> • 🔥 Streak: <strong>${s.character.streak}</strong>
+          </div>
+          <div style="margin-top:6px; display:flex; gap:5px; flex-wrap:wrap;">
+            <button class="secondary-btn" style="font-size:11px; padding:4px 8px;" onclick="closeModal('character-modal'); openMapModal();">🗺️ Karte</button>
+            <button class="secondary-btn" style="font-size:11px; padding:4px 8px;" onclick="closeModal('character-modal'); openRoomBookModal();">📋 Raum-Buch</button>
+            <button class="secondary-btn" style="font-size:11px; padding:4px 8px;" onclick="closeModal('character-modal'); openShopModal();">🐷 Shop</button>
+            <button class="secondary-btn" style="font-size:11px; padding:4px 8px;" onclick="closeModal('character-modal'); openLogModal();">📜 Chronik</button>
           </div>
           <div style="margin-top:6px; display:flex; gap:6px; flex-wrap:wrap;">
             <button class="secondary-btn" style="font-size:11px; padding:4px 8px;" onclick="toggleHudProfileBadge()">

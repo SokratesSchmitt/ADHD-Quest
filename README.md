@@ -1,3 +1,14 @@
+# ADHD-Quest: Version 0.29 (100% Vollbild-Raumkulisse + Nur noch schwebender Profilrahmen)
+
+### Neu in Version 0.29:
+1. **Kompletter oberer Header entfernt (`index.html`, `styles.css`, `app.js`):**
+   - Die Status-Anzeigen für **Gold, Geisteskraft (MB) und Aktion (AP)** sowie die **Schnellnavigation** und Titelzeile wurden vollständig aus dem Hauptbildschirm entfernt.
+2. **100% Vollbild-Hintergrund & Reine Bild-Navigation:**
+   - Die Raum-Kulisse (`#room-canvas`) nimmt nun die gesamten **100% des Bildschirms** ein.
+   - Die Navigation durch die Wohnung erfolgt direkt über die anklickbaren Türen/Durchgänge und Objekt-Sprites in den Raumbildern sowie über die Raum-Sprites auf der Wohnungs-Karte.
+3. **Schwebender 86×86 px Pop-Out Profilrahmen:**
+   - Einzig der runde Profilrahmen (`.floating-avatar-hud` / `.avatar-popout-wrapper`) schwebt oben links frei über dem Hintergrundbild (inkl. orangem MB%-Fortschrittsring). Ein Tipp auf das Profilbild öffnet bei Bedarf den Charakterbogen.
+
 # ADHD-Quest: Version 0.28 (Ruhige Raum-Ansicht ohne Hintergrund-Figur + Vergrößerter 86px Pop-Out Profilrahmen)
 
 ### Neu in Version 0.28:

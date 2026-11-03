@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="ADHD Quest">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="assets/avatar/avatar_happy.png">
-  <title>ADHD QUEST | Version 0.28</title>
+  <title>ADHD QUEST | Version 0.30</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -23,60 +23,25 @@
       <div class="intro-zoom-container">
         <img src="aq_schriftzugtitle.png" alt="ADHD Quest Startbild" id="intro-splash-img" class="intro-splash-img">
       </div>
-      <div class="intro-version-badge">Version 0.28 • Tippen zum Überspringen</div>
+      <div class="intro-version-badge">Version 0.30 • Tippen zum Überspringen</div>
     </div>
 
     <!-- ==================================================================
-         TOP HUD: 2-EBENEN POP-OUT AVATAR + 3 STATUS-BOXEN + RAUM-AUSWAHL
+         CLEAN FULLSCREEN HUD (v0.30): NUR SCHWEBENDER PROFILRAHMEN OBEN LINKS
          ================================================================== -->
-    <header class="top-header">
-      <div class="header-top-row">
-        <div class="avatar-popout-wrapper" onclick="openCharacterModal()" title="Charakter-Status & Stimmung">
-          <div class="avatar-ring-bg" id="avatar-progress-ring"></div>
-          <img src="assets/avatar/avatar_happy.png" alt="Paddy Avatar" id="header-avatar-img" class="avatar-popout-sprite">
-        </div>
-
-        <div class="title-and-controls">
-          <div class="brand-row">
-            <span class="brand-title">ADHD QUEST</span>
-            <span class="version-pill">v0.28</span>
-          </div>
-          <div class="quick-actions">
-            <button class="top-btn room-Trigger-btn" id="current-room-btn" onclick="openMapModal()">
-              🗺️ <span id="header-room-label">Flur</span> ▾
-            </button>
-            <button class="top-btn" onclick="openRoomBookModal()" title="Raum-Aufgabenbuch (Alle Gegenstände & Quests im Raum)">📋</button>
-            <button class="top-btn" onclick="openShopModal()" title="Belohnungs-Shop">🐷</button>
-            <button class="top-btn" onclick="openLogModal()" title="Chronik, Intro-Test & Backup">📜</button>
-          </div>
-        </div>
+    <div class="floating-avatar-hud">
+      <div class="avatar-popout-wrapper" onclick="openCharacterModal()" title="Charakterbogen, Werte & 10 Avatar-States öffnen">
+        <div class="avatar-ring-bg" id="avatar-progress-ring"></div>
+        <img src="assets/avatar/avatar_happy.png" alt="Paddy Avatar" id="header-avatar-img" class="avatar-popout-sprite">
       </div>
-
-      <div class="stats-bar">
-        <div class="stat-card">
-          <div class="stat-label">🪙 GOLD</div>
-          <div class="stat-value" id="hud-gold">9424</div>
-          <div class="stat-sub">🔥 Streak: <span id="hud-streak">0</span></div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">🧠 GEISTESKRAFT</div>
-          <div class="stat-value"><span id="hud-mb">95</span>%</div>
-          <div class="stat-sub">⭐ Lvl <span id="hud-level">25</span> (<span id="hud-xp">59005</span> XP)</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">⚡ AKTION (AP)</div>
-          <div class="stat-value"><span id="hud-ap">7</span>/<span id="hud-max-ap">10</span></div>
-          <div class="stat-sub">❤️ HP: <span id="hud-hp">54</span></div>
-        </div>
-      </div>
-    </header>
+    </div>
 
     <!-- ==================================================================
          HAUPT-SPIELFELD: AKTUELLER RAUM MIT FREIGESTELLTEN ORIGINAL-SPRITES
          ================================================================== -->
     <main class="room-canvas" id="room-canvas" data-room="Flur">
       <div id="room-hotspots-layer" class="hotspots-layer"></div>
-      <!-- Raum-Spielerfigur entfernt (v0.28) für ruhigere Raum-Ansicht -->
+      <!-- Raum-Spielerfigur entfernt (v0.30) für ruhigere Raum-Ansicht -->
       <div id="loot-toast" class="loot-toast hidden"></div>
     </main>
 
@@ -136,7 +101,7 @@
     <div class="modal-backdrop" id="log-modal" onclick="if(event.target===this) closeModal('log-modal')">
       <div class="modal-card">
         <div class="modal-header">
-          <span>📜 Tageschronik & System (v0.28)</span>
+          <span>📜 Tageschronik & System (v0.30)</span>
           <button class="modal-close" onclick="closeModal('log-modal')">✕</button>
         </div>
         <div class="modal-body">

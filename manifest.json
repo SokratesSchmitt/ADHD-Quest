@@ -1,7 +1,7 @@
 {
   "name": "ADHD QUEST",
   "short_name": "ADHD Quest",
-  "description": "ADHD Quest - Gamifiziertes Point & Click Alltags-Abenteuer (v0.28)",
+  "description": "ADHD Quest - Gamifiziertes Point & Click Alltags-Abenteuer (v0.30)",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

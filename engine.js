@@ -13,8 +13,8 @@
  * - Achievements (Beständiger Geist, Wochenheld, Monatsveteran)
  */
 const Engine = (function () {
-  const APP_VERSION = "0.28";
-  const STORAGE_KEY = "ADHD_QUEST_SHEET_STATE_V0_28";
+  const APP_VERSION = "0.30";
+  const STORAGE_KEY = "ADHD_QUEST_SHEET_STATE_V0_30";
   const SPLASH_DATE_KEY = "adhdQuest_lastSplashDate";
 
   // Deine Live Google Apps Script Web-App URL aus dem Tabellenblatt "Dokumentation"
@@ -218,8 +218,8 @@ const Engine = (function () {
         icon: "📋",
         iconUrl: "assets/icons/icon_dash_klemmbrett_todo.png",
         spriteUrl: "assets/dashboard_sprites/sprite_dash_pinnwand.png",
-        leftPct: 7.38, topPct: 21.88, widthPct: 63.71, heightPct: 19.14, zIndex: 12,
-        xPct: 39.2, yPct: 31.4,
+        leftPct: 9.00, topPct: 16.50, widthPct: 60.00, heightPct: 25.28, zIndex: 12,
+        xPct: 39.0, yPct: 29.1,
         mb: 1, xp: 300, gold: 0, ap: 1,
         repr: "Klemmbrett mit abgehakter To-Do-Liste an der Korkwand"
       },
@@ -233,8 +233,8 @@ const Engine = (function () {
         icon: "🎯",
         iconUrl: "assets/icons/icon_dash_interview_prep.png",
         spriteUrl: "assets/dashboard_sprites/sprite_dash_goals.png",
-        leftPct: 37.55, topPct: 43.36, widthPct: 32.91, heightPct: 9.96, zIndex: 13,
-        xPct: 54.0, yPct: 48.3,
+        leftPct: 39.00, topPct: 42.50, widthPct: 29.00, heightPct: 14.68, zIndex: 13,
+        xPct: 53.5, yPct: 49.8,
         mb: 0, xp: 50, gold: 125, ap: 1,
         repr: "Klemmbrett mit Fragen & Notizblock"
       },
@@ -248,8 +248,8 @@ const Engine = (function () {
         icon: "💡",
         iconUrl: "assets/icons/icon_dash_vibecoding.png",
         spriteUrl: "assets/dashboard_sprites/sprite_dash_lampe.png",
-        leftPct: 15.82, topPct: 44.43, widthPct: 21.52, heightPct: 14.65, zIndex: 14,
-        xPct: 26.6, yPct: 51.8,
+        leftPct: 15.00, topPct: 46.50, widthPct: 23.50, heightPct: 14.73, zIndex: 14,
+        xPct: 26.8, yPct: 53.9,
         mb: 2, xp: 500, gold: 0, ap: 1,
         repr: "Coding-Kopfhörer & beleuchtete mechanische Tastatur"
       },
@@ -263,8 +263,8 @@ const Engine = (function () {
         icon: "✒️",
         iconUrl: "assets/icons/icon_dash_afa_check.png",
         spriteUrl: "assets/dashboard_sprites/sprite_dash_organizer.png",
-        leftPct: 11.18, topPct: 58.40, widthPct: 19.41, heightPct: 4.49, zIndex: 16,
-        xPct: 20.9, yPct: 60.6,
+        leftPct: 15.50, topPct: 59.80, widthPct: 17.50, heightPct: 7.16, zIndex: 16,
+        xPct: 24.3, yPct: 63.4,
         mb: 1, xp: 25, gold: 50, ap: 1,
         repr: "Schreibtisch-Organizer & AfA-Unterlagen"
       },
@@ -278,8 +278,8 @@ const Engine = (function () {
         icon: "🧮",
         iconUrl: "assets/icons/icon_dash_rechnungen.png",
         spriteUrl: "assets/dashboard_sprites/sprite_dash_rechner.png",
-        leftPct: 30.59, topPct: 57.81, widthPct: 11.60, heightPct: 4.88, zIndex: 17,
-        xPct: 36.4, yPct: 60.3,
+        leftPct: 31.00, topPct: 59.20, widthPct: 16.00, heightPct: 7.87, zIndex: 17,
+        xPct: 39.0, yPct: 63.1,
         mb: -2, xp: 300, gold: 0, ap: 3,
         repr: "Briefstapel & Taschenrechner am Schreibtisch"
       },
@@ -291,8 +291,8 @@ const Engine = (function () {
         zielTabelle: "Shop",
         icon: "🐷",
         spriteUrl: "assets/dashboard_sprites/sprite_dash_sparschwein.png",
-        leftPct: 39.24, topPct: 52.34, widthPct: 21.94, heightPct: 9.38, zIndex: 18,
-        xPct: 50.2, yPct: 57.0,
+        leftPct: 42.00, topPct: 52.80, widthPct: 20.00, heightPct: 9.86, zIndex: 18,
+        xPct: 52.0, yPct: 57.7,
         isShopTrigger: true
       },
       {
@@ -305,8 +305,8 @@ const Engine = (function () {
         icon: "🤖",
         iconUrl: "assets/icons/icon_dash_adhdquest_code.png",
         spriteUrl: "assets/dashboard_sprites/sprite_dash_roboter.png",
-        leftPct: 65.61, topPct: 50.59, widthPct: 11.81, heightPct: 8.50, zIndex: 17,
-        xPct: 71.5, yPct: 54.8,
+        leftPct: 63.50, topPct: 50.20, widthPct: 14.50, heightPct: 10.59, zIndex: 17,
+        xPct: 70.8, yPct: 55.5,
         mb: 1, xp: 500, gold: 0, ap: 1,
         repr: "Offener Laptop & Roboter-Figur auf dem Schreibtisch"
       },
@@ -320,8 +320,8 @@ const Engine = (function () {
         icon: "📖",
         iconUrl: "assets/icons/icon_dash_jobboersen.png",
         spriteUrl: "assets/dashboard_sprites/sprite_dash_notizbuch.png",
-        leftPct: 58.02, topPct: 58.69, widthPct: 22.57, heightPct: 4.20, zIndex: 16,
-        xPct: 69.3, yPct: 60.8,
+        leftPct: 56.50, topPct: 59.80, widthPct: 22.00, heightPct: 7.48, zIndex: 16,
+        xPct: 67.5, yPct: 63.5,
         mb: 1, xp: 25, gold: 50, ap: 1,
         repr: "Laptop auf dem Schreibtisch mit Jobbörsen-Tabs"
       },
@@ -335,8 +335,8 @@ const Engine = (function () {
         icon: "📚",
         iconUrl: "assets/icons/icon_dash_istqb_buch.png",
         spriteUrl: "assets/dashboard_sprites/sprite_dash_istqb_stapel.png",
-        leftPct: 52.32, topPct: 84.18, widthPct: 21.52, heightPct: 9.57, zIndex: 19,
-        xPct: 63.1, yPct: 89.0,
+        leftPct: 52.00, topPct: 82.50, widthPct: 21.00, heightPct: 11.22, zIndex: 19,
+        xPct: 62.5, yPct: 88.1,
         mb: 0, xp: 50, gold: 100, ap: 3,
         repr: "ISTQB-Lehrbuch & Textmarker am Schreibtisch"
       },
@@ -350,8 +350,8 @@ const Engine = (function () {
         icon: "🧳",
         iconUrl: "assets/icons/icon_dash_bewerbungsmappe.png",
         spriteUrl: "assets/dashboard_sprites/sprite_dash_koffer.png",
-        leftPct: 73.42, topPct: 81.05, widthPct: 26.58, heightPct: 14.45, zIndex: 18,
-        xPct: 86.7, yPct: 88.3,
+        leftPct: 71.50, topPct: 79.50, widthPct: 26.50, heightPct: 13.95, zIndex: 18,
+        xPct: 84.8, yPct: 86.5,
         mb: 2, xp: 500, gold: 300, ap: 3,
         repr: "Versandbereite Bewerbungsmappe am Schreibtisch"
       },
@@ -363,8 +363,8 @@ const Engine = (function () {
         zielTabelle: "Navigation",
         icon: "🚪",
         spriteUrl: "assets/dashboard_sprites/sprite_dash_tuer.png",
-        leftPct: 77.64, topPct: 28.52, widthPct: 22.36, heightPct: 45.51, zIndex: 11,
-        xPct: 88.8, yPct: 51.3,
+        leftPct: 74.22, topPct: 29.36, widthPct: 25.78, heightPct: 45.49, zIndex: 11,
+        xPct: 87.1, yPct: 52.1,
         isMapDoor: true
       }
     ],
@@ -1714,7 +1714,7 @@ const Engine = (function () {
       streak: 5
     },
     settings: {
-      currentRoom: "Flur",
+      currentRoom: "Dashboard",
       liveSheetSync: true
     },
     completedToday: {},
