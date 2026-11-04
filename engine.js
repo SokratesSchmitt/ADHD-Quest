@@ -13,8 +13,8 @@
  * - Achievements (Beständiger Geist, Wochenheld, Monatsveteran)
  */
 const Engine = (function () {
-  const APP_VERSION = "0.32";
-  const STORAGE_KEY = "ADHD_QUEST_SHEET_STATE_V0_32";
+  const APP_VERSION = "0.33";
+  const STORAGE_KEY = "ADHD_QUEST_SHEET_STATE_V0_33";
   const SPLASH_DATE_KEY = "adhdQuest_lastSplashDate";
 
   // Deine Live Google Apps Script Web-App URL aus dem Tabellenblatt "Dokumentation"
@@ -31,7 +31,7 @@ const Engine = (function () {
       "Arbeitszimmer": "assets/bg_dashboard.jpg",
       "Wohnzimmer": "assets/bg_livingroom_me.png",
       "Küche": "assets/bg_kitchen.jpg",
-      "Badezimmer": "https://raw.githubusercontent.com/SokratesSchmitt/ADHD-Quest/main/backgrounds/bg_bathroom.png",
+      "Badezimmer": "assets/bg_bathroom.jpg",
       "Schlafzimmer": "https://raw.githubusercontent.com/SokratesSchmitt/ADHD-Quest/main/assets/bg_schlafzimmer_orig.png",
       "Kinderzimmer": "https://raw.githubusercontent.com/SokratesSchmitt/ADHD-Quest/main/assets/bg_kinderzimmer_orig.png"
     }
@@ -772,12 +772,14 @@ const Engine = (function () {
         id: "BAD_MB_001",
         raum: "Badezimmer",
         name: "Schwimmen",
-        anzeigeName: "Schwimmen gehen",
+        anzeigeName: "Gepackte Badetasche mit Handtuch & Schwimmbrille (Schwimmen gehen)",
         zielTabelle: "MB Aktivitaeten",
         verknuepfung: "A5",
-        xPct: 34, yPct: 56,
+        leftPct: 26.00, topPct: 75.50, widthPct: 25.50, heightPct: 12.73, zIndex: 18,
+        xPct: 38.8, yPct: 81.9,
         icon: "🏊",
         iconUrl: "assets/icons/icon_bad_badetasche.png",
+        spriteUrl: "assets/badezimmer_sprites/sprite_bad_badetasche.png",
         mb: 5, xp: 25, gold: 0, ap: 0,
         repr: "Fertig gepackte Badetasche mit Handtuch"
       },
@@ -785,62 +787,101 @@ const Engine = (function () {
         id: "BAD_MB_002",
         raum: "Badezimmer",
         name: "Kalt duschen",
-        anzeigeName: "Kalt duschen (Erfrischung & Fokus)",
+        anzeigeName: "Glasdusche mit Regenduschkopf (Kalt duschen – Erfrischung & Fokus)",
         zielTabelle: "MB Aktivitaeten",
         verknuepfung: "A34",
-        xPct: 28, yPct: 32,
+        leftPct: 50.80, topPct: 32.00, widthPct: 25.70, heightPct: 33.80, zIndex: 12,
+        xPct: 63.7, yPct: 48.9,
         icon: "🚿",
         iconUrl: "assets/icons/icon_bad_kaltduschen.png",
+        spriteUrl: "assets/badezimmer_sprites/sprite_bad_dusche.png",
         mb: 1, xp: 5, gold: 0, ap: 0,
-        repr: "Regenduschkopf mit blauen Wassertropfen"
+        repr: "Regenduschkopf in der Glasdusche"
       },
       {
         id: "BAD_MB_003",
         raum: "Badezimmer",
         name: "Venla",
-        anzeigeName: "Venla (Tägliche Medikations-Routine)",
+        anzeigeName: "Pillendose & Wasserglas am Waschtisch (Venla – Tägliche Medikations-Routine)",
         zielTabelle: "MB Aktivitaeten",
         verknuepfung: "A38",
-        xPct: 74, yPct: 38,
+        leftPct: 73.50, topPct: 52.80, widthPct: 18.00, heightPct: 6.00, zIndex: 17,
+        xPct: 82.5, yPct: 55.8,
         icon: "💊",
         iconUrl: "assets/icons/icon_bad_venla.png",
+        spriteUrl: "assets/badezimmer_sprites/sprite_bad_venla.png",
         mb: 2, xp: 50, gold: 0, ap: 0,
         repr: "Pillendose auf der Bad-Ablage"
+      },
+      {
+        id: "BAD_MB_004",
+        raum: "Badezimmer",
+        name: "Sich bewusst werden, dass die eigenen Schwächen oder Fehler auch nur menschlich sind.",
+        anzeigeName: "Spiegel über dem Waschbecken (Selbstmitgefühl & Achtsamkeit)",
+        zielTabelle: "MB Aktivitaeten",
+        verknuepfung: "A27",
+        leftPct: 83.80, topPct: 31.80, widthPct: 14.00, heightPct: 24.70, zIndex: 13,
+        xPct: 90.8, yPct: 44.2,
+        icon: "🪞",
+        spriteUrl: "assets/badezimmer_sprites/sprite_bad_spiegel.png",
+        mb: 1, xp: 15, gold: 0, ap: 0,
+        repr: "Spiegel über dem Waschbecken"
       },
       {
         id: "BAD_AUF_001",
         raum: "Badezimmer",
         name: "Wäsche waschen",
-        anzeigeName: "Wäsche waschen",
+        anzeigeName: "Wäschekorb & Waschpulver vor der Waschmaschine (Wäsche waschen / ausräumen)",
         zielTabelle: "Aufgaben",
         verknuepfung: "A4",
-        xPct: 68, yPct: 64,
+        leftPct: 19.50, topPct: 63.50, widthPct: 22.00, heightPct: 9.89, zIndex: 16,
+        xPct: 30.5, yPct: 68.4,
         icon: "🧺",
         iconUrl: "assets/icons/icon_bad_waschmaschine.png",
+        spriteUrl: "assets/badezimmer_sprites/sprite_bad_waeschekorb.png",
         mb: 0, xp: 50, gold: 25, ap: 1,
-        repr: "Waschmaschine / Wäschekorb"
+        repr: "Wäschekorb & Waschpulver vor der Waschmaschine"
       },
       {
         id: "BAD_AUF_002",
         raum: "Badezimmer",
         name: "Samstagsputz (Bad)",
-        anzeigeName: "Samstagsputz (Bad)",
+        anzeigeName: "Badreiniger, Schwamm & Abzieher (Samstagsputz Bad)",
         zielTabelle: "Aufgaben",
         verknuepfung: "A10",
-        xPct: 52, yPct: 36,
+        leftPct: 55.50, topPct: 69.50, widthPct: 18.00, heightPct: 9.46, zIndex: 17,
+        xPct: 64.5, yPct: 74.2,
         icon: "✨",
         iconUrl: "assets/icons/icon_bad_badreiniger.png",
+        spriteUrl: "assets/badezimmer_sprites/sprite_bad_badreiniger.png",
         mb: 0, xp: 125, gold: 50, ap: 2,
-        repr: "Waschbecken & Spiegel glänzen lassen"
+        repr: "Badreiniger, Schwamm & Abzieher"
+      },
+      {
+        id: "BAD_AUF_003",
+        raum: "Badezimmer",
+        name: "Trockner ausräumen und Wäsche zusammenlegen",
+        anzeigeName: "Frisch zusammengelegte Handtücher auf der Holzplatte (Trockner ausräumen & zusammenlegen)",
+        zielTabelle: "Aufgaben",
+        verknuepfung: "A6",
+        leftPct: 10.50, topPct: 49.80, widthPct: 17.50, heightPct: 9.60, zIndex: 16,
+        xPct: 19.3, yPct: 54.6,
+        icon: "🧖",
+        iconUrl: "assets/icons/icon_bad_handtuecher.png",
+        spriteUrl: "assets/badezimmer_sprites/sprite_bad_handtuecher.png",
+        mb: 0, xp: 50, gold: 25, ap: 2,
+        repr: "Zusammengelegte Handtücher über der Waschmaschine"
       },
       {
         id: "BAD_DOOR",
         raum: "Badezimmer",
         name: "Zur Wohnungs-Map",
-        anzeigeName: "Zur Wohnungs-Map",
+        anzeigeName: "Badezimmertür hinten links (Zur Wohnungs-Map)",
         zielTabelle: "Navigation",
-        xPct: 14, yPct: 48,
+        leftPct: 24.50, topPct: 35.20, widthPct: 22.30, heightPct: 26.30, zIndex: 11,
+        xPct: 35.7, yPct: 48.4,
         icon: "🚪",
+        spriteUrl: "assets/badezimmer_sprites/sprite_bad_tuer.png",
         isMapDoor: true
       }
     ],
