@@ -1,4 +1,4 @@
-/* ADHD QUEST - Version 0.33 Stylesheet (Null-Naht Sprites für Flur & neue Wohnungs-Map) */
+/* ADHD QUEST - Version 0.34 Stylesheet (Null-Naht Sprites für Flur & neue Wohnungs-Map) */
 :root {
   --orange-main: #ff7a00;
   --orange-glow: #ffb703;
@@ -102,7 +102,7 @@ body {
 }
 
 /* ============================================================================
-   2. SCHWEBENDER POP-OUT AVATAR-RING AUF VOLLBILD-KULISSE (v0.33)
+   2. SCHWEBENDER POP-OUT AVATAR-RING AUF VOLLBILD-KULISSE (v0.34)
    ============================================================================ */
 .floating-avatar-hud {
   position: absolute;
@@ -564,7 +564,7 @@ body {
 }
 
 
-/* --- SPIELERFIGUR IM RAUM DEAKTIVIERT (v0.33: Ruhiger Hintergrund ohne Figur) --- */
+/* --- SPIELERFIGUR IM RAUM DEAKTIVIERT (v0.34: Ruhiger Hintergrund ohne Figur) --- */
 .room-player-container {
   display: none !important;
 }
