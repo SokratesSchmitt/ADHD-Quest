@@ -13,8 +13,8 @@
  * - Achievements (Beständiger Geist, Wochenheld, Monatsveteran)
  */
 const Engine = (function () {
-  const APP_VERSION = "0.34";
-  const STORAGE_KEY = "ADHD_QUEST_SHEET_STATE_V0_34";
+  const APP_VERSION = "0.35";
+  const STORAGE_KEY = "ADHD_QUEST_SHEET_STATE_V0_35";
   const SPLASH_DATE_KEY = "adhdQuest_lastSplashDate";
 
   // Deine Live Google Apps Script Web-App URL aus dem Tabellenblatt "Dokumentation"
@@ -32,7 +32,7 @@ const Engine = (function () {
       "Wohnzimmer": "assets/bg_livingroom_me.jpg",
       "Küche": "assets/bg_kitchen.jpg",
       "Badezimmer": "assets/bg_bathroom.jpg",
-      "Schlafzimmer": "https://raw.githubusercontent.com/SokratesSchmitt/ADHD-Quest/main/assets/bg_schlafzimmer_orig.png",
+      "Schlafzimmer": "assets/bg_bedroom.jpg",
       "Kinderzimmer": "https://raw.githubusercontent.com/SokratesSchmitt/ADHD-Quest/main/assets/bg_kinderzimmer_orig.png"
     }
   };
@@ -708,75 +708,130 @@ const Engine = (function () {
         id: "SCH_MB_001",
         raum: "Schlafzimmer",
         name: "Eine Massage bekommen oder jemanden massieren",
-        anzeigeName: "Eine Massage bekommen oder jemanden massieren",
+        anzeigeName: "Massageöl & Spa-Handtuch auf dem Sideboard (Massage bekommen / massieren)",
         zielTabelle: "MB Aktivitaeten",
         verknuepfung: "A3",
-        xPct: 34, yPct: 52,
+        leftPct: 81.00, topPct: 50.50, widthPct: 16.50, heightPct: 9.69, zIndex: 17,
+        xPct: 89.3, yPct: 55.3,
         icon: "💆",
         iconUrl: "assets/icons/icon_sch_massageoel.png",
+        spriteUrl: "assets/schlafzimmer_sprites/sprite_sch_massageoel.png",
         mb: 2, xp: 5, gold: 0, ap: 0,
-        repr: "Fläschchen Massageöl auf dem Nachttisch"
+        repr: "Fläschchen Massageöl & Handtuch"
       },
       {
         id: "SCH_MB_002",
         raum: "Schlafzimmer",
         name: "Mit jemandem zärtlich sein",
-        anzeigeName: "Mit jemandem zärtlich sein",
+        anzeigeName: "Rostorange & senfgelbe Kissen auf dem Bett (Mit jemandem zärtlich sein)",
         zielTabelle: "MB Aktivitaeten",
         verknuepfung: "A8",
-        xPct: 58, yPct: 56,
+        leftPct: 3.80, topPct: 53.00, widthPct: 25.70, heightPct: 11.20, zIndex: 13,
+        xPct: 16.7, yPct: 58.6,
         icon: "🕯️",
         iconUrl: "assets/icons/icon_sch_kissen.png",
+        spriteUrl: "assets/schlafzimmer_sprites/sprite_sch_kissen.png",
         mb: 2, xp: 25, gold: 0, ap: 0,
-        repr: "Besonderes Kissen auf dem Bett"
+        repr: "Besondere Kissen auf dem Bett"
       },
       {
         id: "SCH_MB_003",
         raum: "Schlafzimmer",
         name: "Nachts ganz bewusst den Mond und die Sterne betrachten",
-        anzeigeName: "Nachts ganz bewusst den Mond und die Sterne betrachten",
+        anzeigeName: "Messing-Teleskop im Bücher-Erker (Mond und Sterne betrachten)",
         zielTabelle: "MB Aktivitaeten",
         verknuepfung: "A13",
-        xPct: 82, yPct: 40,
+        leftPct: 50.00, topPct: 46.80, widthPct: 13.80, heightPct: 12.70, zIndex: 14,
+        xPct: 56.9, yPct: 53.2,
         icon: "🔭",
         iconUrl: "assets/icons/icon_sch_teleskop.png",
+        spriteUrl: "assets/schlafzimmer_sprites/sprite_sch_teleskop.png",
         mb: 2, xp: 5, gold: 0, ap: 0,
-        repr: "Teleskop am Fenster"
+        repr: "Teleskop am Erkerfenster"
       },
       {
         id: "SCH_MB_004",
         raum: "Schlafzimmer",
         name: "Sich sportlich betätigen",
-        anzeigeName: "Yogamatte & Hanteln (Sich sportlich betätigen / Planking)",
+        anzeigeName: "Ausgerollte Yogamatte & Hanteln am Teppich (Sich sportlich betätigen / Planking)",
         zielTabelle: "MB Aktivitaeten",
         verknuepfung: "A29",
-        xPct: 28, yPct: 78,
+        leftPct: 49.00, topPct: 70.50, widthPct: 29.00, heightPct: 11.20, zIndex: 18,
+        xPct: 63.5, yPct: 76.1,
         icon: "🧘",
         iconUrl: "assets/icons/icon_sch_yogamatte.png",
+        spriteUrl: "assets/schlafzimmer_sprites/sprite_sch_yogamatte.png",
         mb: 2, xp: 25, gold: 0, ap: 0,
         repr: "Ausgerollte Yogamatte & Hanteln"
+      },
+      {
+        id: "SCH_MB_005",
+        raum: "Schlafzimmer",
+        name: "10000 Schritte gehen",
+        anzeigeName: "Paar Laufschuhe auf der Holzbank (10.000 Schritte gehen)",
+        zielTabelle: "MB Aktivitaeten",
+        verknuepfung: "A16",
+        leftPct: 24.00, topPct: 77.20, widthPct: 20.50, heightPct: 7.91, zIndex: 19,
+        xPct: 34.3, yPct: 81.2,
+        icon: "👟",
+        iconUrl: "assets/icons/icon_sch_laufschuhe.png",
+        spriteUrl: "assets/schlafzimmer_sprites/sprite_sch_laufschuhe.png",
+        mb: 2, xp: 50, gold: 0, ap: 0,
+        repr: "Paar Laufschuhe im Vordergrund"
+      },
+      {
+        id: "SCH_MB_006",
+        raum: "Schlafzimmer",
+        name: "Eigene Stärken und Talente bewusst machen... Liste oder Test absolvieren",
+        anzeigeName: "Aufgeschlagenes Journal auf dem vorderen Nachttisch (Eigene Stärken bewusst machen)",
+        zielTabelle: "MB Aktivitaeten",
+        verknuepfung: "A26",
+        leftPct: 0.50, topPct: 62.80, widthPct: 17.00, heightPct: 7.20, zIndex: 15,
+        xPct: 9.0, yPct: 66.4,
+        icon: "📓",
+        spriteUrl: "assets/schlafzimmer_sprites/sprite_sch_journal.png",
+        mb: 1, xp: 15, gold: 0, ap: 0,
+        repr: "Aufgeschlagenes Journal auf dem Nachttisch"
+      },
+      {
+        id: "SCH_MB_007",
+        raum: "Schlafzimmer",
+        name: "Mit jemandem Sex haben",
+        anzeigeName: "Brennende Kerzen auf dem hinteren Nachttisch (Zweisamkeit & Intimität)",
+        zielTabelle: "MB Aktivitaeten",
+        verknuepfung: "A24",
+        leftPct: 22.50, topPct: 53.20, widthPct: 10.30, heightPct: 5.00, zIndex: 14,
+        xPct: 27.7, yPct: 55.7,
+        icon: "🕯️",
+        spriteUrl: "assets/schlafzimmer_sprites/sprite_sch_kerzen.png",
+        mb: 2, xp: 25, gold: 0, ap: 0,
+        repr: "Kerzen am Bett"
       },
       {
         id: "SCH_AUF_001",
         raum: "Schlafzimmer",
         name: "Samstagsputz (Schlafzimmer)",
-        anzeigeName: "Samstagsputz (Schlafzimmer)",
+        anzeigeName: "Staubwedel & frische Bettwäsche (Samstagsputz Schlafzimmer)",
         zielTabelle: "Aufgaben",
         verknuepfung: "A9",
-        xPct: 62, yPct: 78,
+        leftPct: 44.50, topPct: 56.50, widthPct: 20.00, heightPct: 10.54, zIndex: 17,
+        xPct: 54.5, yPct: 61.8,
         icon: "🛏️",
         iconUrl: "assets/icons/icon_sch_samstagsputz.png",
+        spriteUrl: "assets/schlafzimmer_sprites/sprite_sch_samstagsputz.png",
         mb: 0, xp: 150, gold: 50, ap: 2,
-        repr: "Schlafzimmer komplett herrichten"
+        repr: "Frische Bettwäsche & Staubwedel"
       },
       {
         id: "SCH_DOOR",
         raum: "Schlafzimmer",
         name: "Zur Wohnungs-Map",
-        anzeigeName: "Zur Wohnungs-Map",
+        anzeigeName: "Schlafzimmertür rechts (Zur Wohnungs-Map)",
         zielTabelle: "Navigation",
-        xPct: 12, yPct: 45,
+        leftPct: 65.00, topPct: 34.50, widthPct: 25.00, heightPct: 28.00, zIndex: 11,
+        xPct: 77.5, yPct: 48.5,
         icon: "🚪",
+        spriteUrl: "assets/schlafzimmer_sprites/sprite_sch_tuer.png",
         isMapDoor: true
       }
     ],
