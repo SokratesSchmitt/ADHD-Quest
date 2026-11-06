@@ -13,8 +13,8 @@
  * - Achievements (Beständiger Geist, Wochenheld, Monatsveteran)
  */
 const Engine = (function () {
-  const APP_VERSION = "0.35";
-  const STORAGE_KEY = "ADHD_QUEST_SHEET_STATE_V0_35";
+  const APP_VERSION = "0.37";
+  const STORAGE_KEY = "ADHD_QUEST_SHEET_STATE_V0_37";
   const SPLASH_DATE_KEY = "adhdQuest_lastSplashDate";
 
   // Deine Live Google Apps Script Web-App URL aus dem Tabellenblatt "Dokumentation"
@@ -33,7 +33,7 @@ const Engine = (function () {
       "Küche": "assets/bg_kitchen.jpg",
       "Badezimmer": "assets/bg_bathroom.jpg",
       "Schlafzimmer": "assets/bg_bedroom.jpg",
-      "Kinderzimmer": "https://raw.githubusercontent.com/SokratesSchmitt/ADHD-Quest/main/assets/bg_kinderzimmer_orig.png"
+      "Kinderzimmer": "assets/bg_kinderzimmer.jpg"
     }
   };
 
@@ -56,16 +56,23 @@ const Engine = (function () {
     ]
   };
 
-  // 2. Interaktive Wohnungs-Map (Neuer Grundriss inkl. Flur & Schlafzimmer)
+  // 2. Interaktive Wohnungs-Map (Neuer 7-Raum-Grundriss v0.37 mit freigestellten Raum-Sprites)
   const ROOMS = [
+    {
+      id: "Kinderzimmer",
+      icon: "🦄",
+      desc: "Gelato-Girl-Poster, Korg-Minipiano, Einhorn, Holzeisenbahn & Basteltisch",
+      bgUrl: ASSETS.backgrounds["Kinderzimmer"],
+      mapSprite: "assets/map_sprites/sprite_map_kinderzimmer.png",
+      leftPct: 4.22, topPct: 6.25, widthPct: 28.63, heightPct: 53.12, zIndex: 5
+    },
     {
       id: "Flur",
       icon: "🚪",
       desc: "Bücherregal, Eulen-Uhr, freies Holzbrett & Wohnungstür",
       bgUrl: ASSETS.backgrounds["Flur"],
       mapSprite: "assets/map_sprites/sprite_map_flur.png",
-      leftPct: 3.92, topPct: 14.45, widthPct: 33.28, heightPct: 73.18, zIndex: 5,
-      clipPath: "polygon(33.2% 0%, 100% 0%, 68.7% 100%, 0% 100%, 0% 40.1%)"
+      leftPct: 4.22, topPct: 60.94, widthPct: 36.05, heightPct: 32.55, zIndex: 5
     },
     {
       id: "Wohnzimmer",
@@ -73,8 +80,15 @@ const Engine = (function () {
       desc: "Schöne Musik, Instrumente, Filme & Erholung",
       bgUrl: ASSETS.backgrounds["Wohnzimmer"],
       mapSprite: "assets/map_sprites/sprite_map_wohnzimmer.png",
-      leftPct: 29.65, topPct: 14.45, widthPct: 33.79, heightPct: 73.18, zIndex: 4,
-      clipPath: "polygon(25.8% 0%, 100% 0%, 100% 49.0%, 85.3% 49.0%, 85.3% 100%, 0% 100%)"
+      leftPct: 33.79, topPct: 6.25, widthPct: 32.19, heightPct: 53.39, zIndex: 5
+    },
+    {
+      id: "Dashboard",
+      icon: "🏠",
+      desc: "Arbeitszimmer / Haupt-Dashboard, Tagesplaner, Shop & Questlog",
+      bgUrl: ASSETS.backgrounds["Dashboard"],
+      mapSprite: "assets/map_sprites/sprite_map_arbeitszimmer.png",
+      leftPct: 41.28, topPct: 61.46, widthPct: 24.71, heightPct: 32.03, zIndex: 6
     },
     {
       id: "Schlafzimmer",
@@ -82,7 +96,7 @@ const Engine = (function () {
       desc: "Erholung, Massageöl, Teleskop & Samstagsputz",
       bgUrl: ASSETS.backgrounds["Schlafzimmer"],
       mapSprite: "assets/map_sprites/sprite_map_schlafzimmer.png",
-      leftPct: 64.53, topPct: 14.45, widthPct: 32.05, heightPct: 35.94, zIndex: 5
+      leftPct: 67.15, topPct: 6.25, widthPct: 28.63, heightPct: 34.11, zIndex: 5
     },
     {
       id: "Badezimmer",
@@ -90,7 +104,7 @@ const Engine = (function () {
       desc: "Schwimmen, Kalt duschen & Bad-Routine",
       bgUrl: ASSETS.backgrounds["Badezimmer"],
       mapSprite: "assets/map_sprites/sprite_map_badezimmer.png",
-      leftPct: 59.45, topPct: 52.08, widthPct: 12.72, heightPct: 35.55, zIndex: 5
+      leftPct: 75.29, topPct: 42.19, widthPct: 20.49, heightPct: 21.88, zIndex: 5
     },
     {
       id: "Küche",
@@ -98,15 +112,7 @@ const Engine = (function () {
       desc: "Geschirrspüler, Tisch abwischen & Mittagessen",
       bgUrl: ASSETS.backgrounds["Küche"],
       mapSprite: "assets/map_sprites/sprite_map_kueche.png",
-      leftPct: 73.26, topPct: 52.08, widthPct: 23.33, heightPct: 35.55, zIndex: 5
-    },
-    {
-      id: "Dashboard",
-      icon: "🏠",
-      desc: "Haupt-Dashboard, Tagesplaner, Shop & Questlog",
-      bgUrl: ASSETS.backgrounds["Dashboard"],
-      mapSprite: "assets/map_sprites/sprite_map_arbeitszimmer.png",
-      leftPct: 41.13, topPct: 88.80, widthPct: 17.22, heightPct: 10.94, zIndex: 6
+      leftPct: 67.15, topPct: 65.62, widthPct: 28.63, heightPct: 27.86, zIndex: 5
     }
   ];
 
@@ -958,25 +964,29 @@ const Engine = (function () {
         id: "KIN_MB_001",
         raum: "Kinderzimmer",
         name: "Mit Kindern spielen",
-        anzeigeName: "Mit Kindern spielen (Eisenbahn & Einhorn)",
+        anzeigeName: "Bunte Holzeisenbahn auf dem Spielteppich (Mit Kindern spielen)",
         zielTabelle: "MB Aktivitaeten",
         verknuepfung: "A14",
-        xPct: 36, yPct: 64,
+        leftPct: 15.50, topPct: 74.20, widthPct: 48.70, heightPct: 16.60, zIndex: 17,
+        xPct: 39.9, yPct: 82.5,
         icon: "🚂",
         iconUrl: "assets/icons/icon_kin_eisenbahn_einhorn.png",
+        spriteUrl: "assets/kinderzimmer_sprites/sprite_kin_eisenbahn.png",
         mb: 1, xp: 25, gold: 0, ap: 0,
-        repr: "Bunte Spielzeug-Eisenbahn oder Plüsch-Einhorn"
+        repr: "Bunte Spielzeug-Eisenbahn auf dem Teppich"
       },
       {
         id: "KIN_MB_002",
         raum: "Kinderzimmer",
         name: "Etwas basteln oder bauen (30 min)",
-        anzeigeName: "Kleiner Mal- & Basteltisch (30 min basteln/bauen)",
+        anzeigeName: "Kleiner Mal- & Basteltisch mit Buntstiften (30 min basteln/bauen)",
         zielTabelle: "MB Aktivitaeten",
         verknuepfung: "A20",
-        xPct: 66, yPct: 58,
+        leftPct: 62.20, topPct: 58.50, widthPct: 36.30, heightPct: 21.00, zIndex: 16,
+        xPct: 80.4, yPct: 69.0,
         icon: "🎨",
         iconUrl: "assets/icons/icon_kin_basteltisch.png",
+        spriteUrl: "assets/kinderzimmer_sprites/sprite_kin_basteltisch.png",
         mb: 1, xp: 5, gold: 0, ap: 0,
         repr: "Kleiner Mal- & Basteltisch"
       },
@@ -984,36 +994,117 @@ const Engine = (function () {
         id: "KIN_MB_003",
         raum: "Kinderzimmer",
         name: "Handwerken (Holz)",
-        anzeigeName: "Holz-Werkzeugkasten (Handwerken & DIY-Projekte)",
+        anzeigeName: "Holz-Werkzeugkasten mit Japansäge, Hammer & Stecheisen (Handwerken / Holz)",
         zielTabelle: "MB Aktivitaeten",
         verknuepfung: "A44",
-        xPct: 74, yPct: 80,
+        leftPct: 64.20, topPct: 78.80, widthPct: 35.60, heightPct: 21.00, zIndex: 19,
+        xPct: 82.0, yPct: 89.3,
         icon: "🪚",
         iconUrl: "assets/icons/icon_kin_holzwerkzeug.png",
+        spriteUrl: "assets/kinderzimmer_sprites/sprite_kin_werkzeugkasten.png",
         mb: 3, xp: 500, gold: 0, ap: 1,
         repr: "Holz-Werkzeugkasten mit Japansäge & Stecheisen"
+      },
+      {
+        id: "KIN_MB_004",
+        raum: "Kinderzimmer",
+        name: "Etwas tun, worauf ich stolz bin (auch wenn es nur eine kleine Sache ist)",
+        anzeigeName: "Gerahmtes „Gelato Girl“-Poster über dem Bett (Worauf ich stolz bin)",
+        zielTabelle: "MB Aktivitaeten",
+        verknuepfung: "A28",
+        leftPct: 55.40, topPct: 21.20, widthPct: 19.20, heightPct: 16.00, zIndex: 14,
+        xPct: 65.0, yPct: 29.2,
+        icon: "🌟",
+        iconUrl: "assets/icons/icon_kin_poster.png",
+        spriteUrl: "assets/kinderzimmer_sprites/sprite_kin_poster.png",
+        mb: 1, xp: 15, gold: 0, ap: 0,
+        repr: "Gerahmtes Gelato-Girl-Poster an der Wand"
+      },
+      {
+        id: "KIN_MB_005",
+        raum: "Kinderzimmer",
+        name: "Klavier spielen (20 min)",
+        anzeigeName: "Rotes Korg Minipiano (Musik machen & kreativ klimpern)",
+        zielTabelle: "MB Aktivitaeten",
+        verknuepfung: "A33",
+        leftPct: 13.80, topPct: 53.20, widthPct: 25.00, heightPct: 16.00, zIndex: 15,
+        xPct: 26.3, yPct: 61.2,
+        icon: "🎹",
+        iconUrl: "assets/icons/icon_kin_korg_piano.png",
+        spriteUrl: "assets/kinderzimmer_sprites/sprite_kin_korg_piano.png",
+        mb: 3, xp: 15, gold: 0, ap: 1,
+        repr: "Rotes Minipiano von Korg"
+      },
+      {
+        id: "KIN_MB_006",
+        raum: "Kinderzimmer",
+        name: "Gemeinsam mit jemandem lachen",
+        anzeigeName: "Großes Regenbogen-Plüsch-Einhorn auf dem Bodenbett (Quatsch machen & kuscheln)",
+        zielTabelle: "MB Aktivitaeten",
+        verknuepfung: "A23",
+        leftPct: 65.50, topPct: 37.80, widthPct: 20.70, heightPct: 13.20, zIndex: 15,
+        xPct: 75.9, yPct: 44.4,
+        icon: "🦄",
+        iconUrl: "assets/icons/icon_kin_einhorn.png",
+        spriteUrl: "assets/kinderzimmer_sprites/sprite_kin_einhorn.png",
+        mb: 1, xp: 5, gold: 0, ap: 0,
+        repr: "Großes Plüsch-Einhorn auf dem Bett"
+      },
+      {
+        id: "KIN_MB_007",
+        raum: "Kinderzimmer",
+        name: "Jemandem sagen, dass man ihm oder ihr dankbar ist oder sie/ihn gern hat",
+        anzeigeName: "IKEA-Wandregale voller Kinderbücher (Vorlesen & gemeinsame Zeit)",
+        zielTabelle: "MB Aktivitaeten",
+        verknuepfung: "A25",
+        leftPct: 12.20, topPct: 21.80, widthPct: 20.80, heightPct: 28.40, zIndex: 14,
+        xPct: 22.6, yPct: 36.0,
+        icon: "📚",
+        iconUrl: "assets/icons/icon_kin_ikearegale.png",
+        spriteUrl: "assets/kinderzimmer_sprites/sprite_kin_ikearegale.png",
+        mb: 1, xp: 15, gold: 0, ap: 0,
+        repr: "Weiße IKEA-Bücherleisten an der Wand"
       },
       {
         id: "KIN_AUF_001",
         raum: "Kinderzimmer",
         name: "Ronja ins Bett bringen",
-        anzeigeName: "Gute-Nacht-Buch (Ronja ins Bett bringen)",
+        anzeigeName: "Aufgeschlagenes Gute-Nacht-Buch auf dem Bodenbett (Ronja ins Bett bringen)",
         zielTabelle: "Aufgaben",
         verknuepfung: "A16",
-        xPct: 45, yPct: 42,
+        leftPct: 68.50, topPct: 51.20, widthPct: 20.30, heightPct: 6.30, zIndex: 16,
+        xPct: 78.7, yPct: 54.4,
         icon: "📖",
         iconUrl: "assets/icons/icon_kin_gutenachtbuch.png",
+        spriteUrl: "assets/kinderzimmer_sprites/sprite_kin_gutenachtbuch.png",
         mb: 0, xp: 10, gold: 1, ap: 1,
         repr: "Gute-Nacht-Buch auf dem Kinderbett"
+      },
+      {
+        id: "KIN_AUF_002",
+        raum: "Kinderzimmer",
+        name: "Zimmer oder Wohnung aufräumen (30 min)",
+        anzeigeName: "Bunte Spielzeugkiste mit Kuscheltieren & Bauklötzen (Kinderzimmer aufräumen)",
+        zielTabelle: "MB Aktivitaeten",
+        verknuepfung: "A18",
+        leftPct: 0.20, topPct: 81.20, widthPct: 29.00, heightPct: 18.60, zIndex: 18,
+        xPct: 14.7, yPct: 90.5,
+        icon: "🧸",
+        iconUrl: "assets/icons/icon_kin_spielzeugkiste.png",
+        spriteUrl: "assets/kinderzimmer_sprites/sprite_kin_spielzeugkiste.png",
+        mb: 1, xp: 50, gold: 0, ap: 0,
+        repr: "Bunte Spielzeugkiste im Vordergrund"
       },
       {
         id: "KIN_DOOR",
         raum: "Kinderzimmer",
         name: "Zur Wohnungs-Map",
-        anzeigeName: "Zur Wohnungs-Map",
+        anzeigeName: "Kinderzimmertür links (Zur Wohnungs-Map)",
         zielTabelle: "Navigation",
-        xPct: 14, yPct: 48,
+        leftPct: 0.00, topPct: 9.80, widthPct: 10.80, heightPct: 61.70, zIndex: 11,
+        xPct: 5.4, yPct: 40.7,
         icon: "🚪",
+        spriteUrl: "assets/kinderzimmer_sprites/sprite_kin_tuer.png",
         isMapDoor: true
       }
     ]
