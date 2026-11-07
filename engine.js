@@ -13,8 +13,8 @@
  * - Achievements (Beständiger Geist, Wochenheld, Monatsveteran)
  */
 const Engine = (function () {
-  const APP_VERSION = "0.37";
-  const STORAGE_KEY = "ADHD_QUEST_SHEET_STATE_V0_37";
+  const APP_VERSION = "0.38";
+  const STORAGE_KEY = "ADHD_QUEST_SHEET_STATE_V0_38";
   const SPLASH_DATE_KEY = "adhdQuest_lastSplashDate";
 
   // Deine Live Google Apps Script Web-App URL aus dem Tabellenblatt "Dokumentation"
@@ -56,7 +56,7 @@ const Engine = (function () {
     ]
   };
 
-  // 2. Interaktive Wohnungs-Map (Neuer 7-Raum-Grundriss v0.37 mit freigestellten Raum-Sprites)
+  // 2. Interaktive Wohnungs-Map (Neuer 7-Raum-Grundriss v0.37 mit entlang der Innenwände freigestellten Raum-Sprites)
   const ROOMS = [
     {
       id: "Kinderzimmer",
@@ -72,7 +72,8 @@ const Engine = (function () {
       desc: "Bücherregal, Eulen-Uhr, freies Holzbrett & Wohnungstür",
       bgUrl: ASSETS.backgrounds["Flur"],
       mapSprite: "assets/map_sprites/sprite_map_flur.png",
-      leftPct: 4.22, topPct: 60.94, widthPct: 36.05, heightPct: 32.55, zIndex: 5
+      leftPct: 4.22, topPct: 59.90, widthPct: 36.48, heightPct: 33.59, zIndex: 5,
+      clipPath: "polygon(0% 3.1%, 80.9% 3.1%, 80.9% 0%, 100% 0%, 100% 100%, 0% 100%)"
     },
     {
       id: "Wohnzimmer",
@@ -80,7 +81,7 @@ const Engine = (function () {
       desc: "Schöne Musik, Instrumente, Filme & Erholung",
       bgUrl: ASSETS.backgrounds["Wohnzimmer"],
       mapSprite: "assets/map_sprites/sprite_map_wohnzimmer.png",
-      leftPct: 33.79, topPct: 6.25, widthPct: 32.19, heightPct: 53.39, zIndex: 5
+      leftPct: 33.79, topPct: 6.25, widthPct: 32.34, heightPct: 53.65, zIndex: 5
     },
     {
       id: "Dashboard",
@@ -88,7 +89,7 @@ const Engine = (function () {
       desc: "Arbeitszimmer / Haupt-Dashboard, Tagesplaner, Shop & Questlog",
       bgUrl: ASSETS.backgrounds["Dashboard"],
       mapSprite: "assets/map_sprites/sprite_map_arbeitszimmer.png",
-      leftPct: 41.28, topPct: 61.46, widthPct: 24.71, heightPct: 32.03, zIndex: 6
+      leftPct: 41.28, topPct: 61.46, widthPct: 24.85, heightPct: 32.03, zIndex: 6
     },
     {
       id: "Schlafzimmer",
@@ -104,7 +105,7 @@ const Engine = (function () {
       desc: "Schwimmen, Kalt duschen & Bad-Routine",
       bgUrl: ASSETS.backgrounds["Badezimmer"],
       mapSprite: "assets/map_sprites/sprite_map_badezimmer.png",
-      leftPct: 75.29, topPct: 42.19, widthPct: 20.49, heightPct: 21.88, zIndex: 5
+      leftPct: 75.29, topPct: 42.19, widthPct: 20.49, heightPct: 21.88, zIndex: 6
     },
     {
       id: "Küche",
@@ -112,7 +113,8 @@ const Engine = (function () {
       desc: "Geschirrspüler, Tisch abwischen & Mittagessen",
       bgUrl: ASSETS.backgrounds["Küche"],
       mapSprite: "assets/map_sprites/sprite_map_kueche.png",
-      leftPct: 67.15, topPct: 65.62, widthPct: 28.63, heightPct: 27.86, zIndex: 5
+      leftPct: 67.01, topPct: 42.19, widthPct: 28.78, heightPct: 51.30, zIndex: 5,
+      clipPath: "polygon(0% 0%, 19.2% 0%, 19.2% 45.7%, 100% 45.7%, 100% 100%, 0% 100%)"
     }
   ];
 
