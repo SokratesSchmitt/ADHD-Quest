@@ -92,14 +92,169 @@ function getActivePlayerStateObj() {
   }
 }
 
+// ============================================================================
+// KOMBINIERTE IDLE-ENGINE (#1 ATMEN + #2 BLINZELN + #3 GLINT + #4 BRAUE + #5 BLICK)
+// ============================================================================
+const BREATHING_IDLE_FRAMES = [
+  "assets/avatar/idle_01_breathing/breathing_frame_01.png",
+  "assets/avatar/idle_01_breathing/breathing_frame_02.png",
+  "assets/avatar/idle_01_breathing/breathing_frame_03.png",
+  "assets/avatar/idle_01_breathing/breathing_frame_04.png",
+  "assets/avatar/idle_01_breathing/breathing_frame_05.png",
+  "assets/avatar/idle_01_breathing/breathing_frame_06.png",
+  "assets/avatar/idle_01_breathing/breathing_frame_07.png",
+  "assets/avatar/idle_01_breathing/breathing_frame_08.png"
+];
+
+const IDLE_MICRO_FRAMES = {
+  blink_half:   "assets/avatar/idle_02_blinking/blink_frame_02_half.png",
+  blink_closed: "assets/avatar/idle_02_blinking/blink_frame_03_closed.png",
+  glint: [
+    "assets/avatar/idle_03_glint/glint_frame_01.png",
+    "assets/avatar/idle_03_glint/glint_frame_02.png",
+    "assets/avatar/idle_03_glint/glint_frame_03.png",
+    "assets/avatar/idle_03_glint/glint_frame_04.png",
+    "assets/avatar/idle_03_glint/glint_frame_05.png"
+  ],
+  brow_mid:  "assets/avatar/idle_04_eyebrow/brow_frame_02_mid.png",
+  brow_high: "assets/avatar/idle_04_eyebrow/brow_frame_03_high.png",
+  gaze_mid:  "assets/avatar/idle_05_room_gaze/gaze_frame_02_mid.png",
+  gaze_room: "assets/avatar/idle_05_room_gaze/gaze_frame_03_room.png"
+};
+
+let currentBreathingFrameIdx = 0;
+let activeMicroIdleOverride = null; // Aktiver Frame-Pfad aus #2, #3, #4 oder #5
+
+// Alle Frames (#1 bis #5) beim Start vorladen für absolut flackerfreie Wiedergabe
+[
+  ...BREATHING_IDLE_FRAMES,
+  IDLE_MICRO_FRAMES.blink_half,
+  IDLE_MICRO_FRAMES.blink_closed,
+  ...IDLE_MICRO_FRAMES.glint,
+  IDLE_MICRO_FRAMES.brow_mid,
+  IDLE_MICRO_FRAMES.brow_high,
+  IDLE_MICRO_FRAMES.gaze_mid,
+  IDLE_MICRO_FRAMES.gaze_room
+].forEach(src => {
+  const pre = new Image();
+  pre.src = src;
+});
+
+function getIdleAvatarFrameUrl() {
+  if (activeMicroIdleOverride) return activeMicroIdleOverride;
+  return BREATHING_IDLE_FRAMES[currentBreathingFrameIdx] || Engine.PLAYER_DESIGN_REF.profileRef;
+}
+
 function getAvatarFrameUrl() {
   const s = Engine.getState();
   if (s.settings && s.settings.useProfileBadgeInHud && !isExcitedOverride && !pinnedStateId) {
-    return Engine.PLAYER_DESIGN_REF.profileRef;
+    return getIdleAvatarFrameUrl();
   }
   const st = getActivePlayerStateObj();
+  if (!isExcitedOverride && st && st.id === "state_01_neutral") {
+    return getIdleAvatarFrameUrl();
+  }
   return st ? st.portrait : "assets/avatar/avatar_happy.png";
 }
+
+function refreshHudIdleAvatar() {
+  const s = Engine.getState();
+  if (!isExcitedOverride && (!s.settings || s.settings.useProfileBadgeInHud || !pinnedStateId)) {
+    const st = getActivePlayerStateObj();
+    if ((s.settings && s.settings.useProfileBadgeInHud) || (st && st.id === "state_01_neutral")) {
+      const img = document.getElementById("header-avatar-img");
+      if (img) img.src = getIdleAvatarFrameUrl();
+    }
+  }
+  const modalPreview = document.getElementById("modal-profile-ref-img");
+  if (modalPreview) modalPreview.src = getIdleAvatarFrameUrl();
+}
+
+// #1: Ruhiges Atmen (8 Frames * 500ms = 4.0 Sekunden Zyklus)
+setInterval(() => {
+  currentBreathingFrameIdx = (currentBreathingFrameIdx + 1) % BREATHING_IDLE_FRAMES.length;
+  if (!activeMicroIdleOverride) refreshHudIdleAvatar();
+}, 500);
+
+// #2: Doppel-Blinzeln (alle 6,5 Sekunden)
+function triggerDoubleBlink(manual = false) {
+  if (activeMicroIdleOverride && !manual) return;
+  const seq = [
+    { src: IDLE_MICRO_FRAMES.blink_half,   delay: 0 },
+    { src: IDLE_MICRO_FRAMES.blink_closed, delay: 65 },
+    { src: null,                           delay: 140 },
+    { src: IDLE_MICRO_FRAMES.blink_half,   delay: 230 },
+    { src: IDLE_MICRO_FRAMES.blink_closed, delay: 295 },
+    { src: IDLE_MICRO_FRAMES.blink_half,   delay: 375 },
+    { src: null,                           delay: 440 }
+  ];
+  seq.forEach(step => {
+    setTimeout(() => {
+      activeMicroIdleOverride = step.src;
+      refreshHudIdleAvatar();
+    }, step.delay);
+  });
+}
+setInterval(() => triggerDoubleBlink(false), 6500);
+
+// #3: Brillenglas-Glanz / Glint (alle 9,5 Sekunden)
+function triggerGlassesGlint(manual = false) {
+  if (activeMicroIdleOverride && !manual) return;
+  const seq = [
+    { src: IDLE_MICRO_FRAMES.glint[0], delay: 0 },
+    { src: IDLE_MICRO_FRAMES.glint[1], delay: 75 },
+    { src: IDLE_MICRO_FRAMES.glint[2], delay: 150 },
+    { src: IDLE_MICRO_FRAMES.glint[3], delay: 225 },
+    { src: IDLE_MICRO_FRAMES.glint[4], delay: 300 },
+    { src: null,                       delay: 380 }
+  ];
+  seq.forEach(step => {
+    setTimeout(() => {
+      activeMicroIdleOverride = step.src;
+      refreshHudIdleAvatar();
+    }, step.delay);
+  });
+}
+setInterval(() => triggerGlassesGlint(false), 9500);
+
+// #4: Augenbrauen-Wippen (alle 11,5 Sekunden)
+function triggerEyebrowWiggle(manual = false) {
+  if (activeMicroIdleOverride && !manual) return;
+  const seq = [
+    { src: IDLE_MICRO_FRAMES.brow_mid,  delay: 0 },
+    { src: IDLE_MICRO_FRAMES.brow_high, delay: 95 },
+    { src: IDLE_MICRO_FRAMES.brow_mid,  delay: 280 },
+    { src: IDLE_MICRO_FRAMES.brow_high, delay: 390 },
+    { src: IDLE_MICRO_FRAMES.brow_mid,  delay: 750 },
+    { src: null,                        delay: 880 }
+  ];
+  seq.forEach(step => {
+    setTimeout(() => {
+      activeMicroIdleOverride = step.src;
+      refreshHudIdleAvatar();
+    }, step.delay);
+  });
+}
+setInterval(() => triggerEyebrowWiggle(false), 11500);
+
+// #5: Blick durch den Raum (alle 14,5 Sekunden)
+function triggerRoomGaze(manual = false) {
+  if (activeMicroIdleOverride && !manual) return;
+  const seq = [
+    { src: IDLE_MICRO_FRAMES.gaze_mid,  delay: 0 },
+    { src: IDLE_MICRO_FRAMES.gaze_room, delay: 120 },
+    { src: IDLE_MICRO_FRAMES.gaze_mid,  delay: 1350 },
+    { src: null,                        delay: 1520 }
+  ];
+  seq.forEach(step => {
+    setTimeout(() => {
+      activeMicroIdleOverride = step.src;
+      refreshHudIdleAvatar();
+    }, step.delay);
+  });
+}
+setInterval(() => triggerRoomGaze(false), 14500);
+
 
 function updateAvatarSprite() {
   const img = document.getElementById("header-avatar-img");
@@ -355,7 +510,7 @@ function openCharacterModal() {
   if (body) {
     body.innerHTML = `
       <div style="display:flex; align-items:center; gap:14px; background:#fff7ed; border:2px solid #fed7aa; border-radius:14px; padding:12px; margin-bottom:12px;">
-        <img src="${ref.profileRef}" alt="Profilbild Referenz" style="width:96px; height:96px; border-radius:50%; object-fit:contain; object-position:center bottom; padding-top:4px; border:3.5px solid #ff7a00; image-rendering:auto; background:radial-gradient(circle at 50% 40%, #fff9db 0%, #ffd43b 70%, #f76707 100%); flex-shrink:0;">
+        <img id="modal-profile-ref-img" src="${getIdleAvatarFrameUrl()}" alt="Profilbild Referenz" style="width:96px; height:96px; border-radius:50%; object-fit:contain; object-position:center bottom; padding-top:4px; border:3.5px solid #ff7a00; image-rendering:auto; background:radial-gradient(circle at 50% 40%, #fff9db 0%, #ffd43b 70%, #f76707 100%); flex-shrink:0;">
         <div style="flex:1;">
           <div style="font-weight:900; font-size:15px; color:#9a3412;">Offizielle Designreferenz (Paddy)</div>
           <div style="font-size:12px; color:#475569; margin-top:2px;">
@@ -377,6 +532,18 @@ function openCharacterModal() {
               ⚡ Auto-Modus (nach MB%)
             </button>
           </div>
+        </div>
+      </div>
+      <div style="background:#f8fafc; border:1.5px solid #cbd5e1; border-radius:12px; padding:10px; margin-bottom:12px;">
+        <div style="font-weight:800; font-size:12px; color:#1e293b; margin-bottom:6px;">
+          ✨ AKTIVE IDLE-MIKRO-ANIMATIONEN #1–#5 (LIVE IM HUD & HIER TESTBAR):
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="activeMicroIdleOverride=null; refreshHudIdleAvatar(); showLootToast('🫁 #1 Ruhiges Atmen (4s Dauer-Loop aktiv)');">🫁 #1 Ruhiges Atmen</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="triggerDoubleBlink(true); showLootToast('👀 #2 Doppel-Blinzeln ausgelöst!');">👀 #2 Doppel-Blinzeln</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="triggerGlassesGlint(true); showLootToast('✨ #3 Brillenglas-Glanz ausgelöst!');">✨ #3 Brillen-Glint</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="triggerEyebrowWiggle(true); showLootToast('🤨 #4 Augenbrauen-Wippen ausgelöst!');">🤨 #4 Brauen-Wippen</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="triggerRoomGaze(true); showLootToast('👁️ #5 Blick durch den Raum ausgelöst!');">👁️ #5 Raum-Blick</button>
         </div>
       </div>
       <div style="font-weight:800; font-size:12px; color:#475569; margin-bottom:8px;">

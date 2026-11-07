@@ -1,4 +1,4 @@
-/* ADHD QUEST - Version 0.38 Stylesheet (Null-Naht Sprites für Flur & neue Wohnungs-Map) */
+/* ADHD QUEST - Version 0.40 Stylesheet (Null-Naht Sprites für Flur & neue Wohnungs-Map) */
 :root {
   --orange-main: #ff7a00;
   --orange-glow: #ffb703;
@@ -181,11 +181,29 @@ body {
   z-index: 0;
 }
 
+/* ============================================================================
+   IDLE-ANIMATION #1 (BEREICH 1): RUHIGES ATMEN (4-Sekunden-Zyklus)
+   Sanftes Heben und Senken der Schultern & Brustkorb-Atmung, während der Kopf
+   minimal mitschwingt und die untere Kreis-Naht (bottom: 11px) 100% dicht bleibt.
+   ============================================================================ */
+@keyframes paddyIdleBreathing {
+  0%, 100% {
+    transform: translateX(-50%) translateY(0px) scaleX(1) scaleY(1);
+  }
+  45% {
+    transform: translateX(-50%) translateY(-1.5px) scaleX(1.016) scaleY(1.028);
+  }
+  52% {
+    transform: translateX(-50%) translateY(-1.5px) scaleX(1.016) scaleY(1.028);
+  }
+}
+
 .avatar-popout-sprite {
   position: absolute;
   left: 50%;
   bottom: 11px;
   transform: translateX(-50%);
+  transform-origin: 50% 96%;
   width: 156px;
   height: 174px;
   object-fit: contain;
@@ -195,10 +213,12 @@ body {
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.48));
   z-index: 2;
   pointer-events: none;
-  transition: transform 0.22s ease;
+  animation: paddyIdleBreathing 4s cubic-bezier(0.42, 0, 0.58, 1) infinite;
+  transition: filter 0.22s ease;
 }
 
 .avatar-popout-wrapper:hover .avatar-popout-sprite {
+  animation-play-state: paused;
   transform: translateX(-50%) scale(1.03);
 }
 
