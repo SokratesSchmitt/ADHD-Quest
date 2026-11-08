@@ -93,7 +93,7 @@ function getActivePlayerStateObj() {
 }
 
 // ============================================================================
-// KOMBINIERTE IDLE-ENGINE (#1 ATMEN + #2 BLINZELN + #3 GLINT + #4 BRAUE + #5 BLICK)
+// KOMBINIERTE IDLE-ENGINE: KATEGORIE 1 (#1–#10), KATEGORIE 2 (#11–#20) & KATEGORIE 3 (#21–#30)
 // ============================================================================
 const BREATHING_IDLE_FRAMES = [
   "assets/avatar/idle_01_breathing/breathing_frame_01.png",
@@ -107,6 +107,7 @@ const BREATHING_IDLE_FRAMES = [
 ];
 
 const IDLE_MICRO_FRAMES = {
+  // --- KATEGORIE 1 (#2 bis #10) ---
   blink_half:   "assets/avatar/idle_02_blinking/blink_frame_02_half.png",
   blink_closed: "assets/avatar/idle_02_blinking/blink_frame_03_closed.png",
   glint: [
@@ -116,26 +117,127 @@ const IDLE_MICRO_FRAMES = {
     "assets/avatar/idle_03_glint/glint_frame_04.png",
     "assets/avatar/idle_03_glint/glint_frame_05.png"
   ],
-  brow_mid:  "assets/avatar/idle_04_eyebrow/brow_frame_02_mid.png",
-  brow_high: "assets/avatar/idle_04_eyebrow/brow_frame_03_high.png",
-  gaze_mid:  "assets/avatar/idle_05_room_gaze/gaze_frame_02_mid.png",
-  gaze_room: "assets/avatar/idle_05_room_gaze/gaze_frame_03_room.png"
+  brow_mid:   "assets/avatar/idle_04_eyebrow/brow_frame_02_mid.png",
+  brow_high:  "assets/avatar/idle_04_eyebrow/brow_frame_03_high.png",
+  gaze_mid:   "assets/avatar/idle_05_room_gaze/gaze_frame_02_mid.png",
+  gaze_room:  "assets/avatar/idle_05_room_gaze/gaze_frame_03_room.png",
+  smirk_mid:  "assets/avatar/idle_06_smirk/smirk_frame_02_mid.png",
+  smirk_full: "assets/avatar/idle_06_smirk/smirk_frame_03_full.png",
+  cap_low:    "assets/avatar/idle_07_cap_twitch/cap_frame_02_low.png",
+  cap_high:   "assets/avatar/idle_07_cap_twitch/cap_frame_03_high.png",
+  tilt_mid:   "assets/avatar/idle_08_head_tilt/tilt_frame_02_mid.png",
+  tilt_full:  "assets/avatar/idle_08_head_tilt/tilt_frame_03_full.png",
+  nod_mid:    "assets/avatar/idle_09_nod/nod_frame_02_mid.png",
+  nod_down:   "assets/avatar/idle_09_nod/nod_frame_03_down.png",
+  beard_a:    "assets/avatar/idle_10_beard_twitch/beard_frame_02_twitch_a.png",
+  beard_b:    "assets/avatar/idle_10_beard_twitch/beard_frame_03_twitch_b.png",
+
+  // --- KATEGORIE 2 (#11 bis #20: CHARAKTER-GIMMICKS & REQUISITEN) ---
+  coffee_raise: "assets/avatar/idle_11_coffee_sip/coffee_frame_02_raise.png",
+  coffee_sip_a: "assets/avatar/idle_11_coffee_sip/coffee_frame_03_sip_a.png",
+  coffee_sip_b: "assets/avatar/idle_11_coffee_sip/coffee_frame_04_sip_b.png",
+
+  glasses_reach: "assets/avatar/idle_12_glasses_adjust/glasses_frame_02_reach.png",
+  glasses_push:  "assets/avatar/idle_12_glasses_adjust/glasses_frame_03_push.png",
+
+  salute_mid: "assets/avatar/idle_13_cap_salute/salute_frame_02_mid.png",
+  salute_tap: "assets/avatar/idle_13_cap_salute/salute_frame_03_tap.png",
+
+  stroke_chin: "assets/avatar/idle_14_beard_stroke/stroke_frame_02_chin.png",
+  stroke_down: "assets/avatar/idle_14_beard_stroke/stroke_frame_03_stroke_down.png",
+
+  pencil_tucked: "assets/avatar/idle_15_carpenter_pencil/pencil_frame_01_tucked.png",
+  pencil_slide:  "assets/avatar/idle_15_carpenter_pencil/pencil_frame_02_slide_up.png",
+  pencil_ready:  "assets/avatar/idle_15_carpenter_pencil/pencil_frame_03_ready.png",
+
+  groove_1: "assets/avatar/idle_16_headphone_groove/groove_frame_01_neutral.png",
+  groove_2: "assets/avatar/idle_16_headphone_groove/groove_frame_02_bob_down.png",
+  groove_3: "assets/avatar/idle_16_headphone_groove/groove_frame_03_bob_deep.png",
+
+  ukulele_1: "assets/avatar/idle_17_ukulele_strum/ukulele_frame_01_ready.png",
+  ukulele_2: "assets/avatar/idle_17_ukulele_strum/ukulele_frame_02_strum_up.png",
+  ukulele_3: "assets/avatar/idle_17_ukulele_strum/ukulele_frame_03_strum_down.png",
+
+  gum_small: "assets/avatar/idle_18_bubblegum/gum_frame_01_small.png",
+  gum_big:   "assets/avatar/idle_18_bubblegum/gum_frame_02_big.png",
+  gum_pop:   "assets/avatar/idle_18_bubblegum/gum_frame_03_pop.png",
+
+  sketch_1: "assets/avatar/idle_19_fineliner_sketch/sketch_frame_01_start.png",
+  sketch_2: "assets/avatar/idle_19_fineliner_sketch/sketch_frame_02_draw.png",
+  sketch_3: "assets/avatar/idle_19_fineliner_sketch/sketch_frame_03_finish.png",
+
+  tea_inhale: "assets/avatar/idle_20_cozy_tea/tea_frame_01_inhale.png",
+  tea_cozy_a: "assets/avatar/idle_20_cozy_tea/tea_frame_02_cozy_a.png",
+  tea_cozy_b: "assets/avatar/idle_20_cozy_tea/tea_frame_03_cozy_b.png",
+
+  // --- KATEGORIE 3 (#21 bis #30: RAHMEN-INTERAKTIONEN & POP-OUT-EFFEKTE) ---
+  lean_raise: "assets/avatar/idle_21_ring_lean/lean_frame_01_raise.png",
+  lean_rest:  "assets/avatar/idle_21_ring_lean/lean_frame_02_rest.png",
+  lean_smirk: "assets/avatar/idle_21_ring_lean/lean_frame_03_smirk.png",
+
+  peek_mid:   "assets/avatar/idle_22_ring_peek/peek_frame_01_duck_mid.png",
+  peek_low:   "assets/avatar/idle_22_ring_peek/peek_frame_02_peek_low.png",
+  peek_pop:   "assets/avatar/idle_22_ring_peek/peek_frame_03_pop_up.png",
+
+  knock_windup:  "assets/avatar/idle_23_glass_knock/knock_frame_01_windup.png",
+  knock_tap:     "assets/avatar/idle_23_glass_knock/knock_frame_02_tap_a.png",
+  knock_between: "assets/avatar/idle_23_glass_knock/knock_frame_03_between.png",
+
+  wave_center: "assets/avatar/idle_24_wave_popout/wave_frame_01_center.png",
+  wave_left:   "assets/avatar/idle_24_wave_popout/wave_frame_02_left.png",
+  wave_right:  "assets/avatar/idle_24_wave_popout/wave_frame_03_right.png",
+
+  thumb_rise:    "assets/avatar/idle_25_thumbsup_popout/thumb_frame_01_rise.png",
+  thumb_pop:     "assets/avatar/idle_25_thumbsup_popout/thumb_frame_02_pop.png",
+  thumb_sparkle: "assets/avatar/idle_25_thumbsup_popout/thumb_frame_03_sparkle.png",
+
+  caplift_grab:   "assets/avatar/idle_26_cap_lift/caplift_frame_01_grab.png",
+  caplift_high:   "assets/avatar/idle_26_cap_lift/caplift_frame_02_high.png",
+  caplift_settle: "assets/avatar/idle_26_cap_lift/caplift_frame_03_settle.png",
+
+  polish_left:  "assets/avatar/idle_27_ring_polish/polish_frame_01_left.png",
+  polish_right: "assets/avatar/idle_27_ring_polish/polish_frame_02_right.png",
+  polish_top:   "assets/avatar/idle_27_ring_polish/polish_frame_03_top.png",
+
+  sidelean_mid:  "assets/avatar/idle_28_side_lean/sidelean_frame_01_right_mid.png",
+  sidelean_far:  "assets/avatar/idle_28_side_lean/sidelean_frame_02_right_far.png",
+  sidelean_left: "assets/avatar/idle_28_side_lean/sidelean_frame_03_left_peek.png",
+
+  confetti_toss:   "assets/avatar/idle_29_confetti_throw/confetti_frame_01_toss.png",
+  confetti_burst:  "assets/avatar/idle_29_confetti_throw/confetti_frame_02_burst.png",
+  confetti_shower: "assets/avatar/idle_29_confetti_throw/confetti_frame_03_shower.png",
+
+  jump_pop:  "assets/avatar/idle_30_startle_jump/jump_frame_01_pop.png",
+  jump_air:  "assets/avatar/idle_30_startle_jump/jump_frame_02_air.png",
+  jump_land: "assets/avatar/idle_30_startle_jump/jump_frame_03_land.png"
 };
 
 let currentBreathingFrameIdx = 0;
-let activeMicroIdleOverride = null; // Aktiver Frame-Pfad aus #2, #3, #4 oder #5
+let activeMicroIdleOverride = null; // Aktiver Frame-Pfad aus #2 bis #30
+let activeIdleTimeouts = [];
 
-// Alle Frames (#1 bis #5) beim Start vorladen für absolut flackerfreie Wiedergabe
-[
+function runMicroIdleSequence(seq, manual = false) {
+  if (activeMicroIdleOverride && !manual) return;
+  if (manual) {
+    activeIdleTimeouts.forEach(t => clearTimeout(t));
+    activeIdleTimeouts = [];
+  }
+  seq.forEach(step => {
+    const tid = setTimeout(() => {
+      activeMicroIdleOverride = step.src;
+      refreshHudIdleAvatar();
+    }, step.delay);
+    activeIdleTimeouts.push(tid);
+  });
+}
+
+// Alle Frames (#1 bis #30) beim Start vorladen für absolut flackerfreie Wiedergabe
+const ALL_PRELOAD_IDLE_URLS = [
   ...BREATHING_IDLE_FRAMES,
-  IDLE_MICRO_FRAMES.blink_half,
-  IDLE_MICRO_FRAMES.blink_closed,
   ...IDLE_MICRO_FRAMES.glint,
-  IDLE_MICRO_FRAMES.brow_mid,
-  IDLE_MICRO_FRAMES.brow_high,
-  IDLE_MICRO_FRAMES.gaze_mid,
-  IDLE_MICRO_FRAMES.gaze_room
-].forEach(src => {
+  ...Object.values(IDLE_MICRO_FRAMES).filter(v => typeof v === "string")
+];
+ALL_PRELOAD_IDLE_URLS.forEach(src => {
   const pre = new Image();
   pre.src = src;
 });
@@ -178,8 +280,7 @@ setInterval(() => {
 
 // #2: Doppel-Blinzeln (alle 6,5 Sekunden)
 function triggerDoubleBlink(manual = false) {
-  if (activeMicroIdleOverride && !manual) return;
-  const seq = [
+  runMicroIdleSequence([
     { src: IDLE_MICRO_FRAMES.blink_half,   delay: 0 },
     { src: IDLE_MICRO_FRAMES.blink_closed, delay: 65 },
     { src: null,                           delay: 140 },
@@ -187,74 +288,384 @@ function triggerDoubleBlink(manual = false) {
     { src: IDLE_MICRO_FRAMES.blink_closed, delay: 295 },
     { src: IDLE_MICRO_FRAMES.blink_half,   delay: 375 },
     { src: null,                           delay: 440 }
-  ];
-  seq.forEach(step => {
-    setTimeout(() => {
-      activeMicroIdleOverride = step.src;
-      refreshHudIdleAvatar();
-    }, step.delay);
-  });
+  ], manual);
 }
 setInterval(() => triggerDoubleBlink(false), 6500);
 
 // #3: Brillenglas-Glanz / Glint (alle 9,5 Sekunden)
 function triggerGlassesGlint(manual = false) {
-  if (activeMicroIdleOverride && !manual) return;
-  const seq = [
+  runMicroIdleSequence([
     { src: IDLE_MICRO_FRAMES.glint[0], delay: 0 },
     { src: IDLE_MICRO_FRAMES.glint[1], delay: 75 },
     { src: IDLE_MICRO_FRAMES.glint[2], delay: 150 },
     { src: IDLE_MICRO_FRAMES.glint[3], delay: 225 },
     { src: IDLE_MICRO_FRAMES.glint[4], delay: 300 },
     { src: null,                       delay: 380 }
-  ];
-  seq.forEach(step => {
-    setTimeout(() => {
-      activeMicroIdleOverride = step.src;
-      refreshHudIdleAvatar();
-    }, step.delay);
-  });
+  ], manual);
 }
 setInterval(() => triggerGlassesGlint(false), 9500);
 
 // #4: Augenbrauen-Wippen (alle 11,5 Sekunden)
 function triggerEyebrowWiggle(manual = false) {
-  if (activeMicroIdleOverride && !manual) return;
-  const seq = [
+  runMicroIdleSequence([
     { src: IDLE_MICRO_FRAMES.brow_mid,  delay: 0 },
     { src: IDLE_MICRO_FRAMES.brow_high, delay: 95 },
     { src: IDLE_MICRO_FRAMES.brow_mid,  delay: 280 },
     { src: IDLE_MICRO_FRAMES.brow_high, delay: 390 },
     { src: IDLE_MICRO_FRAMES.brow_mid,  delay: 750 },
     { src: null,                        delay: 880 }
-  ];
-  seq.forEach(step => {
-    setTimeout(() => {
-      activeMicroIdleOverride = step.src;
-      refreshHudIdleAvatar();
-    }, step.delay);
-  });
+  ], manual);
 }
 setInterval(() => triggerEyebrowWiggle(false), 11500);
 
 // #5: Blick durch den Raum (alle 14,5 Sekunden)
 function triggerRoomGaze(manual = false) {
-  if (activeMicroIdleOverride && !manual) return;
-  const seq = [
+  runMicroIdleSequence([
     { src: IDLE_MICRO_FRAMES.gaze_mid,  delay: 0 },
     { src: IDLE_MICRO_FRAMES.gaze_room, delay: 120 },
     { src: IDLE_MICRO_FRAMES.gaze_mid,  delay: 1350 },
     { src: null,                        delay: 1520 }
-  ];
-  seq.forEach(step => {
-    setTimeout(() => {
-      activeMicroIdleOverride = step.src;
-      refreshHudIdleAvatar();
-    }, step.delay);
-  });
+  ], manual);
 }
 setInterval(() => triggerRoomGaze(false), 14500);
 
+// #6: Zufriedenes Schmunzeln (alle 17,5 Sekunden)
+function triggerSmirk(manual = false) {
+  runMicroIdleSequence([
+    { src: IDLE_MICRO_FRAMES.smirk_mid,  delay: 0 },
+    { src: IDLE_MICRO_FRAMES.smirk_full, delay: 130 },
+    { src: IDLE_MICRO_FRAMES.smirk_mid,  delay: 1150 },
+    { src: null,                         delay: 1320 }
+  ], manual);
+}
+setInterval(() => triggerSmirk(false), 17500);
+
+// #7: Schiebermützen-Ruckler (alle 20,5 Sekunden)
+function triggerCapTwitch(manual = false) {
+  runMicroIdleSequence([
+    { src: IDLE_MICRO_FRAMES.cap_low,  delay: 0 },
+    { src: IDLE_MICRO_FRAMES.cap_high, delay: 260 },
+    { src: IDLE_MICRO_FRAMES.cap_low,  delay: 480 },
+    { src: IDLE_MICRO_FRAMES.cap_high, delay: 620 },
+    { src: null,                       delay: 820 }
+  ], manual);
+}
+setInterval(() => triggerCapTwitch(false), 20500);
+
+// #8: Nachdenkliches Kopfneigen (alle 23,5 Sekunden)
+function triggerHeadTilt(manual = false) {
+  runMicroIdleSequence([
+    { src: IDLE_MICRO_FRAMES.tilt_mid,  delay: 0 },
+    { src: IDLE_MICRO_FRAMES.tilt_full, delay: 150 },
+    { src: IDLE_MICRO_FRAMES.tilt_mid,  delay: 1350 },
+    { src: null,                        delay: 1550 }
+  ], manual);
+}
+setInterval(() => triggerHeadTilt(false), 23500);
+
+// #9: Sanftes bestätigendes Nicken (alle 26,5 Sekunden)
+function triggerConfirmNod(manual = false) {
+  runMicroIdleSequence([
+    { src: IDLE_MICRO_FRAMES.nod_mid,  delay: 0 },
+    { src: IDLE_MICRO_FRAMES.nod_down, delay: 110 },
+    { src: IDLE_MICRO_FRAMES.nod_mid,  delay: 260 },
+    { src: null,                       delay: 380 },
+    { src: IDLE_MICRO_FRAMES.nod_mid,  delay: 520 },
+    { src: IDLE_MICRO_FRAMES.nod_down, delay: 630 },
+    { src: IDLE_MICRO_FRAMES.nod_mid,  delay: 800 },
+    { src: null,                       delay: 930 }
+  ], manual);
+}
+setInterval(() => triggerConfirmNod(false), 26500);
+
+// #10: Vergnügtes Bart- & Nasenspitzen-Zucken (alle 29,5 Sekunden)
+function triggerBeardTwitch(manual = false) {
+  runMicroIdleSequence([
+    { src: IDLE_MICRO_FRAMES.beard_a, delay: 0 },
+    { src: IDLE_MICRO_FRAMES.beard_b, delay: 110 },
+    { src: IDLE_MICRO_FRAMES.beard_a, delay: 220 },
+    { src: IDLE_MICRO_FRAMES.beard_b, delay: 330 },
+    { src: IDLE_MICRO_FRAMES.beard_a, delay: 440 },
+    { src: null,                      delay: 580 }
+  ], manual);
+}
+setInterval(() => triggerBeardTwitch(false), 29500);
+
+// ============================================================================
+// KATEGORIE 2 TRIGGER-FUNKTIONEN (#11 BIS #20: CHARAKTER-GIMMICKS & REQUISITEN)
+// ============================================================================
+
+// #11: Kaffee-Schluck
+function triggerCoffeeSip(manual = false) {
+  runMicroIdleSequence([
+    { src: IDLE_MICRO_FRAMES.coffee_raise, delay: 0 },
+    { src: IDLE_MICRO_FRAMES.coffee_sip_a, delay: 180 },
+    { src: IDLE_MICRO_FRAMES.coffee_sip_b, delay: 620 },
+    { src: IDLE_MICRO_FRAMES.coffee_sip_a, delay: 1080 },
+    { src: IDLE_MICRO_FRAMES.coffee_raise, delay: 1450 },
+    { src: null,                           delay: 1650 }
+  ], manual);
+}
+
+// #12: Brille zurechtrücken
+function triggerGlassesAdjust(manual = false) {
+  runMicroIdleSequence([
+    { src: IDLE_MICRO_FRAMES.glasses_reach, delay: 0 },
+    { src: IDLE_MICRO_FRAMES.glasses_push,  delay: 160 },
+    { src: IDLE_MICRO_FRAMES.glasses_reach, delay: 460 },
+    { src: IDLE_MICRO_FRAMES.glasses_push,  delay: 620 },
+    { src: IDLE_MICRO_FRAMES.glasses_reach, delay: 880 },
+    { src: null,                            delay: 1060 }
+  ], manual);
+}
+
+// #13: Tippen an den Mützenschirm
+function triggerCapSalute(manual = false) {
+  runMicroIdleSequence([
+    { src: IDLE_MICRO_FRAMES.salute_mid, delay: 0 },
+    { src: IDLE_MICRO_FRAMES.salute_tap, delay: 160 },
+    { src: IDLE_MICRO_FRAMES.salute_mid, delay: 420 },
+    { src: IDLE_MICRO_FRAMES.salute_tap, delay: 560 },
+    { src: IDLE_MICRO_FRAMES.salute_mid, delay: 820 },
+    { src: null,                         delay: 980 }
+  ], manual);
+}
+
+// #14: Nachdenkliches Bart-Streichen
+function triggerBeardStroke(manual = false) {
+  runMicroIdleSequence([
+    { src: IDLE_MICRO_FRAMES.stroke_chin, delay: 0 },
+    { src: IDLE_MICRO_FRAMES.stroke_down, delay: 280 },
+    { src: IDLE_MICRO_FRAMES.stroke_chin, delay: 620 },
+    { src: IDLE_MICRO_FRAMES.stroke_down, delay: 940 },
+    { src: IDLE_MICRO_FRAMES.stroke_chin, delay: 1280 },
+    { src: null,                          delay: 1480 }
+  ], manual);
+}
+
+// #15: Zimmermannsbleistift hinter dem Ohr
+function triggerCarpenterPencil(manual = false) {
+  runMicroIdleSequence([
+    { src: IDLE_MICRO_FRAMES.pencil_tucked, delay: 0 },
+    { src: IDLE_MICRO_FRAMES.pencil_slide,  delay: 260 },
+    { src: IDLE_MICRO_FRAMES.pencil_ready,  delay: 520 },
+    { src: IDLE_MICRO_FRAMES.pencil_slide,  delay: 1050 },
+    { src: IDLE_MICRO_FRAMES.pencil_tucked, delay: 1320 },
+    { src: null,                            delay: 1580 }
+  ], manual);
+}
+
+// #16: Kopfhörer-Groove & Musik-Vibes
+function triggerHeadphoneGroove(manual = false) {
+  runMicroIdleSequence([
+    { src: IDLE_MICRO_FRAMES.groove_1, delay: 0 },
+    { src: IDLE_MICRO_FRAMES.groove_2, delay: 220 },
+    { src: IDLE_MICRO_FRAMES.groove_3, delay: 440 },
+    { src: IDLE_MICRO_FRAMES.groove_1, delay: 660 },
+    { src: IDLE_MICRO_FRAMES.groove_2, delay: 880 },
+    { src: IDLE_MICRO_FRAMES.groove_3, delay: 1100 },
+    { src: IDLE_MICRO_FRAMES.groove_1, delay: 1320 },
+    { src: null,                       delay: 1550 }
+  ], manual);
+}
+
+// #17: Ukulele-Akkord anschlagen
+function triggerUkuleleStrum(manual = false) {
+  runMicroIdleSequence([
+    { src: IDLE_MICRO_FRAMES.ukulele_1, delay: 0 },
+    { src: IDLE_MICRO_FRAMES.ukulele_2, delay: 220 },
+    { src: IDLE_MICRO_FRAMES.ukulele_3, delay: 420 },
+    { src: IDLE_MICRO_FRAMES.ukulele_2, delay: 640 },
+    { src: IDLE_MICRO_FRAMES.ukulele_3, delay: 860 },
+    { src: IDLE_MICRO_FRAMES.ukulele_1, delay: 1150 },
+    { src: null,                        delay: 1380 }
+  ], manual);
+}
+
+// #18: Rosa Kaugummi-Blase (90er LucasArts Hommage)
+function triggerBubblegum(manual = false) {
+  runMicroIdleSequence([
+    { src: IDLE_MICRO_FRAMES.gum_small, delay: 0 },
+    { src: IDLE_MICRO_FRAMES.gum_big,   delay: 380 },
+    { src: IDLE_MICRO_FRAMES.gum_pop,   delay: 980 },
+    { src: IDLE_MICRO_FRAMES.smirk_full,delay: 1220 },
+    { src: null,                        delay: 1500 }
+  ], manual);
+}
+
+// #19: Fineliner-Skizze / Zentangle kritzeln
+function triggerFinelinerSketch(manual = false) {
+  runMicroIdleSequence([
+    { src: IDLE_MICRO_FRAMES.sketch_1, delay: 0 },
+    { src: IDLE_MICRO_FRAMES.sketch_2, delay: 320 },
+    { src: IDLE_MICRO_FRAMES.sketch_3, delay: 640 },
+    { src: IDLE_MICRO_FRAMES.sketch_2, delay: 960 },
+    { src: IDLE_MICRO_FRAMES.sketch_3, delay: 1280 },
+    { src: null,                       delay: 1580 }
+  ], manual);
+}
+
+// #20: Dampfende Teetasse & Augen-Entspannung
+function triggerCozyTea(manual = false) {
+  runMicroIdleSequence([
+    { src: IDLE_MICRO_FRAMES.tea_inhale, delay: 0 },
+    { src: IDLE_MICRO_FRAMES.tea_cozy_a, delay: 280 },
+    { src: IDLE_MICRO_FRAMES.tea_cozy_b, delay: 780 },
+    { src: IDLE_MICRO_FRAMES.tea_cozy_a, delay: 1280 },
+    { src: IDLE_MICRO_FRAMES.tea_inhale, delay: 1620 },
+    { src: null,                         delay: 1850 }
+  ], manual);
+}
+
+// ============================================================================
+// KATEGORIE 3 TRIGGER-FUNKTIONEN (#21 BIS #30: RAHMEN-INTERAKTIONEN & POP-OUTS)
+// ============================================================================
+
+// #21: Auf dem Ring abstützen
+function triggerRingLean(manual = false) {
+  runMicroIdleSequence([
+    { src: IDLE_MICRO_FRAMES.lean_raise, delay: 0 },
+    { src: IDLE_MICRO_FRAMES.lean_rest,  delay: 200 },
+    { src: IDLE_MICRO_FRAMES.lean_smirk, delay: 650 },
+    { src: IDLE_MICRO_FRAMES.lean_rest,  delay: 1250 },
+    { src: IDLE_MICRO_FRAMES.lean_raise, delay: 1550 },
+    { src: null,                         delay: 1750 }
+  ], manual);
+}
+
+// #22: Über den Rand spähen (Abtauchen & Hochspähen)
+function triggerRingPeek(manual = false) {
+  runMicroIdleSequence([
+    { src: IDLE_MICRO_FRAMES.peek_mid, delay: 0 },
+    { src: IDLE_MICRO_FRAMES.peek_low, delay: 180 },
+    { src: IDLE_MICRO_FRAMES.peek_mid, delay: 1150 },
+    { src: IDLE_MICRO_FRAMES.peek_pop, delay: 1320 },
+    { src: null,                       delay: 1520 }
+  ], manual);
+}
+
+// #23: Ring-Klopfen (von innen gegen die Scheibe klopfen)
+function triggerGlassKnock(manual = false) {
+  runMicroIdleSequence([
+    { src: IDLE_MICRO_FRAMES.knock_windup,  delay: 0 },
+    { src: IDLE_MICRO_FRAMES.knock_tap,     delay: 140 },
+    { src: IDLE_MICRO_FRAMES.knock_between, delay: 320 },
+    { src: IDLE_MICRO_FRAMES.knock_tap,     delay: 480 },
+    { src: IDLE_MICRO_FRAMES.knock_windup,  delay: 720 },
+    { src: null,                            delay: 900 }
+  ], manual);
+}
+
+// #24: Rauswinken über den Rahmen
+function triggerWavePopout(manual = false) {
+  runMicroIdleSequence([
+    { src: IDLE_MICRO_FRAMES.wave_center, delay: 0 },
+    { src: IDLE_MICRO_FRAMES.wave_left,   delay: 160 },
+    { src: IDLE_MICRO_FRAMES.wave_right,  delay: 340 },
+    { src: IDLE_MICRO_FRAMES.wave_left,   delay: 520 },
+    { src: IDLE_MICRO_FRAMES.wave_right,  delay: 700 },
+    { src: IDLE_MICRO_FRAMES.wave_center, delay: 880 },
+    { src: null,                          delay: 1080 }
+  ], manual);
+}
+
+// #25: Daumen-Hoch-Pop-Out
+function triggerThumbsUpPopout(manual = false) {
+  runMicroIdleSequence([
+    { src: IDLE_MICRO_FRAMES.thumb_rise,    delay: 0 },
+    { src: IDLE_MICRO_FRAMES.thumb_pop,     delay: 150 },
+    { src: IDLE_MICRO_FRAMES.thumb_sparkle, delay: 320 },
+    { src: IDLE_MICRO_FRAMES.thumb_pop,     delay: 980 },
+    { src: IDLE_MICRO_FRAMES.thumb_rise,    delay: 1180 },
+    { src: null,                            delay: 1350 }
+  ], manual);
+}
+
+// #26: Schiebermütze lüften
+function triggerCapLift(manual = false) {
+  runMicroIdleSequence([
+    { src: IDLE_MICRO_FRAMES.caplift_grab,   delay: 0 },
+    { src: IDLE_MICRO_FRAMES.caplift_high,   delay: 180 },
+    { src: IDLE_MICRO_FRAMES.caplift_settle, delay: 680 },
+    { src: IDLE_MICRO_FRAMES.caplift_grab,   delay: 920 },
+    { src: null,                             delay: 1120 }
+  ], manual);
+}
+
+// #27: Rahmen von innen polieren
+function triggerRingPolish(manual = false) {
+  runMicroIdleSequence([
+    { src: IDLE_MICRO_FRAMES.polish_left,  delay: 0 },
+    { src: IDLE_MICRO_FRAMES.polish_right, delay: 260 },
+    { src: IDLE_MICRO_FRAMES.polish_top,   delay: 520 },
+    { src: IDLE_MICRO_FRAMES.polish_right, delay: 780 },
+    { src: IDLE_MICRO_FRAMES.polish_left,  delay: 1040 },
+    { src: null,                           delay: 1280 }
+  ], manual);
+}
+
+// #28: Seitenwechsel-Blick (weit seitlich herauslehnen)
+function triggerSideLean(manual = false) {
+  runMicroIdleSequence([
+    { src: IDLE_MICRO_FRAMES.sidelean_mid,  delay: 0 },
+    { src: IDLE_MICRO_FRAMES.sidelean_far,  delay: 180 },
+    { src: IDLE_MICRO_FRAMES.sidelean_mid,  delay: 820 },
+    { src: IDLE_MICRO_FRAMES.sidelean_left, delay: 1080 },
+    { src: null,                            delay: 1550 }
+  ], manual);
+}
+
+// #29: Konfetti- & Pixel-Funken-Wurf
+function triggerConfettiThrow(manual = false) {
+  runMicroIdleSequence([
+    { src: IDLE_MICRO_FRAMES.confetti_toss,   delay: 0 },
+    { src: IDLE_MICRO_FRAMES.confetti_burst,  delay: 200 },
+    { src: IDLE_MICRO_FRAMES.confetti_shower, delay: 650 },
+    { src: IDLE_MICRO_FRAMES.confetti_toss,   delay: 1150 },
+    { src: null,                              delay: 1400 }
+  ], manual);
+}
+
+// #30: Schreck-Hüpfer (überraschter Hopser nach oben)
+function triggerStartleJump(manual = false) {
+  runMicroIdleSequence([
+    { src: IDLE_MICRO_FRAMES.jump_pop,  delay: 0 },
+    { src: IDLE_MICRO_FRAMES.jump_air,  delay: 180 },
+    { src: IDLE_MICRO_FRAMES.jump_land, delay: 360 },
+    { src: null,                        delay: 560 }
+  ], manual);
+}
+
+// Rotierender Auto-Scheduler für Kategorie 2 & 3 (spielt alle 32 Sekunden abwechselnd ein Gimmick/Pop-Out ab)
+const SPECIAL_IDLE_ROTATION = [
+  triggerCoffeeSip,
+  triggerRingLean,
+  triggerGlassesAdjust,
+  triggerRingPeek,
+  triggerCapSalute,
+  triggerGlassKnock,
+  triggerBeardStroke,
+  triggerWavePopout,
+  triggerCarpenterPencil,
+  triggerThumbsUpPopout,
+  triggerHeadphoneGroove,
+  triggerCapLift,
+  triggerUkuleleStrum,
+  triggerRingPolish,
+  triggerBubblegum,
+  triggerSideLean,
+  triggerFinelinerSketch,
+  triggerConfettiThrow,
+  triggerCozyTea,
+  triggerStartleJump
+];
+let currentSpecialIdleIdx = 0;
+setInterval(() => {
+  if (!activeMicroIdleOverride) {
+    SPECIAL_IDLE_ROTATION[currentSpecialIdleIdx](false);
+    currentSpecialIdleIdx = (currentSpecialIdleIdx + 1) % SPECIAL_IDLE_ROTATION.length;
+  }
+}, 32000);
 
 function updateAvatarSprite() {
   const img = document.getElementById("header-avatar-img");
@@ -534,9 +945,9 @@ function openCharacterModal() {
           </div>
         </div>
       </div>
-      <div style="background:#f8fafc; border:1.5px solid #cbd5e1; border-radius:12px; padding:10px; margin-bottom:12px;">
+      <div style="background:#f8fafc; border:1.5px solid #cbd5e1; border-radius:12px; padding:10px; margin-bottom:10px;">
         <div style="font-weight:800; font-size:12px; color:#1e293b; margin-bottom:6px;">
-          ✨ AKTIVE IDLE-MIKRO-ANIMATIONEN #1–#5 (LIVE IM HUD & HIER TESTBAR):
+          ✨ KATEGORIE 1: SUBTILE MIKRO-BEWEGUNGEN #1–#10 (ANTIPPEN ZUM TESTEN):
         </div>
         <div style="display:flex; gap:6px; flex-wrap:wrap;">
           <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="activeMicroIdleOverride=null; refreshHudIdleAvatar(); showLootToast('🫁 #1 Ruhiges Atmen (4s Dauer-Loop aktiv)');">🫁 #1 Ruhiges Atmen</button>
@@ -544,6 +955,45 @@ function openCharacterModal() {
           <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="triggerGlassesGlint(true); showLootToast('✨ #3 Brillenglas-Glanz ausgelöst!');">✨ #3 Brillen-Glint</button>
           <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="triggerEyebrowWiggle(true); showLootToast('🤨 #4 Augenbrauen-Wippen ausgelöst!');">🤨 #4 Brauen-Wippen</button>
           <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="triggerRoomGaze(true); showLootToast('👁️ #5 Blick durch den Raum ausgelöst!');">👁️ #5 Raum-Blick</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="triggerSmirk(true); showLootToast('😏 #6 Zufriedenes Schmunzeln ausgelöst!');">😏 #6 Schmunzeln</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="triggerCapTwitch(true); showLootToast('🧢 #7 Schiebermützen-Ruckler ausgelöst!');">🧢 #7 Mützen-Ruckler</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="triggerHeadTilt(true); showLootToast('🤔 #8 Nachdenkliches Kopfneigen ausgelöst!');">🤔 #8 Kopfneigen</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="triggerConfirmNod(true); showLootToast('😌 #9 Bestätigendes Nicken ausgelöst!');">😌 #9 Sanftes Nicken</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="triggerBeardTwitch(true); showLootToast('🧔 #10 Vergnügtes Bart-Zucken ausgelöst!');">🧔 #10 Bart-Zucken</button>
+        </div>
+      </div>
+      <div style="background:#fff7ed; border:1.5px solid #fed7aa; border-radius:12px; padding:10px; margin-bottom:12px;">
+        <div style="font-weight:800; font-size:12px; color:#9a3412; margin-bottom:6px;">
+          🎸 KATEGORIE 2: CHARAKTER-GIMMICKS & REQUISITEN #11–#20 (ANTIPPEN ZUM TESTEN):
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="triggerCoffeeSip(true); showLootToast('☕ #11 Kaffee-Schluck ausgelöst!');">☕ #11 Kaffee-Schluck</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="triggerGlassesAdjust(true); showLootToast('🤓 #12 Brille zurechtrücken ausgelöst!');">🤓 #12 Brille rücken</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="triggerCapSalute(true); showLootToast('🫡 #13 Tippen an Mützenschirm ausgelöst!');">🫡 #13 Mützenschirm-Tipp</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="triggerBeardStroke(true); showLootToast('🧔‍♂️ #14 Bart-Streichen ausgelöst!');">🧔‍♂️ #14 Bart-Streichen</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="triggerCarpenterPencil(true); showLootToast('✏️ #15 Zimmermannsbleistift ausgelöst!');">✏️ #15 Holz-Bleistift</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="triggerHeadphoneGroove(true); showLootToast('🎧 #16 Kopfhörer-Groove ausgelöst!');">🎧 #16 Kopfhörer-Groove</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="triggerUkuleleStrum(true); showLootToast('🎸 #17 Ukulele-Akkord ausgelöst!');">🎸 #17 Ukulele-Strum</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="triggerBubblegum(true); showLootToast('🫧 #18 Kaugummi-Blase ausgelöst!');">🫧 #18 Kaugummi-Blase</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="triggerFinelinerSketch(true); showLootToast('✒️ #19 Fineliner-Zentangle ausgelöst!');">✒️ #19 Fineliner-Skizze</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="triggerCozyTea(true); showLootToast('🍵 #20 Dampfende Teetasse ausgelöst!');">🍵 #20 Teetasse genießen</button>
+        </div>
+      </div>
+      <div style="background:#f0fdf4; border:1.5px solid #86efac; border-radius:12px; padding:10px; margin-bottom:12px;">
+        <div style="font-weight:800; font-size:12px; color:#166534; margin-bottom:6px;">
+          🖼️ KATEGORIE 3: RAHMEN-INTERAKTIONEN & POP-OUTS #21–#30 (ANTIPPEN ZUM TESTEN):
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="triggerRingLean(true); showLootToast('💪 #21 Auf dem Ring abstützen ausgelöst!');">💪 #21 Ring-Abstützen</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="triggerRingPeek(true); showLootToast('🫣 #22 Über den Rand spähen ausgelöst!');">🫣 #22 Rand-Spähen</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="triggerGlassKnock(true); showLootToast('✊ #23 Ring-Klopfen gegen Scheibe ausgelöst!');">✊ #23 Scheibe klopfen</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="triggerWavePopout(true); showLootToast('👋 #24 Rauswinken über den Rahmen ausgelöst!');">👋 #24 Rauswinken</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="triggerThumbsUpPopout(true); showLootToast('👍 #25 Daumen-Hoch-Pop-Out ausgelöst!');">👍 #25 Daumen-Pop-Out</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="triggerCapLift(true); showLootToast('🎩 #26 Mütze lüften ausgelöst!');">🎩 #26 Mütze lüften</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="triggerRingPolish(true); showLootToast('🧽 #27 Rahmen polieren ausgelöst!');">🧽 #27 Rahmen polieren</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="triggerSideLean(true); showLootToast('↔️ #28 Seitenwechsel-Blick ausgelöst!');">↔️ #28 Seiten-Lehnen</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="triggerConfettiThrow(true); showLootToast('🎉 #29 Konfetti- & Pixel-Funken-Wurf ausgelöst!');">🎉 #29 Konfetti-Wurf</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="triggerStartleJump(true); showLootToast('❗ #30 Schreck-Hüpfer ausgelöst!');">❗ #30 Schreck-Hüpfer</button>
         </div>
       </div>
       <div style="font-weight:800; font-size:12px; color:#475569; margin-bottom:8px;">
