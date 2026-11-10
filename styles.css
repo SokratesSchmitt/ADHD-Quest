@@ -1,4 +1,4 @@
-/* ADHD QUEST - Version 0.49 Stylesheet (Null-Naht Sprites für Flur & neue Wohnungs-Map) */
+/* ADHD QUEST - Version 0.50 Stylesheet (Null-Naht Sprites für Flur & neue Wohnungs-Map) */
 :root {
   --orange-main: #ff7a00;
   --orange-glow: #ffb703;
@@ -127,7 +127,7 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.49);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.50);
   transition: transform 0.15s ease, background-color 0.18s ease, box-shadow 0.18s ease;
   margin-bottom: 2px;
 }
@@ -166,7 +166,7 @@ body {
   border-radius: 50%;
   background: radial-gradient(circle at 50% 42%, #ffe066 0%, #ff922b 72%, #e8590c 100%);
   border: 5px solid var(--wood-dark);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55), 0 0 16px rgba(255, 122, 0, 0.49);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55), 0 0 16px rgba(255, 122, 0, 0.50);
   z-index: 1;
   overflow: hidden;
 }
@@ -210,7 +210,7 @@ body {
   object-position: center bottom;
   border-radius: 0 0 74px 74px;
   image-rendering: auto;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.49));
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.50));
   z-index: 2;
   pointer-events: none;
   animation: paddyIdleBreathing 4s cubic-bezier(0.42, 0, 0.58, 1) infinite;
@@ -454,7 +454,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.49);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.50);
 }
 
 .modal-header {
@@ -582,7 +582,7 @@ body {
   font-weight: 800;
   font-size: 13px;
   z-index: 60;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.49);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.50);
   white-space: nowrap;
 }
 
@@ -614,7 +614,7 @@ body {
 
 
 /* ============================================================================
-   6. UPDATE v0.49: 3 SCHNELLZUGRIFFS-HAFTNOTIZEN AUF DER KORK-PINNWAND
+   6. UPDATE v0.50: 3 SCHNELLZUGRIFFS-HAFTNOTIZEN AUF DER KORK-PINNWAND
    ============================================================================ */
 .pinnwand-postit-hotspot {
   position: absolute;
@@ -702,7 +702,7 @@ body {
 
 
 /* ============================================================================
-   7. UPDATE v0.49: GROSSE OBJEKT-INSZENIERUNG IM INTERAKTIONS-MODAL (HERO STAGE)
+   7. UPDATE v0.50: GROSSE OBJEKT-INSZENIERUNG IM INTERAKTIONS-MODAL (HERO STAGE)
    ============================================================================ */
 #object-modal .modal-card {
   max-width: 374px;
@@ -804,7 +804,7 @@ body {
 
 
 /* ============================================================================
-   8. UPDATE v0.49: 3 WÄHLBARE UI-RAHMEN-OVERLAYS & EINSTELLUNGEN-MENÜ (⚙️)
+   8. UPDATE v0.50: 3 WÄHLBARE UI-RAHMEN-OVERLAYS & EINSTELLUNGEN-MENÜ (⚙️)
    ============================================================================ */
 .ui-frame-overlay {
   position: absolute;
@@ -879,4 +879,236 @@ body {
   border: 1.5px solid #cbd5e1;
   background: #1e1b24;
   flex-shrink: 0;
+}
+
+
+/* ============================================================================
+   9. UPDATE v0.50: WOW-MINIMAP ADDON-BUTTONS AM AVATAR-RING + 3 UI-UPGRADES
+   ============================================================================ */
+.floating-avatar-hud {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  z-index: 35;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.avatar-popout-wrapper {
+  pointer-events: auto;
+}
+
+/* WoW-Minimap-Style Addon-Buttons direkt auf der Kreisbahn des Avatar-Rings (R = 74px) */
+.wow-ring-addon-btn {
+  position: absolute;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #5c3a21 0%, #2b180a 75%, #1a0f07 100%);
+  border: 2.5px solid #ffb703;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.65),
+              inset 0 1px 2px rgba(255, 255, 255, 0.35),
+              0 0 0 1.5px #3b2314;
+  color: #fff;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 6;
+  pointer-events: auto;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1),
+              border-color 0.18s ease,
+              box-shadow 0.18s ease;
+}
+
+/* Lupe (🔍) auf 18° am rechten unteren Ringbogen */
+.wow-ring-addon-btn.addon-pos-lupe {
+  left: 134px;
+  top: 87px;
+}
+
+/* Einstellungen (⚙️) auf 52° am unteren rechten Ringbogen */
+.wow-ring-addon-btn.addon-pos-settings {
+  left: 109px;
+  top: 122px;
+}
+
+.wow-ring-addon-btn:hover,
+.wow-ring-addon-btn:active,
+.wow-ring-addon-btn.active-hint {
+  transform: scale(1.16);
+  border-color: #ffffff;
+  background: radial-gradient(circle at 35% 30%, #ff922b 0%, #ea580c 80%);
+  box-shadow: 0 0 14px rgba(255, 138, 0, 0.95), 0 3px 8px rgba(0, 0, 0, 0.6);
+}
+
+/* UI-Vorschlag 1: Ausklappbare Mini-Stat-Pille direkt unter dem Avatar-Ring */
+.mini-stat-pill {
+  pointer-events: auto;
+  margin-left: 6px;
+  margin-top: -2px;
+  background: rgba(38, 22, 12, 0.92);
+  border: 2px solid #ff8a12;
+  border-radius: 999px;
+  padding: 3px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #ffedd5;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.52), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  transition: transform 0.18s ease, padding 0.18s ease, background-color 0.18s ease;
+}
+
+.mini-stat-pill:hover {
+  background: rgba(59, 35, 20, 0.96);
+  transform: translateY(-1px);
+}
+
+.mini-stat-pill.collapsed {
+  padding: 3px 8px;
+  gap: 4px;
+}
+
+.mini-stat-pill.collapsed .stat-pill-details {
+  display: none;
+}
+
+.stat-pill-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+@keyframes statPulsePop {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.12); border-color: #fde047; box-shadow: 0 0 16px rgba(250, 204, 21, 0.85); }
+  100% { transform: scale(1); }
+}
+
+.mini-stat-pill.pulse-loot {
+  animation: statPulsePop 0.55s ease-out;
+}
+
+/* UI-Vorschlag 2: Smart-Badge oben rechts (Raumname + Erledigt-Zähler + Putz-Multiplikator-Tag) */
+.ui-frame-room-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(38, 22, 12, 0.92);
+  color: #ffe8b2;
+  border: 2px solid #ff8a12;
+  border-radius: 14px;
+  padding: 4px 8px 4px 10px;
+  font-size: 11px;
+  font-weight: 800;
+  z-index: 34;
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.smart-badge-room-btn {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.smart-badge-count {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fde68a;
+  padding: 1px 6px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.smart-badge-dirt-pill {
+  cursor: pointer;
+  padding: 2px 7px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 900;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  transition: transform 0.14s ease;
+}
+
+.smart-badge-dirt-pill:hover,
+.smart-badge-dirt-pill:active {
+  transform: scale(1.08);
+}
+
+/* UI-Vorschlag 3: Kompaktes 1-Tap Schnell-Dock am unteren Rahmenrand + Swipe-Hint */
+.bottom-room-dock {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 34;
+  background: rgba(28, 16, 9, 0.88);
+  border: 2px solid rgba(255, 138, 18, 0.85);
+  border-radius: 999px;
+  padding: 3px 7px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.58);
+  backdrop-filter: blur(4px);
+}
+
+.bottom-room-dock.hidden {
+  display: none !important;
+}
+
+.dock-room-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid transparent;
+  background: rgba(255, 255, 255, 0.07);
+  color: #ffedd5;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background-color 0.15s ease,
+              border-color 0.15s ease;
+}
+
+.dock-room-btn:hover,
+.dock-room-btn:active {
+  transform: translateY(-2px) scale(1.1);
+  background: rgba(255, 122, 0, 0.32);
+}
+
+.dock-room-btn.active-dock-room {
+  background: radial-gradient(circle at 50% 35%, #ff922b 0%, #ea580c 100%);
+  border-color: #fde047;
+  transform: translateY(-2px) scale(1.12);
+  box-shadow: 0 0 10px rgba(255, 122, 0, 0.8);
+}
+
+.dock-dirt-dot {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid #1e1b24;
 }

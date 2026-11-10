@@ -673,6 +673,7 @@ function updateAvatarSprite() {
 }
 
 function triggerExcitedAvatar() {
+  if (typeof pulseMiniStatPill === 'function') pulseMiniStatPill();
   isExcitedOverride = true;
   updateAvatarSprite();
   setTimeout(() => {
@@ -696,6 +697,19 @@ function renderAll() {
   setTxt("hud-ap", s.character.ap);
   setTxt("hud-max-ap", s.character.maxAp);
   setTxt("hud-hp", s.character.hp);
+
+  // Update v0.50: Live Mini-Stat-Pille direkt unter dem Avatar-Ring
+  setTxt("pill-gold", s.character.gold);
+  setTxt("pill-ap", s.character.ap);
+  setTxt("pill-streak", s.character.streak);
+  const pillEl = document.getElementById("mini-stat-pill");
+  if (pillEl) {
+    if (s.settings && s.settings.miniStatPillCollapsed) {
+      pillEl.classList.add("collapsed");
+    } else {
+      pillEl.classList.remove("collapsed");
+    }
+  }
 
   const ringEl = document.getElementById("avatar-progress-ring");
   if (ringEl) {
@@ -1311,8 +1325,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 // ============================================================================
-// 8. EINSTELLUNGEN & WÄHLBARE UI-UMRAHMUNGEN (v0.49: IDEE 1, 2, 3 & AUS)
+// 8. EINSTELLUNGEN, WOW-RING-ADDONS & 3 UI-UPGRADES (v0.50)
 // ============================================================================
+function toggleMiniStatPill() {
+  const s = Engine.getState();
+  s.settings.miniStatPillCollapsed = !s.settings.miniStatPillCollapsed;
+  Engine.saveState();
+  renderAll();
+}
+
+function pulseMiniStatPill() {
+  const pillEl = document.getElementById("mini-stat-pill");
+  if (!pillEl) return;
+  pillEl.classList.remove("pulse-loot");
+  void pillEl.offsetWidth;
+  pillEl.classList.add("pulse-loot");
+}
+
 function renderUiFrameOverlay(roomName) {
   const s = Engine.getState();
   const activeFrameId = (s.settings && s.settings.uiFrame) || "frame_1_wood_gold";
@@ -1330,6 +1359,7 @@ function renderUiFrameOverlay(roomName) {
     }
   }
 
+  // UI-Upgrade 2: Smart-Badge oben rechts (Raumname + Erledigt-Zähler + klickbares Putz-Bonus-Tag)
   const badgeEl = document.getElementById("ui-frame-room-badge");
   if (badgeEl) {
     const rName = roomName || (s.settings && s.settings.currentRoom) || "Dashboard";
@@ -1338,19 +1368,126 @@ function renderUiFrameOverlay(roomName) {
     const displayRoom = rName === "Dashboard" ? "Arbeitszimmer" : rName;
     const showBadge = (frameObj && frameObj.showRoomBadge) || (s.settings && s.settings.showRoomBadgeOnFrame);
 
-    if (showBadge && activeFrameId !== "none") {
-      badgeEl.textContent = `${rIcon} ${displayRoom}`;
+    // Zähle heute erledigte Quests im aktuellen Raum
+    const roomObjs = (Engine.ROOM_OBJECTS[rName] || []).filter(o => !o.isMapDoor && !o.isShopTrigger);
+    const completed = s.completedToday || {};
+    const doneCount = roomObjs.filter(o => !!completed[o.id]).length;
+    const totalCount = roomObjs.length;
+
+    // Putz-Status & Multiplikator für diesen Raum
+    const dirtLvl = Engine.getRoomDirtLevel ? Engine.getRoomDirtLevel(rName) : 0;
+    const mult = Engine.getDirtMultiplier ? Engine.getDirtMultiplier(dirtLvl) : 1.0;
+
+    let dirtPillHtml = "";
+    if (dirtLvl === 0) {
+      dirtPillHtml = `<span class="smart-badge-dirt-pill" style="background:#0284c7;" onclick="event.stopPropagation(); showLootToast('✨ ${displayRoom} ist blitzblank (Stufe 0)!');" title="Raum ist sauber">✨ Sauber</span>`;
+    } else {
+      const bgCol = dirtLvl === 1 ? "#16a34a" : (dirtLvl === 2 ? "#ea580c" : "#dc2626");
+      const toolIcon = dirtLvl === 3 ? "🔌" : "🧹";
+      dirtPillHtml = `<span class="smart-badge-dirt-pill" style="background:${bgCol};" onclick="event.stopPropagation(); handleHotspotClick('${rName}', 'CLEAN_DYNAMIC_${rName}');" title="Direkt aufräumen mit Multiplikator x${mult.toFixed(1)}!">${toolIcon} x${mult.toFixed(1)}</span>`;
+    }
+
+    if (showBadge) {
+      badgeEl.innerHTML = `
+        <span class="smart-badge-room-btn" onclick="openMapModal()" title="Wohnungs-Grundriss öffnen">
+          ${rIcon} ${displayRoom}
+          <span class="smart-badge-count">${doneCount}/${totalCount} ✓</span>
+        </span>
+        ${dirtPillHtml}
+      `;
       badgeEl.classList.remove("hidden");
     } else {
       badgeEl.classList.add("hidden");
     }
   }
+
+  // UI-Upgrade 3: Unteres 7-Raum-Schnell-Dock rendern
+  renderBottomRoomDock(roomName);
 }
+
+function renderBottomRoomDock(roomName) {
+  const dockEl = document.getElementById("bottom-room-dock");
+  if (!dockEl) return;
+  const s = Engine.getState();
+  if (s.settings && s.settings.showBottomRoomDock === false) {
+    dockEl.classList.add("hidden");
+    return;
+  }
+  dockEl.classList.remove("hidden");
+
+  const currentRoom = roomName || (s.settings && s.settings.currentRoom) || "Dashboard";
+  const orderedRooms = [
+    { id: "Flur",         icon: "🚪", label: "Flur" },
+    { id: "Dashboard",    icon: "🏠", label: "Arbeitszimmer" },
+    { id: "Wohnzimmer",   icon: "🛋️", label: "Wohnzimmer" },
+    { id: "Küche",        icon: "🍳", label: "Küche" },
+    { id: "Badezimmer",   icon: "🚿", label: "Badezimmer" },
+    { id: "Schlafzimmer", icon: "🛏️", label: "Schlafzimmer" },
+    { id: "Kinderzimmer", icon: "🦄", label: "Kinderzimmer" }
+  ];
+
+  dockEl.innerHTML = orderedRooms.map(r => {
+    const isAct = r.id === currentRoom;
+    const dLvl = Engine.getRoomDirtLevel ? Engine.getRoomDirtLevel(r.id) : 0;
+    const dotCol = dLvl === 1 ? "#22c55e" : (dLvl === 2 ? "#f97316" : (dLvl === 3 ? "#ef4444" : ""));
+    const dotHtml = dLvl > 0 ? `<span class="dock-dirt-dot" style="background:${dotCol};"></span>` : "";
+    return `
+      <button class="dock-room-btn ${isAct ? 'active-dock-room' : ''}"
+              onclick="event.stopPropagation(); selectRoom('${r.id}');"
+              title="${r.label} (${dLvl > 0 ? 'Putz-Stufe ' + dLvl : 'Sauber'})">
+        ${r.icon}
+        ${dotHtml}
+      </button>
+    `;
+  }).join("");
+}
+
+// Horizontaler Swipe-Raumwechsel (Links/Rechts wischen blättert durch die 7 Räume)
+const SWIPE_ROOM_ORDER = ["Flur", "Dashboard", "Wohnzimmer", "Küche", "Badezimmer", "Schlafzimmer", "Kinderzimmer"];
+function cycleRoomBySwipe(direction) {
+  const s = Engine.getState();
+  const cur = (s.settings && s.settings.currentRoom) || "Dashboard";
+  const idx = SWIPE_ROOM_ORDER.indexOf(cur);
+  const nextIdx = (idx + direction + SWIPE_ROOM_ORDER.length) % SWIPE_ROOM_ORDER.length;
+  const nextRoom = SWIPE_ROOM_ORDER[nextIdx];
+  selectRoom(nextRoom);
+  const disp = nextRoom === "Dashboard" ? "Arbeitszimmer" : nextRoom;
+  showLootToast(`⇄ Raumwechsel: ${disp}`);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const canvas = document.getElementById("room-canvas");
+  if (!canvas) return;
+  let touchStartX = null;
+  let touchStartY = null;
+
+  canvas.addEventListener("pointerdown", (e) => {
+    touchStartX = e.clientX;
+    touchStartY = e.clientY;
+  });
+
+  canvas.addEventListener("pointerup", (e) => {
+    if (touchStartX === null || touchStartY === null) return;
+    const dx = e.clientX - touchStartX;
+    const dy = e.clientY - touchStartY;
+    touchStartX = null;
+    touchStartY = null;
+    // Horizontaler Swipe (> 68px horizontal, wenig vertikal)
+    if (Math.abs(dx) > 68 && Math.abs(dx) > Math.abs(dy) * 1.6) {
+      if (dx < 0) {
+        cycleRoomBySwipe(1);  // Nach links wischen -> nächster Raum
+      } else {
+        cycleRoomBySwipe(-1); // Nach rechts wischen -> vorheriger Raum
+      }
+    }
+  });
+});
 
 function openSettingsModal() {
   const s = Engine.getState();
   const activeFrameId = (s.settings && s.settings.uiFrame) || "frame_1_wood_gold";
   const showRoomBadge = !!(s.settings && s.settings.showRoomBadgeOnFrame);
+  const showDock = s.settings ? (s.settings.showBottomRoomDock !== false) : true;
   const useBadge = !!(s.settings && s.settings.useProfileBadgeInHud);
   const liveSync = !!(s.settings && s.settings.liveSheetSync);
   const currentRoom = (s.settings && s.settings.currentRoom) || "Dashboard";
@@ -1389,9 +1526,15 @@ function openSettingsModal() {
         </div>
         ${framesHtml}
         <div style="margin-top:8px; display:flex; justify-content:space-between; align-items:center; padding-top:8px; border-top:1px dashed #fdba74;">
-          <span style="font-size:12px; font-weight:700; color:#475569;">🏷️ Raum-Namensplakette oben rechts im Rahmen</span>
+          <span style="font-size:12px; font-weight:700; color:#475569;">🏷️ Smart-Raum-Plakette oben rechts (inkl. Putz-Bonus)</span>
           <button class="secondary-btn" style="font-size:11px; padding:4px 10px; ${showRoomBadge ? 'background:#ff7a00; color:#fff; border-color:#ea580c;' : ''}" onclick="toggleRoomBadgeSetting()">
             ${showRoomBadge ? 'Ein' : 'Aus'}
+          </button>
+        </div>
+        <div style="margin-top:6px; display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:12px; font-weight:700; color:#475569;">🧭 1-Tap Raum-Dock am unteren Rand</span>
+          <button class="secondary-btn" style="font-size:11px; padding:4px 10px; ${showDock ? 'background:#ff7a00; color:#fff; border-color:#ea580c;' : ''}" onclick="toggleBottomDockSetting()">
+            ${showDock ? 'Ein' : 'Aus'}
           </button>
         </div>
       </div>
@@ -1438,7 +1581,6 @@ function openSettingsModal() {
 function selectUiFrame(frameId) {
   const s = Engine.getState();
   s.settings.uiFrame = frameId;
-  // Bei Rahmen 3 standardmäßig die Raum-Plakette aktivieren, sonst nach Nutzerwunsch
   if (frameId === "frame_3_comic_ink") {
     s.settings.showRoomBadgeOnFrame = true;
   }
@@ -1454,6 +1596,14 @@ function selectUiFrame(frameId) {
 function toggleRoomBadgeSetting() {
   const s = Engine.getState();
   s.settings.showRoomBadgeOnFrame = !s.settings.showRoomBadgeOnFrame;
+  Engine.saveState();
+  renderAll();
+  openSettingsModal();
+}
+
+function toggleBottomDockSetting() {
+  const s = Engine.getState();
+  s.settings.showBottomRoomDock = s.settings.showBottomRoomDock === false ? true : false;
   Engine.saveState();
   renderAll();
   openSettingsModal();

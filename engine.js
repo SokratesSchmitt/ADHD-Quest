@@ -13,7 +13,7 @@
  * - Achievements (Beständiger Geist, Wochenheld, Monatsveteran)
  */
 const Engine = (function () {
-  const APP_VERSION = "0.49";
+  const APP_VERSION = "0.50";
   const STORAGE_KEY = "ADHD_QUEST_SHEET_STATE_V0_38";
   const SPLASH_DATE_KEY = "adhdQuest_lastSplashDate";
 
@@ -2154,7 +2154,9 @@ const Engine = (function () {
       currentRoom: "Dashboard",
       liveSheetSync: true,
       uiFrame: "frame_1_wood_gold",
-      showRoomBadgeOnFrame: true
+      showRoomBadgeOnFrame: true,
+      miniStatPillCollapsed: false,
+      showBottomRoomDock: true
     },
     roomDirtLevels: {
       "Flur": 1,

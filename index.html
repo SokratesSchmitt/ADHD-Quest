@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="ADHD Quest">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="assets/avatar/avatar_happy.png">
-  <title>ADHD QUEST | Version 0.49</title>
+  <title>ADHD QUEST | Version 0.50</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -23,23 +23,30 @@
       <div class="intro-zoom-container">
         <img src="aq_schriftzugtitle.png" alt="ADHD Quest Startbild" id="intro-splash-img" class="intro-splash-img">
       </div>
-      <div class="intro-version-badge">Version 0.49 • Tippen zum Überspringen</div>
+      <div class="intro-version-badge">Version 0.50 • Tippen zum Überspringen</div>
     </div>
 
     <!-- ==================================================================
-         CLEAN FULLSCREEN HUD (v0.49): NUR SCHWEBENDER PROFILRAHMEN OBEN LINKS
+         CLEAN FULLSCREEN HUD (v0.50): NUR SCHWEBENDER PROFILRAHMEN OBEN LINKS
          ================================================================== -->
     <div class="floating-avatar-hud">
       <div class="avatar-popout-wrapper" onclick="openCharacterModal()" title="Charakterbogen, Werte & 10 Avatar-States öffnen">
         <div class="avatar-ring-bg" id="avatar-progress-ring"></div>
         <img src="assets/avatar/avatar_happy.png" alt="Paddy Avatar" id="header-avatar-img" class="avatar-popout-sprite">
+        <button class="wow-ring-addon-btn addon-pos-lupe" id="hint-magnifier-btn" onclick="event.stopPropagation(); triggerObjectHints();" title="🔍 Offene Gegenstände im Raum kurz aufleuchten lassen">
+          🔍
+        </button>
+        <button class="wow-ring-addon-btn addon-pos-settings" id="hud-settings-btn" onclick="event.stopPropagation(); openSettingsModal();" title="⚙️ Einstellungen & UI-Rahmen anpassen">
+          ⚙️
+        </button>
       </div>
-      <button class="hint-magnifier-btn" id="hint-magnifier-btn" onclick="triggerObjectHints()" title="Offene Gegenstände im Raum kurz aufleuchten lassen">
-        🔍
-      </button>
-      <button class="hint-magnifier-btn" id="hud-settings-btn" onclick="openSettingsModal()" title="Einstellungen & UI-Rahmen anpassen">
-        ⚙️
-      </button>
+      <div class="mini-stat-pill" id="mini-stat-pill" onclick="toggleMiniStatPill()" title="Live-Ressourcen (Antippen zum Ein-/Ausklappen)">
+        <span class="stat-pill-item">🪙 <span id="pill-gold">9424</span></span>
+        <span class="stat-pill-details">
+          • <span class="stat-pill-item">⚡ <span id="pill-ap">7</span> AP</span>
+          • <span class="stat-pill-item">🔥 <span id="pill-streak">5</span></span>
+        </span>
+      </div>
     </div>
 
     <!-- ==================================================================
@@ -48,8 +55,9 @@
     <main class="room-canvas" id="room-canvas" data-room="Flur">
       <div id="room-hotspots-layer" class="hotspots-layer"></div>
       <div id="ui-frame-overlay" class="ui-frame-overlay"></div>
-      <div id="ui-frame-room-badge" class="ui-frame-room-badge hidden" onclick="openMapModal()" title="Wohnungs-Grundriss öffnen">🏠 Dashboard</div>
-      <!-- Raum-Spielerfigur entfernt (v0.49) für ruhigere Raum-Ansicht -->
+      <div id="ui-frame-room-badge" class="ui-frame-room-badge hidden"></div>
+      <nav id="bottom-room-dock" class="bottom-room-dock" aria-label="Schnell-Raumwechsel"></nav>
+      <!-- Raum-Spielerfigur entfernt (v0.50) für ruhigere Raum-Ansicht -->
       <div id="loot-toast" class="loot-toast hidden"></div>
     </main>
 
@@ -109,7 +117,7 @@
     <div class="modal-backdrop" id="log-modal" onclick="if(event.target===this) closeModal('log-modal')">
       <div class="modal-card">
         <div class="modal-header">
-          <span>📜 Tageschronik & System (v0.49)</span>
+          <span>📜 Tageschronik & System (v0.50)</span>
           <button class="modal-close" onclick="closeModal('log-modal')">✕</button>
         </div>
         <div class="modal-body">
@@ -155,7 +163,7 @@
     <div class="modal-backdrop" id="settings-modal" onclick="if(event.target===this) closeModal('settings-modal')">
       <div class="modal-card">
         <div class="modal-header">
-          <span>⚙️ Einstellungen & UI-Design (v0.49)</span>
+          <span>⚙️ Einstellungen & UI-Design (v0.50)</span>
           <button class="modal-close" onclick="closeModal('settings-modal')">✕</button>
         </div>
         <div class="modal-body" id="settings-modal-body" style="max-height:72vh; overflow-y:auto;"></div>
