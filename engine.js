@@ -13,7 +13,7 @@
  * - Achievements (Beständiger Geist, Wochenheld, Monatsveteran)
  */
 const Engine = (function () {
-  const APP_VERSION = "0.44";
+  const APP_VERSION = "0.49";
   const STORAGE_KEY = "ADHD_QUEST_SHEET_STATE_V0_38";
   const SPLASH_DATE_KEY = "adhdQuest_lastSplashDate";
 
@@ -34,7 +34,100 @@ const Engine = (function () {
       "Badezimmer": "assets/bg_bathroom.jpg",
       "Schlafzimmer": "assets/bg_bedroom.jpg",
       "Kinderzimmer": "assets/bg_kinderzimmer.jpg"
-    }
+    },
+    dirtyBackgrounds: {
+      "Flur": [
+        "assets/bg_flur.jpg",
+        "assets/bg_flur_dirty_s1.jpg",
+        "assets/bg_flur_dirty_s2.jpg",
+        "assets/bg_flur_dirty_s3.jpg"
+      ],
+      "Dashboard": [
+        "assets/bg_dashboard.jpg",
+        "assets/bg_dashboard_dirty_s1.jpg",
+        "assets/bg_dashboard_dirty_s2.jpg",
+        "assets/bg_dashboard_dirty_s3.jpg"
+      ],
+      "Wohnzimmer": [
+        "assets/bg_livingroom_me.jpg",
+        "assets/bg_wohnzimmer_dirty_s1.jpg",
+        "assets/bg_wohnzimmer_dirty_s2.jpg",
+        "assets/bg_wohnzimmer_dirty_s3.jpg"
+      ],
+      "Küche": [
+        "assets/bg_kitchen.jpg",
+        "assets/bg_kueche_dirty_s1.jpg",
+        "assets/bg_kueche_dirty_s2.jpg",
+        "assets/bg_kueche_dirty_s3.jpg"
+      ],
+      "Badezimmer": [
+        "assets/bg_bathroom.jpg",
+        "assets/bg_badezimmer_dirty_s1.jpg",
+        "assets/bg_badezimmer_dirty_s2.jpg",
+        "assets/bg_badezimmer_dirty_s3.jpg"
+      ],
+      "Schlafzimmer": [
+        "assets/bg_bedroom.jpg",
+        "assets/bg_schlafzimmer_dirty_s1.jpg",
+        "assets/bg_schlafzimmer_dirty_s2.jpg",
+        "assets/bg_schlafzimmer_dirty_s3.jpg"
+      ],
+      "Kinderzimmer": [
+        "assets/bg_kinderzimmer.jpg",
+        "assets/bg_kinderzimmer_dirty_s1.jpg",
+        "assets/bg_kinderzimmer_dirty_s2.jpg",
+        "assets/bg_kinderzimmer_dirty_s3.jpg"
+      ]
+    },
+    cleaningToolSprites: {
+      1: "assets/cleaning_sprites/sprite_clean_besen_s1.png",
+      2: "assets/cleaning_sprites/sprite_clean_kehrset_s2.png",
+      3: "assets/cleaning_sprites/sprite_clean_staubsauger_s3.png"
+    },
+    // Position des Besens / Staubsaugers direkt neben der jeweiligen Zimmertür
+    doorCleaningCoords: {
+      "Flur":         { leftPct: 54.0, topPct: 52.0, widthPct: 16.5, heightPct: 18.5, zIndex: 20, taskName: "Zimmer oder Wohnung aufräumen (30 min)", zielTabelle: "MB Aktivitaeten", verknuepfung: "A18", baseXp: 50,  baseGold: 25, baseMb: 1, baseAp: 1 },
+      "Dashboard":    { leftPct: 67.5, topPct: 55.0, widthPct: 16.5, heightPct: 18.5, zIndex: 20, taskName: "Zimmer oder Wohnung aufräumen (30 min)", zielTabelle: "MB Aktivitaeten", verknuepfung: "A18", baseXp: 50,  baseGold: 25, baseMb: 1, baseAp: 1 },
+      "Wohnzimmer":   { leftPct: 36.5, topPct: 46.5, widthPct: 16.5, heightPct: 18.5, zIndex: 20, taskName: "Samstagsputz (Wohnzimmer)",             zielTabelle: "Aufgaben",        verknuepfung: "A8",  baseXp: 125, baseGold: 50, baseMb: 0, baseAp: 2 },
+      "Küche":        { leftPct: 73.5, topPct: 50.0, widthPct: 16.5, heightPct: 18.5, zIndex: 20, taskName: "Samstagsputz (Küche)",                  zielTabelle: "Aufgaben",        verknuepfung: "A7",  baseXp: 100, baseGold: 50, baseMb: 0, baseAp: 2 },
+      "Schlafzimmer": { leftPct: 60.5, topPct: 48.0, widthPct: 16.5, heightPct: 18.5, zIndex: 20, taskName: "Samstagsputz (Schlafzimmer)",           zielTabelle: "Aufgaben",        verknuepfung: "A9",  baseXp: 150, baseGold: 50, baseMb: 0, baseAp: 2 },
+      "Badezimmer":   { leftPct: 37.5, topPct: 46.5, widthPct: 16.5, heightPct: 18.5, zIndex: 20, taskName: "Samstagsputz (Bad)",                    zielTabelle: "Aufgaben",        verknuepfung: "A10", baseXp: 125, baseGold: 50, baseMb: 0, baseAp: 2 },
+      "Kinderzimmer": { leftPct: 7.5,  topPct: 53.0, widthPct: 16.5, heightPct: 18.5, zIndex: 20, taskName: "Zimmer oder Wohnung aufräumen (30 min)", zielTabelle: "MB Aktivitaeten", verknuepfung: "A18", baseXp: 50,  baseGold: 25, baseMb: 1, baseAp: 1 }
+    },
+    uiFrames: [
+      {
+        id: "frame_1_wood_gold",
+        nr: 1,
+        label: "Rahmen 1: Ultra-Slim Holz & Gold-Intarsie",
+        desc: "Nur 5px schmale Edelholz-Kante mit goldener Intarsienlinie (99% Vollbild)",
+        overlayUrl: "assets/ui_frames/frame_1_wood_gold.png",
+        showRoomBadge: false
+      },
+      {
+        id: "frame_2_corner_brackets",
+        nr: 2,
+        label: "Rahmen 2: Offene Eck-Beschläge (Corner-L)",
+        desc: "Seitenkanten 100% frei – nur die 4 Ecken sind mit Holz-/Messing-Winkeln gefasst",
+        overlayUrl: "assets/ui_frames/frame_2_corner_brackets.png",
+        showRoomBadge: false
+      },
+      {
+        id: "frame_3_comic_ink",
+        nr: 3,
+        label: "Rahmen 3: Comic-Ink & Inner-Glow Aura",
+        desc: "0px Randverlust – Graphic-Novel-Tuschekontur mit bernsteinfarbenem Inner-Glow & Raum-Plakette",
+        overlayUrl: "assets/ui_frames/frame_3_comic_ink.png",
+        showRoomBadge: true
+      },
+      {
+        id: "none",
+        nr: 0,
+        label: "Kein Rahmen (Randloses Rohbild)",
+        desc: "Komplett ohne UI-Umrahmung",
+        overlayUrl: "",
+        showRoomBadge: false
+      }
+    ]
   };
 
 
@@ -1943,6 +2036,94 @@ const Engine = (function () {
 ]
   };
 
+
+  // --- TOP-3 HÄUFIGSTE AKTIVITÄTEN AUS DEM QUESTLOG (FÜR DIE 3 PINNWAND-HAFTNOTIZEN) ---
+  function getTop3FrequentActivities() {
+    // 1. Alle verfügbaren Raum-Objekte (mit Icons/Sprites) + Katalog-Einträge indizieren
+    const byName = {};
+    const cat = state.sheetCatalog || DEFAULT_SHEET_CATALOG;
+    (cat.aufgaben || DEFAULT_SHEET_CATALOG.aufgaben).forEach(a => {
+      byName[a.name] = Object.assign({}, a, { icon: "🧹", shortLabel: a.name.split(" ")[0] });
+    });
+    (cat.mbAktivitaeten || DEFAULT_SHEET_CATALOG.mbAktivitaeten).forEach(m => {
+      byName[m.name] = Object.assign({}, m, { icon: "✨", shortLabel: m.name.split(" ")[0] });
+    });
+
+    Object.keys(ROOM_OBJECTS).forEach(rKey => {
+      (ROOM_OBJECTS[rKey] || []).forEach(ro => {
+        if (!ro.isMapDoor && !ro.isShopTrigger && ro.name) {
+          const existing = byName[ro.name] || {};
+          byName[ro.name] = Object.assign({}, existing, ro, {
+            id: ro.id || existing.id,
+            icon: ro.icon || existing.icon || "✨",
+            iconUrl: ro.iconUrl || existing.iconUrl || "",
+            shortLabel: ro.name.replace(/\s*\(.*?\)/g, "").trim()
+          });
+        }
+      });
+    });
+
+    // 2. Häufigkeit im Questlog zählen (nur echte Aufgaben & MB-Aktivitäten, keine System/Shop-Einträge)
+    const counts = {};
+    (state.questlog || []).forEach(entry => {
+      const actName = (entry.aktivitaet || "").trim();
+      if (!actName || entry.typ === "System" || entry.typ === "Shop") return;
+      if (byName[actName]) {
+        counts[actName] = (counts[actName] || 0) + 1;
+      }
+    });
+
+    const sortedNames = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
+
+    // 3. Sinnvolle Standard-Favoriten als Fallback, falls noch weniger als 3 verschiedene Aktivitäten im Questlog stehen
+    const fallbackDefaults = [
+      "Geschirrspüler ausräumen und einräumen",
+      "Venla",
+      "Klavier spielen (20 min)",
+      "ADHD Quest programmieren",
+      "Tisch abwischen"
+    ];
+    fallbackDefaults.forEach(fb => {
+      if (sortedNames.length < 3 && byName[fb] && !sortedNames.includes(fb)) {
+        sortedNames.push(fb);
+      }
+    });
+
+    // 4. Die 3 Haftnotiz-Positionen auf der rechten & unteren Seite der Kork-Pinnwand im Dashboard
+    const postitSlots = [
+      {
+        slotNr: 1,
+        postitSprite: "assets/dashboard_sprites/sprite_dash_postit_1.png",
+        leftPct: 24.5, topPct: 31.2, widthPct: 14.2, heightPct: 8.2, rotDeg: -3.0
+      },
+      {
+        slotNr: 2,
+        postitSprite: "assets/dashboard_sprites/sprite_dash_postit_2.png",
+        leftPct: 39.2, topPct: 31.4, widthPct: 14.2, heightPct: 8.2, rotDeg: 2.2
+      },
+      {
+        slotNr: 3,
+        postitSprite: "assets/dashboard_sprites/sprite_dash_postit_3.png",
+        leftPct: 53.8, topPct: 31.0, widthPct: 14.2, heightPct: 8.2, rotDeg: -1.8
+      }
+    ];
+
+    return postitSlots.map((slot, idx) => {
+      const name = sortedNames[idx] || fallbackDefaults[idx];
+      const item = byName[name] || {
+        id: "TOP3_" + (idx + 1),
+        name: name,
+        zielTabelle: "Aufgaben",
+        xp: 50, gold: 10, mb: 1, ap: 1,
+        icon: "⭐",
+        shortLabel: name
+      };
+      return Object.assign({}, item, slot, {
+        countInLog: counts[name] || 0
+      });
+    });
+  }
+
   function getRoomCatalog(roomName) {
     const cat = state.sheetCatalog || DEFAULT_SHEET_CATALOG;
     const mbList = (cat.mbAktivitaeten && cat.mbAktivitaeten.length ? cat.mbAktivitaeten : DEFAULT_SHEET_CATALOG.mbAktivitaeten)
@@ -1971,7 +2152,18 @@ const Engine = (function () {
     },
     settings: {
       currentRoom: "Dashboard",
-      liveSheetSync: true
+      liveSheetSync: true,
+      uiFrame: "frame_1_wood_gold",
+      showRoomBadgeOnFrame: true
+    },
+    roomDirtLevels: {
+      "Flur": 1,
+      "Dashboard": 1,
+      "Wohnzimmer": 1,
+      "Küche": 1,
+      "Schlafzimmer": 1,
+      "Badezimmer": 1,
+      "Kinderzimmer": 1
     },
     completedToday: {},
     questlog: [
@@ -1988,9 +2180,17 @@ const Engine = (function () {
       if (raw) {
         const parsed = JSON.parse(raw);
         const merged = Object.assign({}, defaultState, parsed);
+        merged.settings = Object.assign({}, defaultState.settings, merged.settings || {});
+        if (!merged.roomDirtLevels) {
+          merged.roomDirtLevels = JSON.parse(JSON.stringify(defaultState.roomDirtLevels));
+        }
         if (merged.lastCompletedDate !== today) {
           merged.completedToday = {};
           merged.lastCompletedDate = today;
+          // Jeden neuen Tag werden unaufgeräumte Räume um +1 Stufe schmutziger (max. Stufe 3)
+          Object.keys(merged.roomDirtLevels).forEach(r => {
+            merged.roomDirtLevels[r] = Math.min(3, (merged.roomDirtLevels[r] || 0) + 1);
+          });
         }
         return merged;
       }
@@ -2103,12 +2303,47 @@ const Engine = (function () {
     }).catch(() => {});
   }
 
+  // --- VERSTÄRKERLOGIK: MULTIPLIKATOR NACH VERSCHMUTZUNGS-STUFE ---
+  // Stufe 1 (Leicht unordentlich / Besen an der Tür) => x2.0 Maximaler Frühstart-Bonus!
+  // Stufe 2 (Mittelmäßig unordentlich / Kehrset)     => x1.7 (-0.3)
+  // Stufe 3 (Dreckig / Staubsauger)                  => x1.4 (-0.6)
+  function getDirtMultiplier(level) {
+    const lvl = Number(level) || 0;
+    if (lvl <= 0) return 1.0;
+    return Math.max(1.0, Math.round((2.0 - (lvl - 1) * 0.3) * 10) / 10);
+  }
+
+  function getRoomDirtLevel(roomName) {
+    if (!state.roomDirtLevels) {
+      state.roomDirtLevels = JSON.parse(JSON.stringify(defaultState.roomDirtLevels));
+    }
+    const lvl = state.roomDirtLevels[roomName];
+    return typeof lvl === "number" ? Math.min(3, Math.max(0, lvl)) : 0;
+  }
+
+  function setRoomDirtLevel(roomName, level) {
+    if (!state.roomDirtLevels) {
+      state.roomDirtLevels = JSON.parse(JSON.stringify(defaultState.roomDirtLevels));
+    }
+    state.roomDirtLevels[roomName] = Math.min(3, Math.max(0, Number(level) || 0));
+    saveState();
+  }
+
   // --- AUFGABE ODER MB-AKTIVITÄT ABSCHLIESSEN ---
   function completeObject(obj) {
-    const xpGain = Number(obj.xp) || 0;
-    const goldGain = Number(obj.gold) || 0;
+    const roomName = obj.raum || state.settings.currentRoom || "Flur";
+    const dirtLvl = getRoomDirtLevel(roomName);
+    const isCleaningQuest = !!(obj.isDirtCleaner || (obj.name && (obj.name.includes("Samstagsputz") || obj.name.includes("aufräumen") || obj.name.includes("Tisch abwischen"))));
+    const mult = (isCleaningQuest && dirtLvl >= 1) ? getDirtMultiplier(dirtLvl) : 1.0;
+
+    const xpGain = Math.round((Number(obj.xp) || 0) * mult);
+    const goldGain = Math.round((Number(obj.gold) || 0) * mult);
     const mbGain = Number(obj.mb) || 0;
     const apGain = Number(obj.ap) || 0;
+
+    if (isCleaningQuest && dirtLvl >= 1) {
+      state.roomDirtLevels[roomName] = 0; // Raum ist nach dem Putzen wieder blitzblank (Stufe 0)!
+    }
 
     state.character.xp += xpGain;
     state.character.gold = Math.max(0, state.character.gold + goldGain);
@@ -2200,6 +2435,10 @@ const Engine = (function () {
     ACHIEVEMENTS,
     DEFAULT_SHEET_CATALOG,
     getRoomCatalog,
+    getTop3FrequentActivities,
+    getDirtMultiplier,
+    getRoomDirtLevel,
+    setRoomDirtLevel,
     getState: () => state,
     saveState,
     shouldShowDailySplash,

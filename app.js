@@ -710,16 +710,83 @@ function renderAll() {
   renderCurrentRoom(roomName);
 }
 
+function getDynamicCleaningObject(roomName) {
+  const dirtLvl = Engine.getRoomDirtLevel(roomName);
+  if (dirtLvl <= 0) return null;
+  const cfg = Engine.ASSETS.doorCleaningCoords && Engine.ASSETS.doorCleaningCoords[roomName];
+  if (!cfg) return null;
+  const mult = Engine.getDirtMultiplier(dirtLvl);
+  const toolLabels = {
+    1: "🧹 Besen an der Tür (Stufe 1: Leicht unordentlich – Frühstart-Bonus x2.0!)",
+    2: "🧹 Kehrset an der Tür (Stufe 2: Mittelmäßig unordentlich – Bonus x1.7)",
+    3: "🔌 Staubsauger (Stufe 3: Dreckig / Chaos – Bonus x1.4)"
+  };
+  return {
+    id: `CLEAN_DYNAMIC_${roomName}`,
+    raum: roomName,
+    name: cfg.taskName,
+    anzeigeName: `${toolLabels[dirtLvl]} → ${cfg.taskName}`,
+    zielTabelle: cfg.zielTabelle,
+    verknuepfung: cfg.verknuepfung,
+    spriteUrl: Engine.ASSETS.cleaningToolSprites[dirtLvl],
+    leftPct: cfg.leftPct,
+    topPct: cfg.topPct,
+    widthPct: cfg.widthPct,
+    heightPct: cfg.heightPct,
+    zIndex: cfg.zIndex || 20,
+    xp: cfg.baseXp,
+    gold: cfg.baseGold,
+    mb: cfg.baseMb,
+    ap: cfg.baseAp,
+    dirtLevel: dirtLvl,
+    dirtMultiplier: mult,
+    isDirtCleaner: true
+  };
+}
+
 function renderCurrentRoom(roomName) {
   const canvas = document.getElementById("room-canvas");
   const layer = document.getElementById("room-hotspots-layer");
   canvas.setAttribute("data-room", roomName);
 
-  const bgUrl = Engine.ASSETS.backgrounds[roomName] || Engine.ASSETS.backgrounds["Flur"];
+  const dirtLvl = Engine.getRoomDirtLevel(roomName);
+  const dirtyList = Engine.ASSETS.dirtyBackgrounds && Engine.ASSETS.dirtyBackgrounds[roomName];
+  const bgUrl = (dirtyList && dirtyList[dirtLvl]) || Engine.ASSETS.backgrounds[roomName] || Engine.ASSETS.backgrounds["Flur"];
   canvas.style.backgroundImage = `url('${bgUrl}')`;
 
-  const objects = Engine.ROOM_OBJECTS[roomName] || [];
+  // Aktiven UI-Rahmen (Idee 1, 2, 3 oder Aus) und optionale Raum-Plakette oben rechts anwenden
+  renderUiFrameOverlay(roomName);
+
+  const baseObjects = Engine.ROOM_OBJECTS[roomName] || [];
+  const dynCleanObj = getDynamicCleaningObject(roomName);
+  const objects = dynCleanObj ? [...baseObjects, dynCleanObj] : baseObjects;
   const completed = Engine.getState().completedToday || {};
+
+  // Wenn wir auf dem Dashboard sind: Die 3 häufigsten Aktivitäten als Haftnotizen direkt auf der Kork-Pinnwand rendern!
+  const top3PostitsHtml = (roomName === "Dashboard" || roomName === "Arbeitszimmer")
+    ? (Engine.getTop3FrequentActivities ? Engine.getTop3FrequentActivities() : []).map((fav, idx) => {
+        const isFavDone = !!completed[fav.id];
+        const shortWords = (fav.shortLabel || fav.name || "").split(" ").slice(0, 2).join(" ");
+        const iconVisual = fav.iconUrl
+          ? `<img src="${fav.iconUrl}" class="postit-icon-img" alt="${fav.name}" onerror="this.outerHTML='<span class=\'postit-emoji\'>${fav.icon || '⭐'}</span>'">`
+          : `<span class="postit-emoji">${fav.icon || "⭐"}</span>`;
+        const freqInfo = fav.countInLog > 0 ? `${fav.countInLog}× im Log` : `Top #${idx + 1}`;
+        return `
+          <div class="pinnwand-postit-hotspot ${isFavDone ? 'done-today' : ''}"
+               style="left: ${fav.leftPct}%; top: ${fav.topPct}%; width: ${fav.widthPct}%; height: ${fav.heightPct}%; transform: rotate(${fav.rotDeg || 0}deg);"
+               title="⚡ Schnellzugriff #${idx + 1} (${freqInfo}): ${fav.name} — 1-Tap Direkt-Abhaken (+${fav.xp || 0} XP, +${fav.mb || 0} MB)"
+               onclick="event.stopPropagation(); quickCompleteTopActivity(${idx})">
+            <img src="${fav.postitSprite}" class="postit-bg-img" alt="Post-it #${idx + 1}">
+            <div class="postit-content">
+              ${iconVisual}
+              <div class="postit-title">${shortWords}</div>
+              <div class="postit-xp-tag">+${fav.xp || 0}XP${fav.mb ? ` • +${fav.mb}MB` : ''}</div>
+            </div>
+            ${isFavDone ? '<span class="sprite-done-badge" style="top:18%; left:82%; font-size:10px; padding:1px 4px;">✓</span>' : ''}
+          </div>
+        `;
+      }).join("")
+    : "";
 
   layer.innerHTML = objects.map(obj => {
     const isDone = !!completed[obj.id];
@@ -753,11 +820,34 @@ function renderCurrentRoom(roomName) {
         <span class="badge-hotspot-label">${displayTitle.split(' ')[0]}</span>
       </div>
     `;
-  }).join("");
+  }).join("") + top3PostitsHtml;
+}
+
+// --- 1-TAP SCHNELLZUGRIFF FÜR DIE 3 HAFTNOTIZEN AUF DER DASHBOARD-PINNWAND ---
+function quickCompleteTopActivity(slotIdx) {
+  if (!Engine.getTop3FrequentActivities) return;
+  const top3 = Engine.getTop3FrequentActivities();
+  const fav = top3[slotIdx];
+  if (!fav) return;
+
+  const rName = fav.raum || Engine.getState().settings.currentRoom || "Dashboard";
+  const dirtBefore = Engine.getRoomDirtLevel ? Engine.getRoomDirtLevel(rName) : 0;
+  const isClean = !!(fav.isDirtCleaner || (fav.name && (fav.name.includes("Samstagsputz") || fav.name.includes("aufräumen") || fav.name.includes("Tisch abwischen"))));
+  const mult = (isClean && dirtBefore >= 1 && Engine.getDirtMultiplier) ? Engine.getDirtMultiplier(dirtBefore) : 1.0;
+  const finalXp = Math.round((Number(fav.xp) || 0) * mult);
+  const finalGold = Math.round((Number(fav.gold) || 0) * mult);
+
+  Engine.completeObject(fav);
+  triggerExcitedAvatar();
+  renderAll();
+  const bonusTxt = mult > 1.0 ? ` [🧹 Putz-Bonus x${mult.toFixed(1)}!]` : "";
+  showLootToast(`📌 Schnell-Quest #${slotIdx + 1}: "${fav.name}" erledigt! (+${finalXp} XP, +${finalGold} G, +${fav.mb || 0} MB)${bonusTxt}`);
 }
 
 function handleHotspotClick(roomName, objId) {
-  const objects = Engine.ROOM_OBJECTS[roomName] || [];
+  const baseObjects = Engine.ROOM_OBJECTS[roomName] || [];
+  const dynCleanObj = getDynamicCleaningObject(roomName);
+  const objects = dynCleanObj ? [...baseObjects, dynCleanObj] : baseObjects;
   const obj = objects.find(o => o.id === objId);
   if (!obj) return;
 
@@ -774,19 +864,34 @@ function handleHotspotClick(roomName, objId) {
   document.getElementById("obj-modal-title").textContent = `${obj.zielTabelle}: ${obj.name}`;
 
   const previewWrap = document.getElementById("obj-modal-preview-wrap");
-  if (obj.spriteUrl) {
-    previewWrap.innerHTML = `<img src="${obj.spriteUrl}" alt="${obj.name}" style="max-height:96px; max-width:180px; object-fit:contain; image-rendering:auto; filter:drop-shadow(0 4px 10px rgba(0,0,0,0.25));">`;
-  } else if (obj.iconUrl) {
-    previewWrap.innerHTML = `<img src="${obj.iconUrl}" alt="${obj.name}" style="width:64px; height:64px; object-fit:contain; image-rendering:auto;" onerror="this.outerHTML='<div style=\'font-size:42px;\'>${obj.icon || '✨'}</div>'">`;
+  const primaryImgUrl = obj.spriteUrl || obj.iconUrl;
+  if (primaryImgUrl) {
+    const fallbackUrl = (obj.iconUrl && obj.iconUrl !== primaryImgUrl) ? obj.iconUrl : "";
+    previewWrap.innerHTML = `
+      <img src="${primaryImgUrl}"
+           alt="${obj.name}"
+           class="obj-hero-img"
+           onclick="this.classList.toggle('zoomed')"
+           title="Antippen zum Vergrößern / Reinzoomen"
+           onerror="${fallbackUrl ? `this.onerror=null; this.src='${fallbackUrl}';` : `this.outerHTML='<div class=\'obj-hero-emoji\'>${obj.icon || '✨'}</div>'`}">
+      <span class="obj-hero-zoom-hint">🔍 Antippen für Zoom</span>
+    `;
   } else {
-    previewWrap.innerHTML = `<div id="obj-modal-icon" style="font-size:42px;">${obj.icon || "✨"}</div>`;
+    previewWrap.innerHTML = `<div id="obj-modal-icon" class="obj-hero-emoji">${obj.icon || "✨"}</div>`;
   }
 
+  const dirtLvl = Engine.getRoomDirtLevel(roomName);
+  const isCleaningQuest = !!(obj.isDirtCleaner || (obj.name && (obj.name.includes("Samstagsputz") || obj.name.includes("aufräumen") || obj.name.includes("Tisch abwischen"))));
+  const mult = (isCleaningQuest && dirtLvl >= 1) ? Engine.getDirtMultiplier(dirtLvl) : 1.0;
+  const effXp = Math.round((Number(obj.xp) || 0) * mult);
+  const effGold = Math.round((Number(obj.gold) || 0) * mult);
+  const multBadge = mult > 1.0 ? ` <span style="background:#16a34a; color:#fff; padding:2px 7px; border-radius:99px; font-size:11px;">🧹 Putz-Multiplikator x${mult.toFixed(1)}!</span>` : "";
+
   const sheetInfo = obj.verknuepfung ? ` (Tabellen-Zelle: ${obj.zielTabelle}!${obj.verknuepfung})` : "";
-  document.getElementById("obj-modal-desc").textContent = `${obj.anzeigeName || obj.name}${sheetInfo}`;
+  document.getElementById("obj-modal-desc").innerHTML = `${obj.anzeigeName || obj.name}${sheetInfo}${multBadge}`;
   document.getElementById("obj-modal-rewards").innerHTML = `
-    <span class="reward-pill">+${obj.xp || 0} XP</span>
-    <span class="reward-pill">+${obj.gold || 0} Gold</span>
+    <span class="reward-pill">+${effXp} XP ${mult > 1.0 ? `(statt ${obj.xp})` : ''}</span>
+    <span class="reward-pill">+${effGold} Gold ${mult > 1.0 ? `(statt ${obj.gold})` : ''}</span>
     <span class="reward-pill">+${obj.mb || 0} MB</span>
     <span class="reward-pill">+${obj.ap || 0} AP</span>
   `;
@@ -795,11 +900,33 @@ function handleHotspotClick(roomName, objId) {
 
 function confirmObjectAction() {
   if (!selectedObject) return;
+  const rName = selectedObject.raum || Engine.getState().settings.currentRoom || "Flur";
+  const dirtBefore = Engine.getRoomDirtLevel(rName);
+  const isClean = !!(selectedObject.isDirtCleaner || (selectedObject.name && (selectedObject.name.includes("Samstagsputz") || selectedObject.name.includes("aufräumen") || selectedObject.name.includes("Tisch abwischen"))));
+  const mult = (isClean && dirtBefore >= 1) ? Engine.getDirtMultiplier(dirtBefore) : 1.0;
+  const finalXp = Math.round((Number(selectedObject.xp) || 0) * mult);
+  const finalGold = Math.round((Number(selectedObject.gold) || 0) * mult);
+
   Engine.completeObject(selectedObject);
   closeModal("object-modal");
   triggerExcitedAvatar();
   renderAll();
-  showLootToast(`✅ "${selectedObject.name}" verbucht (+${selectedObject.xp} XP, +${selectedObject.gold} G, +${selectedObject.mb} MB)`);
+  const bonusTxt = mult > 1.0 ? ` [🧹 Früh-Putz-Bonus x${mult.toFixed(1)} – Raum blitzblank!]` : "";
+  showLootToast(`✅ "${selectedObject.name}" (+${finalXp} XP, +${finalGold} G, +${selectedObject.mb} MB)${bonusTxt}`);
+}
+
+function setCurrentRoomDirt(level) {
+  const rName = Engine.getState().settings.currentRoom || "Flur";
+  Engine.setRoomDirtLevel(rName, level);
+  renderAll();
+  openCharacterModal();
+  const labels = {
+    0: "✨ Stufe 0: Blitzblank (Standard)",
+    1: "🧹 Stufe 1: Leicht unordentlich (Besen an der Tür • Bonus x2.0!)",
+    2: "🧹 Stufe 2: Mittelmäßig unordentlich (Kehrset • Bonus x1.7)",
+    3: "🔌 Stufe 3: Dreckig / Chaos (Staubsauger • Bonus x1.4)"
+  };
+  showLootToast(`${rName}: ${labels[level]}`);
 }
 
 // --- 4. NEUE INTERAKTIVE WOHNUNGS-MAP ---
@@ -934,6 +1061,7 @@ function openCharacterModal() {
             <button class="secondary-btn" style="font-size:11px; padding:4px 8px;" onclick="closeModal('character-modal'); openRoomBookModal();">📋 Raum-Buch</button>
             <button class="secondary-btn" style="font-size:11px; padding:4px 8px;" onclick="closeModal('character-modal'); openShopModal();">🐷 Shop</button>
             <button class="secondary-btn" style="font-size:11px; padding:4px 8px;" onclick="closeModal('character-modal'); openLogModal();">📜 Chronik</button>
+            <button class="secondary-btn" style="font-size:11px; padding:4px 8px; border-color:#ff7a00; color:#9a3412;" onclick="closeModal('character-modal'); openSettingsModal();">⚙️ Einstellungen</button>
           </div>
           <div style="margin-top:6px; display:flex; gap:6px; flex-wrap:wrap;">
             <button class="secondary-btn" style="font-size:11px; padding:4px 8px;" onclick="toggleHudProfileBadge()">
@@ -943,6 +1071,17 @@ function openCharacterModal() {
               ⚡ Auto-Modus (nach MB%)
             </button>
           </div>
+        </div>
+      </div>
+      <div style="background:#fefce8; border:2px solid #facc15; border-radius:12px; padding:10px; margin-bottom:10px;">
+        <div style="font-weight:800; font-size:12px; color:#854d0e; margin-bottom:6px;">
+          🧹 RAUM-ZUSTAND & VERSTÄRKERLOGIK (${s.settings.currentRoom || "Flur"}: Aktuell Stufe ${Engine.getRoomDirtLevel(s.settings.currentRoom || "Flur")} • Multiplikator x${Engine.getDirtMultiplier(Engine.getRoomDirtLevel(s.settings.currentRoom || "Flur")).toFixed(1)}):
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px;" onclick="setCurrentRoomDirt(0)">✨ Stufe 0: Sauber (x1.0)</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px; border-color:#16a34a; color:#166534;" onclick="setCurrentRoomDirt(1)">🧹 Stufe 1: Leicht + Besen (x2.0!)</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px; border-color:#ea580c; color:#9a3412;" onclick="setCurrentRoomDirt(2)">🧹 Stufe 2: Mittel + Kehrset (x1.7)</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px; border-color:#dc2626; color:#991b1b;" onclick="setCurrentRoomDirt(3)">🔌 Stufe 3: Dreckig + Sauger (x1.4)</button>
         </div>
       </div>
       <div style="background:#f8fafc; border:1.5px solid #cbd5e1; border-radius:12px; padding:10px; margin-bottom:10px;">
@@ -1067,11 +1206,27 @@ function openRoomBookModal(filterRoom) {
     </div>
   `;
 
+  // Mappe Raum-Objekte nach Namen, damit auch im Raum-Buch die großen Sprites/Icons angezeigt werden
+  const allRoomObjsByName = {};
+  Object.keys(Engine.ROOM_OBJECTS).forEach(rk => {
+    (Engine.ROOM_OBJECTS[rk] || []).forEach(ro => {
+      if (ro.name && !allRoomObjsByName[ro.name]) {
+        allRoomObjsByName[ro.name] = ro;
+      }
+    });
+  });
+
   const renderItemCard = (item) => {
     const done = !!completed[item.id];
     const badgeColor = item.zielTabelle === "Aufgaben" ? "#ea580c" : "#0284c7";
+    const matchedRo = allRoomObjsByName[item.name];
+    const thumbUrl = matchedRo ? (matchedRo.spriteUrl || matchedRo.iconUrl) : "";
+    const thumbHtml = thumbUrl
+      ? `<img src="${thumbUrl}" class="room-book-thumb" alt="${item.name}" title="Große Objekt-Vorschau öffnen" style="cursor:pointer;" onclick="if('${matchedRo ? matchedRo.raum : ''}' && '${matchedRo ? matchedRo.id : ''}'){ closeModal('room-book-modal'); handleHotspotClick('${matchedRo ? matchedRo.raum : ''}', '${matchedRo ? matchedRo.id : ''}'); }">`
+      : `<div class="room-book-thumb" style="display:flex; align-items:center; justify-content:center; font-size:26px;">${item.zielTabelle === "Aufgaben" ? "🧹" : "✨"}</div>`;
     return `
-      <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px 10px; border:1.5px solid ${done ? '#86efac' : '#fed7aa'}; background:${done ? '#f0fdf4' : '#ffffff'}; border-radius:10px; margin-bottom:6px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; padding:8px 10px; border:1.5px solid ${done ? '#86efac' : '#fed7aa'}; background:${done ? '#f0fdf4' : '#ffffff'}; border-radius:10px; margin-bottom:6px;">
+        ${thumbHtml}
         <div style="flex:1;">
           <div style="font-size:11px; font-weight:800; color:${badgeColor};">
             🪑 ${item.repraesentiertDurch} <span style="color:#94a3b8; font-weight:600;">(${item.zielTabelle}!${item.cellRef})</span>
@@ -1152,3 +1307,170 @@ document.addEventListener("DOMContentLoaded", () => {
     canvas.addEventListener(evt, () => clearTimeout(pressTimer));
   });
 });
+
+
+
+// ============================================================================
+// 8. EINSTELLUNGEN & WÄHLBARE UI-UMRAHMUNGEN (v0.49: IDEE 1, 2, 3 & AUS)
+// ============================================================================
+function renderUiFrameOverlay(roomName) {
+  const s = Engine.getState();
+  const activeFrameId = (s.settings && s.settings.uiFrame) || "frame_1_wood_gold";
+  const framesList = (Engine.ASSETS && Engine.ASSETS.uiFrames) || [];
+  const frameObj = framesList.find(f => f.id === activeFrameId) || framesList[0];
+
+  const overlayEl = document.getElementById("ui-frame-overlay");
+  if (overlayEl) {
+    if (frameObj && frameObj.overlayUrl) {
+      overlayEl.style.backgroundImage = `url('${frameObj.overlayUrl}')`;
+      overlayEl.style.opacity = "1";
+    } else {
+      overlayEl.style.backgroundImage = "none";
+      overlayEl.style.opacity = "0";
+    }
+  }
+
+  const badgeEl = document.getElementById("ui-frame-room-badge");
+  if (badgeEl) {
+    const rName = roomName || (s.settings && s.settings.currentRoom) || "Dashboard";
+    const roomMeta = (Engine.ROOMS || []).find(r => r.id === rName);
+    const rIcon = roomMeta ? roomMeta.icon : "🏠";
+    const displayRoom = rName === "Dashboard" ? "Arbeitszimmer" : rName;
+    const showBadge = (frameObj && frameObj.showRoomBadge) || (s.settings && s.settings.showRoomBadgeOnFrame);
+
+    if (showBadge && activeFrameId !== "none") {
+      badgeEl.textContent = `${rIcon} ${displayRoom}`;
+      badgeEl.classList.remove("hidden");
+    } else {
+      badgeEl.classList.add("hidden");
+    }
+  }
+}
+
+function openSettingsModal() {
+  const s = Engine.getState();
+  const activeFrameId = (s.settings && s.settings.uiFrame) || "frame_1_wood_gold";
+  const showRoomBadge = !!(s.settings && s.settings.showRoomBadgeOnFrame);
+  const useBadge = !!(s.settings && s.settings.useProfileBadgeInHud);
+  const liveSync = !!(s.settings && s.settings.liveSheetSync);
+  const currentRoom = (s.settings && s.settings.currentRoom) || "Dashboard";
+  const dirtLvl = Engine.getRoomDirtLevel ? Engine.getRoomDirtLevel(currentRoom) : 0;
+  const mult = Engine.getDirtMultiplier ? Engine.getDirtMultiplier(dirtLvl) : 1.0;
+
+  const framesList = (Engine.ASSETS && Engine.ASSETS.uiFrames) || [];
+  const bgPreviewUrl = Engine.ASSETS.backgrounds[currentRoom] || "assets/bg_livingroom_me.jpg";
+
+  const framesHtml = framesList.map(f => {
+    const isSel = f.id === activeFrameId;
+    const thumbStyle = f.overlayUrl
+      ? `background-image: url('${f.overlayUrl}'), url('${bgPreviewUrl}'); background-size: 100% 100%, cover; background-position: center;`
+      : `background-image: url('${bgPreviewUrl}'); background-size: cover; background-position: center;`;
+    return `
+      <div class="settings-option-card ${isSel ? 'active-frame' : ''}" onclick="selectUiFrame('${f.id}')">
+        <div class="settings-frame-thumb" style="${thumbStyle}"></div>
+        <div style="flex:1;">
+          <div style="font-size:13px; font-weight:800; color:#1e293b;">
+            ${isSel ? '✅ ' : '🖼️ '}${f.label}
+          </div>
+          <div style="font-size:11px; color:#64748b; margin-top:2px;">
+            ${f.desc}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  const body = document.getElementById("settings-modal-body");
+  if (body) {
+    body.innerHTML = `
+      <div style="background:#fff7ed; border:2px solid #fed7aa; border-radius:14px; padding:12px; margin-bottom:12px;">
+        <div style="font-weight:900; font-size:13px; color:#9a3412; margin-bottom:8px;">
+          🖼️ 1. UI-UMRAHMUNG FÜR DIE HINTERGRUNDBILDER WÄHLEN:
+        </div>
+        ${framesHtml}
+        <div style="margin-top:8px; display:flex; justify-content:space-between; align-items:center; padding-top:8px; border-top:1px dashed #fdba74;">
+          <span style="font-size:12px; font-weight:700; color:#475569;">🏷️ Raum-Namensplakette oben rechts im Rahmen</span>
+          <button class="secondary-btn" style="font-size:11px; padding:4px 10px; ${showRoomBadge ? 'background:#ff7a00; color:#fff; border-color:#ea580c;' : ''}" onclick="toggleRoomBadgeSetting()">
+            ${showRoomBadge ? 'Ein' : 'Aus'}
+          </button>
+        </div>
+      </div>
+
+      <div style="background:#fefce8; border:2px solid #facc15; border-radius:14px; padding:12px; margin-bottom:12px;">
+        <div style="font-weight:900; font-size:13px; color:#854d0e; margin-bottom:6px;">
+          🧹 2. RAUM-VERSCHMUTZUNG & PUTZ-MULTIPLIKATOR (${currentRoom}: Stufe ${dirtLvl} • x${mult.toFixed(1)}):
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px; ${dirtLvl === 0 ? 'background:#eab308; color:#fff;' : ''}" onclick="setCurrentRoomDirtFromSettings(0)">✨ Stufe 0: Sauber (x1.0)</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px; ${dirtLvl === 1 ? 'background:#16a34a; color:#fff;' : ''}" onclick="setCurrentRoomDirtFromSettings(1)">🧹 Stufe 1: Besen (x2.0!)</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px; ${dirtLvl === 2 ? 'background:#ea580c; color:#fff;' : ''}" onclick="setCurrentRoomDirtFromSettings(2)">🧹 Stufe 2: Kehrset (x1.7)</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px; ${dirtLvl === 3 ? 'background:#dc2626; color:#fff;' : ''}" onclick="setCurrentRoomDirtFromSettings(3)">🔌 Stufe 3: Sauger (x1.4)</button>
+        </div>
+      </div>
+
+      <div style="background:#f8fafc; border:1.5px solid #cbd5e1; border-radius:14px; padding:12px;">
+        <div style="font-weight:900; font-size:13px; color:#1e293b; margin-bottom:8px;">
+          ⚡ 3. HUD, TAGES-INTRO & GOOGLE-SHEET-SYNC:
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <span style="font-size:12px; font-weight:700; color:#475569;">🧢 Avatar-Modus oben links</span>
+          <button class="secondary-btn" style="font-size:11px; padding:4px 10px;" onclick="toggleHudProfileBadge(); openSettingsModal();">
+            ${useBadge ? 'Festes Idle-Porträt' : 'Dynamische MB%-States'}
+          </button>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <span style="font-size:12px; font-weight:700; color:#475569;">☁️ Live Google-Sheet-Synchronisation</span>
+          <button class="secondary-btn" style="font-size:11px; padding:4px 10px; ${liveSync ? 'background:#16a34a; color:#fff; border-color:#15803d;' : ''}" onclick="toggleLiveSheetSync()">
+            ${liveSync ? 'Aktiv' : 'Pausiert'}
+          </button>
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap; padding-top:6px; border-top:1px solid #e2e8f0;">
+          <button class="secondary-btn" style="font-size:11px;" onclick="closeModal('settings-modal'); replayDailyIntro();">🎬 5s-Intro abspielen</button>
+          <button class="secondary-btn" style="font-size:11px;" onclick="manualSheetSync()">🔄 Jetzt mit Sheet syncen</button>
+          <button class="secondary-btn" style="font-size:11px;" onclick="Engine.exportBackup()">💾 JSON-Backup</button>
+        </div>
+      </div>
+    `;
+  }
+  openModal("settings-modal");
+}
+
+function selectUiFrame(frameId) {
+  const s = Engine.getState();
+  s.settings.uiFrame = frameId;
+  // Bei Rahmen 3 standardmäßig die Raum-Plakette aktivieren, sonst nach Nutzerwunsch
+  if (frameId === "frame_3_comic_ink") {
+    s.settings.showRoomBadgeOnFrame = true;
+  }
+  Engine.saveState();
+  renderAll();
+  openSettingsModal();
+  const fObj = (Engine.ASSETS.uiFrames || []).find(f => f.id === frameId);
+  if (fObj) {
+    showLootToast(`🖼️ ${fObj.label} aktiviert!`);
+  }
+}
+
+function toggleRoomBadgeSetting() {
+  const s = Engine.getState();
+  s.settings.showRoomBadgeOnFrame = !s.settings.showRoomBadgeOnFrame;
+  Engine.saveState();
+  renderAll();
+  openSettingsModal();
+}
+
+function setCurrentRoomDirtFromSettings(level) {
+  const rName = Engine.getState().settings.currentRoom || "Dashboard";
+  Engine.setRoomDirtLevel(rName, level);
+  renderAll();
+  openSettingsModal();
+  showLootToast(`🧹 ${rName}: Verschmutzungs-Stufe ${level} gesetzt!`);
+}
+
+function toggleLiveSheetSync() {
+  const s = Engine.getState();
+  s.settings.liveSheetSync = !s.settings.liveSheetSync;
+  Engine.saveState();
+  openSettingsModal();
+  showLootToast(s.settings.liveSheetSync ? "☁️ Live Sheet-Sync aktiviert!" : "⏸️ Live Sheet-Sync pausiert.");
+}

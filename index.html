@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="ADHD Quest">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="assets/avatar/avatar_happy.png">
-  <title>ADHD QUEST | Version 0.44</title>
+  <title>ADHD QUEST | Version 0.49</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -23,11 +23,11 @@
       <div class="intro-zoom-container">
         <img src="aq_schriftzugtitle.png" alt="ADHD Quest Startbild" id="intro-splash-img" class="intro-splash-img">
       </div>
-      <div class="intro-version-badge">Version 0.44 • Tippen zum Überspringen</div>
+      <div class="intro-version-badge">Version 0.49 • Tippen zum Überspringen</div>
     </div>
 
     <!-- ==================================================================
-         CLEAN FULLSCREEN HUD (v0.44): NUR SCHWEBENDER PROFILRAHMEN OBEN LINKS
+         CLEAN FULLSCREEN HUD (v0.49): NUR SCHWEBENDER PROFILRAHMEN OBEN LINKS
          ================================================================== -->
     <div class="floating-avatar-hud">
       <div class="avatar-popout-wrapper" onclick="openCharacterModal()" title="Charakterbogen, Werte & 10 Avatar-States öffnen">
@@ -37,6 +37,9 @@
       <button class="hint-magnifier-btn" id="hint-magnifier-btn" onclick="triggerObjectHints()" title="Offene Gegenstände im Raum kurz aufleuchten lassen">
         🔍
       </button>
+      <button class="hint-magnifier-btn" id="hud-settings-btn" onclick="openSettingsModal()" title="Einstellungen & UI-Rahmen anpassen">
+        ⚙️
+      </button>
     </div>
 
     <!-- ==================================================================
@@ -44,7 +47,9 @@
          ================================================================== -->
     <main class="room-canvas" id="room-canvas" data-room="Flur">
       <div id="room-hotspots-layer" class="hotspots-layer"></div>
-      <!-- Raum-Spielerfigur entfernt (v0.44) für ruhigere Raum-Ansicht -->
+      <div id="ui-frame-overlay" class="ui-frame-overlay"></div>
+      <div id="ui-frame-room-badge" class="ui-frame-room-badge hidden" onclick="openMapModal()" title="Wohnungs-Grundriss öffnen">🏠 Dashboard</div>
+      <!-- Raum-Spielerfigur entfernt (v0.49) für ruhigere Raum-Ansicht -->
       <div id="loot-toast" class="loot-toast hidden"></div>
     </main>
 
@@ -58,7 +63,7 @@
           <button class="modal-close" onclick="closeModal('object-modal')">✕</button>
         </div>
         <div class="modal-body" style="text-align:center;">
-          <div id="obj-modal-preview-wrap" style="margin-bottom:10px; display:flex; justify-content:center; align-items:center;">
+          <div id="obj-modal-preview-wrap" class="obj-hero-stage">
             <div id="obj-modal-icon" style="font-size:42px;">✨</div>
           </div>
           <p id="obj-modal-desc" style="font-size:15px; font-weight:700; color:#1e293b; margin-bottom:10px;"></p>
@@ -104,7 +109,7 @@
     <div class="modal-backdrop" id="log-modal" onclick="if(event.target===this) closeModal('log-modal')">
       <div class="modal-card">
         <div class="modal-header">
-          <span>📜 Tageschronik & System (v0.44)</span>
+          <span>📜 Tageschronik & System (v0.49)</span>
           <button class="modal-close" onclick="closeModal('log-modal')">✕</button>
         </div>
         <div class="modal-body">
@@ -141,6 +146,19 @@
           <button class="modal-close" onclick="closeModal('character-modal')">✕</button>
         </div>
         <div class="modal-body" id="character-modal-body" style="max-height:70vh; overflow-y:auto;"></div>
+      </div>
+    </div>
+
+    <!-- ==================================================================
+         MODAL 7: EINSTELLUNGEN (UI-UMRAHMUNG, HUD,RAUM-ZUSTAND & SYNC)
+         ================================================================== -->
+    <div class="modal-backdrop" id="settings-modal" onclick="if(event.target===this) closeModal('settings-modal')">
+      <div class="modal-card">
+        <div class="modal-header">
+          <span>⚙️ Einstellungen & UI-Design (v0.49)</span>
+          <button class="modal-close" onclick="closeModal('settings-modal')">✕</button>
+        </div>
+        <div class="modal-body" id="settings-modal-body" style="max-height:72vh; overflow-y:auto;"></div>
       </div>
     </div>
 
