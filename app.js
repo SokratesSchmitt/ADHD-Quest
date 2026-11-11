@@ -1087,6 +1087,7 @@ function openCharacterModal() {
           </div>
         </div>
       </div>
+      ${(Engine.isRoomDirtEnabled && Engine.isRoomDirtEnabled(s.settings.currentRoom || "Flur")) ? `
       <div style="background:#fefce8; border:2px solid #facc15; border-radius:12px; padding:10px; margin-bottom:10px;">
         <div style="font-weight:800; font-size:12px; color:#854d0e; margin-bottom:6px;">
           🧹 RAUM-ZUSTAND & VERSTÄRKERLOGIK (${s.settings.currentRoom || "Flur"}: Aktuell Stufe ${Engine.getRoomDirtLevel(s.settings.currentRoom || "Flur")} • Multiplikator x${Engine.getDirtMultiplier(Engine.getRoomDirtLevel(s.settings.currentRoom || "Flur")).toFixed(1)}):
@@ -1097,7 +1098,10 @@ function openCharacterModal() {
           <button class="secondary-btn" style="font-size:11px; padding:5px 9px; border-color:#ea580c; color:#9a3412;" onclick="setCurrentRoomDirt(2)">🧹 Stufe 2: Mittel + Kehrset (x1.7)</button>
           <button class="secondary-btn" style="font-size:11px; padding:5px 9px; border-color:#dc2626; color:#991b1b;" onclick="setCurrentRoomDirt(3)">🔌 Stufe 3: Dreckig + Sauger (x1.4)</button>
         </div>
-      </div>
+      </div>` : `
+      <div style="background:#f0fdf4; border:1.5px solid #86efac; border-radius:12px; padding:8px 10px; margin-bottom:10px; font-size:11.5px; color:#166534; font-weight:700;">
+        ✨ <strong>${s.settings.currentRoom || "Dashboard"}:</strong> Dauerhaft sauber (Keine Müll-Logik in diesem Bereich – ${s.settings.currentRoom === "Kinderzimmer" ? "Ronjas eigenes Reich zum Aufräumen lernen!" : "reines Fokus-Dashboard!"}).
+      </div>`}
       <div style="background:#f8fafc; border:1.5px solid #cbd5e1; border-radius:12px; padding:10px; margin-bottom:10px;">
         <div style="font-weight:800; font-size:12px; color:#1e293b; margin-bottom:6px;">
           ✨ KATEGORIE 1: SUBTILE MIKRO-BEWEGUNGEN #1–#10 (ANTIPPEN ZUM TESTEN):
@@ -1325,7 +1329,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 // ============================================================================
-// 8. EINSTELLUNGEN, WOW-RING-ADDONS & 3 UI-UPGRADES (v0.50)
+// 8. EINSTELLUNGEN, WOW-RING-ADDONS & ROBUSTER SWIPE-RAUMWECHSEL (v0.51)
 // ============================================================================
 function toggleMiniStatPill() {
   const s = Engine.getState();
@@ -1359,13 +1363,13 @@ function renderUiFrameOverlay(roomName) {
     }
   }
 
-  // UI-Upgrade 2: Smart-Badge oben rechts (Raumname + Erledigt-Zähler + klickbares Putz-Bonus-Tag)
+  // UI-Upgrade 2: Smart-Badge oben rechts (Raumname + Erledigt-Zähler + Putz-Bonus nur in den 5 Wohnräumen mit Müll-Logik)
   const badgeEl = document.getElementById("ui-frame-room-badge");
   if (badgeEl) {
     const rName = roomName || (s.settings && s.settings.currentRoom) || "Dashboard";
     const roomMeta = (Engine.ROOMS || []).find(r => r.id === rName);
     const rIcon = roomMeta ? roomMeta.icon : "🏠";
-    const displayRoom = rName === "Dashboard" ? "Arbeitszimmer" : rName;
+    const displayRoom = rName;
     const showBadge = (frameObj && frameObj.showRoomBadge) || (s.settings && s.settings.showRoomBadgeOnFrame);
 
     // Zähle heute erledigte Quests im aktuellen Raum
@@ -1374,17 +1378,19 @@ function renderUiFrameOverlay(roomName) {
     const doneCount = roomObjs.filter(o => !!completed[o.id]).length;
     const totalCount = roomObjs.length;
 
-    // Putz-Status & Multiplikator für diesen Raum
-    const dirtLvl = Engine.getRoomDirtLevel ? Engine.getRoomDirtLevel(rName) : 0;
-    const mult = Engine.getDirtMultiplier ? Engine.getDirtMultiplier(dirtLvl) : 1.0;
-
+    // Prüfe, ob dieser Raum überhaupt die Müll-Logik nutzt (Dashboard & Kinderzimmer haben keine Müll-Logik!)
+    const hasDirtLogic = Engine.isRoomDirtEnabled ? Engine.isRoomDirtEnabled(rName) : false;
     let dirtPillHtml = "";
-    if (dirtLvl === 0) {
-      dirtPillHtml = `<span class="smart-badge-dirt-pill" style="background:#0284c7;" onclick="event.stopPropagation(); showLootToast('✨ ${displayRoom} ist blitzblank (Stufe 0)!');" title="Raum ist sauber">✨ Sauber</span>`;
-    } else {
-      const bgCol = dirtLvl === 1 ? "#16a34a" : (dirtLvl === 2 ? "#ea580c" : "#dc2626");
-      const toolIcon = dirtLvl === 3 ? "🔌" : "🧹";
-      dirtPillHtml = `<span class="smart-badge-dirt-pill" style="background:${bgCol};" onclick="event.stopPropagation(); handleHotspotClick('${rName}', 'CLEAN_DYNAMIC_${rName}');" title="Direkt aufräumen mit Multiplikator x${mult.toFixed(1)}!">${toolIcon} x${mult.toFixed(1)}</span>`;
+    if (hasDirtLogic) {
+      const dirtLvl = Engine.getRoomDirtLevel ? Engine.getRoomDirtLevel(rName) : 0;
+      const mult = Engine.getDirtMultiplier ? Engine.getDirtMultiplier(dirtLvl) : 1.0;
+      if (dirtLvl === 0) {
+        dirtPillHtml = `<span class="smart-badge-dirt-pill" style="background:#0284c7;" onclick="event.stopPropagation(); showLootToast('✨ ${displayRoom} ist blitzblank (Stufe 0)!');" title="Raum ist sauber">✨ Sauber</span>`;
+      } else {
+        const bgCol = dirtLvl === 1 ? "#16a34a" : (dirtLvl === 2 ? "#ea580c" : "#dc2626");
+        const toolIcon = dirtLvl === 3 ? "🔌" : "🧹";
+        dirtPillHtml = `<span class="smart-badge-dirt-pill" style="background:${bgCol};" onclick="event.stopPropagation(); handleHotspotClick('${rName}', 'CLEAN_DYNAMIC_${rName}');" title="Direkt aufräumen mit Multiplikator x${mult.toFixed(1)}!">${toolIcon} x${mult.toFixed(1)}</span>`;
+      }
     }
 
     if (showBadge) {
@@ -1418,7 +1424,7 @@ function renderBottomRoomDock(roomName) {
   const currentRoom = roomName || (s.settings && s.settings.currentRoom) || "Dashboard";
   const orderedRooms = [
     { id: "Flur",         icon: "🚪", label: "Flur" },
-    { id: "Dashboard",    icon: "🏠", label: "Arbeitszimmer" },
+    { id: "Dashboard",    icon: "🏠", label: "Dashboard" },
     { id: "Wohnzimmer",   icon: "🛋️", label: "Wohnzimmer" },
     { id: "Küche",        icon: "🍳", label: "Küche" },
     { id: "Badezimmer",   icon: "🚿", label: "Badezimmer" },
@@ -1428,13 +1434,14 @@ function renderBottomRoomDock(roomName) {
 
   dockEl.innerHTML = orderedRooms.map(r => {
     const isAct = r.id === currentRoom;
-    const dLvl = Engine.getRoomDirtLevel ? Engine.getRoomDirtLevel(r.id) : 0;
+    const hasDirt = Engine.isRoomDirtEnabled ? Engine.isRoomDirtEnabled(r.id) : false;
+    const dLvl = (hasDirt && Engine.getRoomDirtLevel) ? Engine.getRoomDirtLevel(r.id) : 0;
     const dotCol = dLvl === 1 ? "#22c55e" : (dLvl === 2 ? "#f97316" : (dLvl === 3 ? "#ef4444" : ""));
     const dotHtml = dLvl > 0 ? `<span class="dock-dirt-dot" style="background:${dotCol};"></span>` : "";
     return `
       <button class="dock-room-btn ${isAct ? 'active-dock-room' : ''}"
               onclick="event.stopPropagation(); selectRoom('${r.id}');"
-              title="${r.label} (${dLvl > 0 ? 'Putz-Stufe ' + dLvl : 'Sauber'})">
+              title="${r.label}${hasDirt ? (dLvl > 0 ? ' (Putz-Stufe ' + dLvl + ')' : ' (Sauber)') : ''}">
         ${r.icon}
         ${dotHtml}
       </button>
@@ -1442,44 +1449,98 @@ function renderBottomRoomDock(roomName) {
   }).join("");
 }
 
-// Horizontaler Swipe-Raumwechsel (Links/Rechts wischen blättert durch die 7 Räume)
+// ============================================================================
+// ROBUSTER HORIZONTALER SWIPE-RAUMWECHSEL (TOUCH + POINTER/MAUS + KEYBOARD)
+// ============================================================================
 const SWIPE_ROOM_ORDER = ["Flur", "Dashboard", "Wohnzimmer", "Küche", "Badezimmer", "Schlafzimmer", "Kinderzimmer"];
+let lastSwipeTimestamp = 0;
+
 function cycleRoomBySwipe(direction) {
+  const now = Date.now();
+  if (now - lastSwipeTimestamp < 220) return; // Entprellung gegen Doppel-Auslösung (Touch + Pointer)
+  lastSwipeTimestamp = now;
+
+  // Nicht swipen, falls gerade ein Modal geöffnet ist
+  if (document.querySelector(".modal-backdrop.active")) return;
+
   const s = Engine.getState();
   const cur = (s.settings && s.settings.currentRoom) || "Dashboard";
   const idx = SWIPE_ROOM_ORDER.indexOf(cur);
   const nextIdx = (idx + direction + SWIPE_ROOM_ORDER.length) % SWIPE_ROOM_ORDER.length;
   const nextRoom = SWIPE_ROOM_ORDER[nextIdx];
   selectRoom(nextRoom);
-  const disp = nextRoom === "Dashboard" ? "Arbeitszimmer" : nextRoom;
-  showLootToast(`⇄ Raumwechsel: ${disp}`);
+  showLootToast(`⇄ Raumwechsel: ${nextRoom}`);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
   const canvas = document.getElementById("room-canvas");
   if (!canvas) return;
-  let touchStartX = null;
-  let touchStartY = null;
 
+  let startX = null;
+  let startY = null;
+  let swipeWasTriggered = false;
+
+  // Verhindert, dass ein Wischen, das zufällig auf einem Sprite beginnt, beim Loslassen das Klick-Modal öffnet
+  canvas.addEventListener("click", (e) => {
+    if (swipeWasTriggered) {
+      e.stopPropagation();
+      e.preventDefault();
+      swipeWasTriggered = false;
+    }
+  }, true);
+
+  // Verhindert das native Ziehen (Drag-Ghost) von Sprite-Bildern auf Desktop/Mobile
+  canvas.addEventListener("dragstart", (e) => e.preventDefault());
+
+  // 1. Native Touch-Events für Smartphones (Samsung Internet / Chrome Mobile)
+  canvas.addEventListener("touchstart", (e) => {
+    if (!e.touches || e.touches.length !== 1) return;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    swipeWasTriggered = false;
+  }, { passive: true });
+
+  canvas.addEventListener("touchend", (e) => {
+    if (startX === null || startY === null || !e.changedTouches || !e.changedTouches.length) return;
+    const dx = e.changedTouches[0].clientX - startX;
+    const dy = e.changedTouches[0].clientY - startY;
+    startX = null;
+    startY = null;
+
+    if (Math.abs(dx) > 42 && Math.abs(dx) > Math.abs(dy) * 1.25) {
+      swipeWasTriggered = true;
+      cycleRoomBySwipe(dx < 0 ? 1 : -1);
+    }
+  }, { passive: true });
+
+  // 2. Pointer-Events für Maus-Drag am PC & Stifteingabe
+  let ptrStartX = null;
+  let ptrStartY = null;
   canvas.addEventListener("pointerdown", (e) => {
-    touchStartX = e.clientX;
-    touchStartY = e.clientY;
+    if (e.pointerType === "touch") return; // Touch wird bereits über touchstart/touchend abgewickelt
+    ptrStartX = e.clientX;
+    ptrStartY = e.clientY;
+    swipeWasTriggered = false;
   });
 
-  canvas.addEventListener("pointerup", (e) => {
-    if (touchStartX === null || touchStartY === null) return;
-    const dx = e.clientX - touchStartX;
-    const dy = e.clientY - touchStartY;
-    touchStartX = null;
-    touchStartY = null;
-    // Horizontaler Swipe (> 68px horizontal, wenig vertikal)
-    if (Math.abs(dx) > 68 && Math.abs(dx) > Math.abs(dy) * 1.6) {
-      if (dx < 0) {
-        cycleRoomBySwipe(1);  // Nach links wischen -> nächster Raum
-      } else {
-        cycleRoomBySwipe(-1); // Nach rechts wischen -> vorheriger Raum
-      }
+  window.addEventListener("pointerup", (e) => {
+    if (e.pointerType === "touch" || ptrStartX === null || ptrStartY === null) return;
+    const dx = e.clientX - ptrStartX;
+    const dy = e.clientY - ptrStartY;
+    ptrStartX = null;
+    ptrStartY = null;
+
+    if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.25) {
+      swipeWasTriggered = true;
+      cycleRoomBySwipe(dx < 0 ? 1 : -1);
     }
+  });
+
+  // 3. Bonus: Pfeiltasten Links/Rechts auf der Tastatur wechseln ebenfalls den Raum
+  window.addEventListener("keydown", (e) => {
+    if (document.querySelector(".modal-backdrop.active")) return;
+    if (e.key === "ArrowLeft") cycleRoomBySwipe(-1);
+    if (e.key === "ArrowRight") cycleRoomBySwipe(1);
   });
 });
 
@@ -1491,6 +1552,7 @@ function openSettingsModal() {
   const useBadge = !!(s.settings && s.settings.useProfileBadgeInHud);
   const liveSync = !!(s.settings && s.settings.liveSheetSync);
   const currentRoom = (s.settings && s.settings.currentRoom) || "Dashboard";
+  const hasDirtLogic = Engine.isRoomDirtEnabled ? Engine.isRoomDirtEnabled(currentRoom) : false;
   const dirtLvl = Engine.getRoomDirtLevel ? Engine.getRoomDirtLevel(currentRoom) : 0;
   const mult = Engine.getDirtMultiplier ? Engine.getDirtMultiplier(dirtLvl) : 1.0;
 
@@ -1517,6 +1579,24 @@ function openSettingsModal() {
     `;
   }).join("");
 
+  const dirtSettingsSectionHtml = hasDirtLogic
+    ? `
+      <div style="background:#fefce8; border:2px solid #facc15; border-radius:14px; padding:12px; margin-bottom:12px;">
+        <div style="font-weight:900; font-size:13px; color:#854d0e; margin-bottom:6px;">
+          🧹 2. RAUM-VERSCHMUTZUNG & PUTZ-MULTIPLIKATOR (${currentRoom}: Stufe ${dirtLvl} • x${mult.toFixed(1)}):
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px; ${dirtLvl === 0 ? 'background:#eab308; color:#fff;' : ''}" onclick="setCurrentRoomDirtFromSettings(0)">✨ Stufe 0: Sauber (x1.0)</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px; ${dirtLvl === 1 ? 'background:#16a34a; color:#fff;' : ''}" onclick="setCurrentRoomDirtFromSettings(1)">🧹 Stufe 1: Besen (x2.0!)</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px; ${dirtLvl === 2 ? 'background:#ea580c; color:#fff;' : ''}" onclick="setCurrentRoomDirtFromSettings(2)">🧹 Stufe 2: Kehrset (x1.7)</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 9px; ${dirtLvl === 3 ? 'background:#dc2626; color:#fff;' : ''}" onclick="setCurrentRoomDirtFromSettings(3)">🔌 Stufe 3: Sauger (x1.4)</button>
+        </div>
+      </div>`
+    : `
+      <div style="background:#f0fdf4; border:1.5px solid #86efac; border-radius:14px; padding:10px 12px; margin-bottom:12px; font-size:12px; color:#166534; font-weight:700;">
+        ✨ <strong>2. Raum-Zustand (${currentRoom}):</strong> Für das Dashboard und das Kinderzimmer ist die Müll-Logik deaktiviert (immer sauber!).
+      </div>`;
+
   const body = document.getElementById("settings-modal-body");
   if (body) {
     body.innerHTML = `
@@ -1526,7 +1606,7 @@ function openSettingsModal() {
         </div>
         ${framesHtml}
         <div style="margin-top:8px; display:flex; justify-content:space-between; align-items:center; padding-top:8px; border-top:1px dashed #fdba74;">
-          <span style="font-size:12px; font-weight:700; color:#475569;">🏷️ Smart-Raum-Plakette oben rechts (inkl. Putz-Bonus)</span>
+          <span style="font-size:12px; font-weight:700; color:#475569;">🏷️ Smart-Raum-Plakette oben rechts</span>
           <button class="secondary-btn" style="font-size:11px; padding:4px 10px; ${showRoomBadge ? 'background:#ff7a00; color:#fff; border-color:#ea580c;' : ''}" onclick="toggleRoomBadgeSetting()">
             ${showRoomBadge ? 'Ein' : 'Aus'}
           </button>
@@ -1539,17 +1619,7 @@ function openSettingsModal() {
         </div>
       </div>
 
-      <div style="background:#fefce8; border:2px solid #facc15; border-radius:14px; padding:12px; margin-bottom:12px;">
-        <div style="font-weight:900; font-size:13px; color:#854d0e; margin-bottom:6px;">
-          🧹 2. RAUM-VERSCHMUTZUNG & PUTZ-MULTIPLIKATOR (${currentRoom}: Stufe ${dirtLvl} • x${mult.toFixed(1)}):
-        </div>
-        <div style="display:flex; gap:6px; flex-wrap:wrap;">
-          <button class="secondary-btn" style="font-size:11px; padding:5px 9px; ${dirtLvl === 0 ? 'background:#eab308; color:#fff;' : ''}" onclick="setCurrentRoomDirtFromSettings(0)">✨ Stufe 0: Sauber (x1.0)</button>
-          <button class="secondary-btn" style="font-size:11px; padding:5px 9px; ${dirtLvl === 1 ? 'background:#16a34a; color:#fff;' : ''}" onclick="setCurrentRoomDirtFromSettings(1)">🧹 Stufe 1: Besen (x2.0!)</button>
-          <button class="secondary-btn" style="font-size:11px; padding:5px 9px; ${dirtLvl === 2 ? 'background:#ea580c; color:#fff;' : ''}" onclick="setCurrentRoomDirtFromSettings(2)">🧹 Stufe 2: Kehrset (x1.7)</button>
-          <button class="secondary-btn" style="font-size:11px; padding:5px 9px; ${dirtLvl === 3 ? 'background:#dc2626; color:#fff;' : ''}" onclick="setCurrentRoomDirtFromSettings(3)">🔌 Stufe 3: Sauger (x1.4)</button>
-        </div>
-      </div>
+      ${dirtSettingsSectionHtml}
 
       <div style="background:#f8fafc; border:1.5px solid #cbd5e1; border-radius:14px; padding:12px;">
         <div style="font-weight:900; font-size:13px; color:#1e293b; margin-bottom:8px;">
@@ -1610,7 +1680,7 @@ function toggleBottomDockSetting() {
 }
 
 function setCurrentRoomDirtFromSettings(level) {
-  const rName = Engine.getState().settings.currentRoom || "Dashboard";
+  const rName = Engine.getState().settings.currentRoom || "Flur";
   Engine.setRoomDirtLevel(rName, level);
   renderAll();
   openSettingsModal();

@@ -13,7 +13,7 @@
  * - Achievements (Beständiger Geist, Wochenheld, Monatsveteran)
  */
 const Engine = (function () {
-  const APP_VERSION = "0.50";
+  const APP_VERSION = "0.51";
   const STORAGE_KEY = "ADHD_QUEST_SHEET_STATE_V0_38";
   const SPLASH_DATE_KEY = "adhdQuest_lastSplashDate";
 
@@ -42,12 +42,6 @@ const Engine = (function () {
         "assets/bg_flur_dirty_s2.jpg",
         "assets/bg_flur_dirty_s3.jpg"
       ],
-      "Dashboard": [
-        "assets/bg_dashboard.jpg",
-        "assets/bg_dashboard_dirty_s1.jpg",
-        "assets/bg_dashboard_dirty_s2.jpg",
-        "assets/bg_dashboard_dirty_s3.jpg"
-      ],
       "Wohnzimmer": [
         "assets/bg_livingroom_me.jpg",
         "assets/bg_wohnzimmer_dirty_s1.jpg",
@@ -71,12 +65,6 @@ const Engine = (function () {
         "assets/bg_schlafzimmer_dirty_s1.jpg",
         "assets/bg_schlafzimmer_dirty_s2.jpg",
         "assets/bg_schlafzimmer_dirty_s3.jpg"
-      ],
-      "Kinderzimmer": [
-        "assets/bg_kinderzimmer.jpg",
-        "assets/bg_kinderzimmer_dirty_s1.jpg",
-        "assets/bg_kinderzimmer_dirty_s2.jpg",
-        "assets/bg_kinderzimmer_dirty_s3.jpg"
       ]
     },
     cleaningToolSprites: {
@@ -84,15 +72,13 @@ const Engine = (function () {
       2: "assets/cleaning_sprites/sprite_clean_kehrset_s2.png",
       3: "assets/cleaning_sprites/sprite_clean_staubsauger_s3.png"
     },
-    // Position des Besens / Staubsaugers direkt neben der jeweiligen Zimmertür
+    // Position des Besens / Staubsaugers direkt neben der jeweiligen Zimmertür (Nur für die 5 Räume mit Müll-Logik; Dashboard & Kinderzimmer sind ausgenommen!)
     doorCleaningCoords: {
       "Flur":         { leftPct: 54.0, topPct: 52.0, widthPct: 16.5, heightPct: 18.5, zIndex: 20, taskName: "Zimmer oder Wohnung aufräumen (30 min)", zielTabelle: "MB Aktivitaeten", verknuepfung: "A18", baseXp: 50,  baseGold: 25, baseMb: 1, baseAp: 1 },
-      "Dashboard":    { leftPct: 67.5, topPct: 55.0, widthPct: 16.5, heightPct: 18.5, zIndex: 20, taskName: "Zimmer oder Wohnung aufräumen (30 min)", zielTabelle: "MB Aktivitaeten", verknuepfung: "A18", baseXp: 50,  baseGold: 25, baseMb: 1, baseAp: 1 },
       "Wohnzimmer":   { leftPct: 36.5, topPct: 46.5, widthPct: 16.5, heightPct: 18.5, zIndex: 20, taskName: "Samstagsputz (Wohnzimmer)",             zielTabelle: "Aufgaben",        verknuepfung: "A8",  baseXp: 125, baseGold: 50, baseMb: 0, baseAp: 2 },
       "Küche":        { leftPct: 73.5, topPct: 50.0, widthPct: 16.5, heightPct: 18.5, zIndex: 20, taskName: "Samstagsputz (Küche)",                  zielTabelle: "Aufgaben",        verknuepfung: "A7",  baseXp: 100, baseGold: 50, baseMb: 0, baseAp: 2 },
       "Schlafzimmer": { leftPct: 60.5, topPct: 48.0, widthPct: 16.5, heightPct: 18.5, zIndex: 20, taskName: "Samstagsputz (Schlafzimmer)",           zielTabelle: "Aufgaben",        verknuepfung: "A9",  baseXp: 150, baseGold: 50, baseMb: 0, baseAp: 2 },
-      "Badezimmer":   { leftPct: 37.5, topPct: 46.5, widthPct: 16.5, heightPct: 18.5, zIndex: 20, taskName: "Samstagsputz (Bad)",                    zielTabelle: "Aufgaben",        verknuepfung: "A10", baseXp: 125, baseGold: 50, baseMb: 0, baseAp: 2 },
-      "Kinderzimmer": { leftPct: 7.5,  topPct: 53.0, widthPct: 16.5, heightPct: 18.5, zIndex: 20, taskName: "Zimmer oder Wohnung aufräumen (30 min)", zielTabelle: "MB Aktivitaeten", verknuepfung: "A18", baseXp: 50,  baseGold: 25, baseMb: 1, baseAp: 1 }
+      "Badezimmer":   { leftPct: 37.5, topPct: 46.5, widthPct: 16.5, heightPct: 18.5, zIndex: 20, taskName: "Samstagsputz (Bad)",                    zielTabelle: "Aufgaben",        verknuepfung: "A10", baseXp: 125, baseGold: 50, baseMb: 0, baseAp: 2 }
     },
     uiFrames: [
       {
@@ -2160,12 +2146,10 @@ const Engine = (function () {
     },
     roomDirtLevels: {
       "Flur": 1,
-      "Dashboard": 1,
       "Wohnzimmer": 1,
       "Küche": 1,
       "Schlafzimmer": 1,
-      "Badezimmer": 1,
-      "Kinderzimmer": 1
+      "Badezimmer": 1
     },
     completedToday: {},
     questlog: [
@@ -2186,11 +2170,14 @@ const Engine = (function () {
         if (!merged.roomDirtLevels) {
           merged.roomDirtLevels = JSON.parse(JSON.stringify(defaultState.roomDirtLevels));
         }
+        delete merged.roomDirtLevels["Dashboard"];
+        delete merged.roomDirtLevels["Arbeitszimmer"];
+        delete merged.roomDirtLevels["Kinderzimmer"];
         if (merged.lastCompletedDate !== today) {
           merged.completedToday = {};
           merged.lastCompletedDate = today;
-          // Jeden neuen Tag werden unaufgeräumte Räume um +1 Stufe schmutziger (max. Stufe 3)
-          Object.keys(merged.roomDirtLevels).forEach(r => {
+          // Jeden neuen Tag werden nur die 5 Wohnräume mit Müll-Logik um +1 Stufe schmutziger (max. Stufe 3)
+          ["Flur", "Wohnzimmer", "Küche", "Schlafzimmer", "Badezimmer"].forEach(r => {
             merged.roomDirtLevels[r] = Math.min(3, (merged.roomDirtLevels[r] || 0) + 1);
           });
         }
@@ -2315,7 +2302,15 @@ const Engine = (function () {
     return Math.max(1.0, Math.round((2.0 - (lvl - 1) * 0.3) * 10) / 10);
   }
 
+  // Nur diese 5 echten Wohnräume nutzen die Müll-/Verstärkerlogik (Dashboard & Kinderzimmer sind dauerhaft ausgenommen!)
+  const DIRT_ENABLED_ROOMS = ["Flur", "Wohnzimmer", "Küche", "Schlafzimmer", "Badezimmer"];
+
+  function isRoomDirtEnabled(roomName) {
+    return DIRT_ENABLED_ROOMS.includes(roomName);
+  }
+
   function getRoomDirtLevel(roomName) {
+    if (!isRoomDirtEnabled(roomName)) return 0;
     if (!state.roomDirtLevels) {
       state.roomDirtLevels = JSON.parse(JSON.stringify(defaultState.roomDirtLevels));
     }
@@ -2324,6 +2319,7 @@ const Engine = (function () {
   }
 
   function setRoomDirtLevel(roomName, level) {
+    if (!isRoomDirtEnabled(roomName)) return;
     if (!state.roomDirtLevels) {
       state.roomDirtLevels = JSON.parse(JSON.stringify(defaultState.roomDirtLevels));
     }
@@ -2438,6 +2434,7 @@ const Engine = (function () {
     DEFAULT_SHEET_CATALOG,
     getRoomCatalog,
     getTop3FrequentActivities,
+    isRoomDirtEnabled,
     getDirtMultiplier,
     getRoomDirtLevel,
     setRoomDirtLevel,
