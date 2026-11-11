@@ -1,4 +1,4 @@
-/* ADHD QUEST - Version 0.51 Stylesheet (Null-Naht Sprites für Flur & neue Wohnungs-Map) */
+/* ADHD QUEST - Version 0.52 Stylesheet (Null-Naht Sprites für Flur & neue Wohnungs-Map) */
 :root {
   --orange-main: #ff7a00;
   --orange-glow: #ffb703;
@@ -127,7 +127,7 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.51);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.52);
   transition: transform 0.15s ease, background-color 0.18s ease, box-shadow 0.18s ease;
   margin-bottom: 2px;
 }
@@ -166,7 +166,7 @@ body {
   border-radius: 50%;
   background: radial-gradient(circle at 50% 42%, #ffe066 0%, #ff922b 72%, #e8590c 100%);
   border: 5px solid var(--wood-dark);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55), 0 0 16px rgba(255, 122, 0, 0.51);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55), 0 0 16px rgba(255, 122, 0, 0.52);
   z-index: 1;
   overflow: hidden;
 }
@@ -210,7 +210,7 @@ body {
   object-position: center bottom;
   border-radius: 0 0 74px 74px;
   image-rendering: auto;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.51));
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.52));
   z-index: 2;
   pointer-events: none;
   animation: paddyIdleBreathing 4s cubic-bezier(0.42, 0, 0.58, 1) infinite;
@@ -455,7 +455,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.51);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.52);
 }
 
 .modal-header {
@@ -583,7 +583,7 @@ body {
   font-weight: 800;
   font-size: 13px;
   z-index: 60;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.51);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.52);
   white-space: nowrap;
 }
 
@@ -615,7 +615,7 @@ body {
 
 
 /* ============================================================================
-   6. UPDATE v0.51: 3 SCHNELLZUGRIFFS-HAFTNOTIZEN AUF DER KORK-PINNWAND
+   6. UPDATE v0.52: 3 SCHNELLZUGRIFFS-HAFTNOTIZEN AUF DER KORK-PINNWAND
    ============================================================================ */
 .pinnwand-postit-hotspot {
   position: absolute;
@@ -703,7 +703,7 @@ body {
 
 
 /* ============================================================================
-   7. UPDATE v0.51: GROSSE OBJEKT-INSZENIERUNG IM INTERAKTIONS-MODAL (HERO STAGE)
+   7. UPDATE v0.52: GROSSE OBJEKT-INSZENIERUNG IM INTERAKTIONS-MODAL (HERO STAGE)
    ============================================================================ */
 #object-modal .modal-card {
   max-width: 374px;
@@ -805,7 +805,7 @@ body {
 
 
 /* ============================================================================
-   8. UPDATE v0.51: 3 WÄHLBARE UI-RAHMEN-OVERLAYS & EINSTELLUNGEN-MENÜ (⚙️)
+   8. UPDATE v0.52: 3 WÄHLBARE UI-RAHMEN-OVERLAYS & EINSTELLUNGEN-MENÜ (⚙️)
    ============================================================================ */
 .ui-frame-overlay {
   position: absolute;
@@ -884,7 +884,7 @@ body {
 
 
 /* ============================================================================
-   9. UPDATE v0.51: WOW-MINIMAP ADDON-BUTTONS AM AVATAR-RING + 3 UI-UPGRADES
+   9. UPDATE v0.52: WOW-MINIMAP ADDON-BUTTONS AM AVATAR-RING + 3 UI-UPGRADES
    ============================================================================ */
 .floating-avatar-hud {
   position: absolute;
