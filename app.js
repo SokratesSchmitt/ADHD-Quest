@@ -906,6 +906,20 @@ function handleHotspotClick(roomName, objId) {
   const effGold = Math.round((Number(obj.gold) || 0) * mult);
   const multBadge = mult > 1.0 ? ` <span style="background:#16a34a; color:#fff; padding:2px 7px; border-radius:99px; font-size:11px;">🧹 Putz-Multiplikator x${mult.toFixed(1)}!</span>` : "";
 
+  const quipBox = document.getElementById("obj-modal-lucas-quip");
+  if (quipBox && Engine.getLucasArtsQuip) {
+    const quipTxt = Engine.getLucasArtsQuip(obj);
+    const shortObjName = (obj.repr || obj.name || "Objekt").split("(")[0].trim();
+    const avatarSrc = getIdleAvatarFrameUrl ? getIdleAvatarFrameUrl() : "assets/avatar/avatar_happy.png";
+    quipBox.innerHTML = `
+      <img src="${avatarSrc}" alt="Paddy" class="lucasarts-quip-avatar">
+      <div class="lucasarts-quip-content">
+        <div class="lucasarts-verb-line">👁️ Schau an: ${shortObjName}</div>
+        <div class="lucasarts-quip-text">${quipTxt}</div>
+      </div>
+    `;
+  }
+
   const sheetInfo = obj.verknuepfung ? ` (Tabellen-Zelle: ${obj.zielTabelle}!${obj.verknuepfung})` : "";
   document.getElementById("obj-modal-desc").innerHTML = `${obj.anzeigeName || obj.name}${sheetInfo}${multBadge}`;
   document.getElementById("obj-modal-rewards").innerHTML = `
@@ -1003,11 +1017,79 @@ function redeemShopItem(itemId) {
   }
 }
 
-// --- 6. QUESTLOG, ACHIEVEMENTS & GOOGLE SHEET SYNC MODAL ---
+// --- 6. QUESTLOG, 7-TAGE ABENTEURER-BILANZ, ACHIEVEMENTS & GOOGLE SHEET SYNC MODAL ---
+function renderAdventurerBalanceHtml() {
+  if (!Engine.getWeeklyAdventurerBalance) return "";
+  const wb = Engine.getWeeklyAdventurerBalance();
+
+  const colsHtml = wb.days.map(d => {
+    const xpH = d.xp > 0 ? Math.max(8, Math.round((d.xp / wb.maxXp) * 64)) : 3;
+    const goldH = d.gold > 0 ? Math.max(8, Math.round((d.gold / wb.maxGold) * 64)) : 3;
+    const mbH = Math.max(6, Math.round((d.mbPct / 100) * 64));
+    const topLabel = d.xp > 0 ? `+${d.xp}` : `${d.mbPct}%`;
+    const tooltip = `${d.weekday} (${d.datum}): +${d.xp} XP | +${d.gold} Gold | 🧠 ${d.mbPct}% MB | ${d.questsCount} Quests`;
+    return `
+      <div class="adv-day-col" title="${tooltip}">
+        <div class="adv-day-top-val">${topLabel}</div>
+        <div class="adv-day-bars-pair">
+          <div class="adv-bar xp-bar" style="height:${xpH}px;"></div>
+          <div class="adv-bar gold-bar" style="height:${goldH}px;"></div>
+          <div class="adv-bar mb-bar" style="height:${mbH}px;"></div>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  const labelsHtml = wb.days.map(d => `
+    <div class="adv-day-lbl ${d.isToday ? 'is-today' : ''}">
+      <div>${d.isToday ? 'Heute' : d.weekday}</div>
+      <div style="font-size:8px; opacity:0.78;">${d.shortDate}</div>
+    </div>
+  `).join("");
+
+  return `
+    <div class="adventurer-balance-card">
+      <div class="adv-balance-header">
+        <span class="adv-balance-title">🛡️ 7-Tage Abenteurer-Bilanz</span>
+        <span class="adv-balance-sub">✅ ${wb.totalQuests} Quests in 7 Tagen</span>
+      </div>
+      <div class="adv-kpi-grid">
+        <div class="adv-kpi-box">
+          <div class="adv-kpi-val" style="color:#ff922b;">+${wb.totalXp} XP</div>
+          <div class="adv-kpi-lbl">Wochen-XP</div>
+        </div>
+        <div class="adv-kpi-box">
+          <div class="adv-kpi-val" style="color:#fde047;">+${wb.totalGold} G</div>
+          <div class="adv-kpi-lbl">Wochen-Gold</div>
+        </div>
+        <div class="adv-kpi-box">
+          <div class="adv-kpi-val" style="color:#4ade80;">Ø ${wb.avgMb}%</div>
+          <div class="adv-kpi-lbl">Mentale Batterie</div>
+        </div>
+      </div>
+      <div class="adv-chart-wrap">
+        <div class="adv-bars-grid">
+          ${colsHtml}
+        </div>
+        <div class="adv-days-labels-grid">
+          ${labelsHtml}
+        </div>
+        <div class="adv-legend-row">
+          <span><i class="adv-legend-dot" style="background:#ff922b;"></i>XP</span>
+          <span><i class="adv-legend-dot" style="background:#fde047;"></i>Gold</span>
+          <span><i class="adv-legend-dot" style="background:#4ade80;"></i>MB %</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function openLogModal() {
   const s = Engine.getState();
   const list = document.getElementById("log-entries-list");
   const logs = s.questlog || [];
+
+  const balanceHtml = renderAdventurerBalanceHtml();
 
   const achHtml = Engine.ACHIEVEMENTS.map(a => `
     <div style="font-size:12px; padding:4px 0;">
@@ -1023,6 +1105,7 @@ function openLogModal() {
   `).join("");
 
   list.innerHTML = `
+    ${balanceHtml}
     <div style="background:#fff7ed; border:1.5px solid #ff7a00; border-radius:10px; padding:8px; margin-bottom:10px; font-size:12px;">
       <strong>🎯 Aktives Hauptziel (C14):</strong> ${s.character.aktuelleQuest} (${s.character.levelProgressText})<br>
       <strong>🏅 Achievements (Tabellenblatt):</strong>

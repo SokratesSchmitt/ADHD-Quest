@@ -13,7 +13,7 @@
  * - Achievements (Beständiger Geist, Wochenheld, Monatsveteran)
  */
 const Engine = (function () {
-  const APP_VERSION = "0.54";
+  const APP_VERSION = "0.56";
   const STORAGE_KEY = "ADHD_QUEST_SHEET_STATE_V0_38";
   const SPLASH_DATE_KEY = "adhdQuest_lastSplashDate";
 
@@ -2184,6 +2184,7 @@ const Engine = (function () {
       "Badezimmer": 1
     },
     customObjectLayout: {},
+    dailyMbSnapshots: {},
     completedToday: {},
     questlog: [
       { datum: "01.11.2026", uhrzeit: "20:00", aktivitaet: "Tabellen-Datenstruktur geladen (Level 25 | 9424 Gold | 94% MB)", typ: "System", xp: 0, mb: 0, gold: 0, ap: 0 }
@@ -2290,6 +2291,98 @@ const Engine = (function () {
   }
 
 
+
+  // --- 90er LUCASARTS POINT-&-CLICK OBJEKTKOMMENTARE ("Schau an..." / v0.56) ---
+  const LUCASARTS_QUIPS = {
+    // 1. FLUR
+    "FLU_001_01": "„Eine horizontale Holzfläche im Flur! Laut dem Ersten Gesetz der ADHS-Thermodynamik zieht sie losen Kram magisch an – außer ich wische sofort drüber.“",
+    "FLU_002_01": "„Mein Brettspiel- und Witzebuch-Archiv. Falls mich je ein Pirat zum Beleidigungs-Fechten herausfordert, bin ich bestens präpariert.“",
+    "FLU_003_01": "„5:00 Uhr morgens?! Selbst die Holz-Eule guckt mich an, als hätte ich den Verstand verloren. Aber 100 XP und +5 MB lügen nicht.“",
+    "FLU_004_01": "„Grün-weiße Schubladen. Dahinter verbirgt sich das gefürchtete Textil-Tetris auf Schwierigkeitsgrad ‚Meister‘.“",
+    "FLU_005_01": "„Die Familien-Kommandozentrale. Dagegen wirkt das Questlog in World of Warcraft wie ein kleiner Einkaufszettel.“",
+    "FLU_006_01": "„Schlüssel, Portemonnaie, Sonnenbrille – alle am selben Ort! Ein seltenes Phänomen, das Wissenschaftler noch nicht vollständig erklären können.“",
+    "FLU_007_01": "„Ronjas Jacke und der Einkaufsbeutel. Zeit für die tägliche Eskort-Quest – zum Glück mit deutlich besserer KI als in alten RPGs.“",
+    "FLU_008_01": "„KVH-Balken, Zollstock und Akkuschrauber. Wenn Guybrush Threepwood ein 100 cm hohes Podest bauen müsste, würde er genau hier anfangen.“",
+
+    // 2. DASHBOARD
+    "DASH_001_PINNWAND": "„Plan A, Budget und die große Übersicht. Ich liebe es, wenn ein Plan funktioniert… oder zumindest bunt angepinnt ist.“",
+    "DASH_002_GOALS": "„Meine GOALS-Checkliste. Wer braucht schon Charisma-Buff-Food, wenn man gut vorbereitet ins Gespräch geht?“",
+    "DASH_003_LAMPE": "„Kopfhörer auf, Lampe an, Welt aus. Zeit, im Hyperfokus Code-Magie zu wirken, bis die Tasten glühen.“",
+    "DASH_004_ORGANIZER": "„Der tägliche Check der Bewerbungs-Quests. Bürokratie ist zwar kein geschmeidiger Bosskampf, droppt aber verlässlich 50 Gold.“",
+    "DASH_005_RECHNER": "„Papierkram und Rechnungen… kostet satte 2 Punkte Mentale Batterie, aber 300 XP sind ein verdammt überzeugendes Argument.“",
+    "DASH_007_ROBOTER": "„Ich programmiere in einer App eine Quest darüber, wie ich diese App programmiere. Wenn das kein Meta-Gaming auf LucasArts-Niveau ist!“",
+    "DASH_008_NOTIZBUCH": "„20 Minuten gezielte Recherche im Netz – natürlich mit der eisernen Disziplin, nicht nach drei Klicks im Wikipedia-Kaninchenbau über mittelalterliche Belagerungswaffen zu landen.“",
+    "DASH_009_ISTQB": "„Boundary Value Analysis und Equivalence Partitioning… klingt wie ein Zauberspruch aus Dalaran, ist aber reines ISTQB-Wissen.“",
+    "DASH_010_KOFFER": "„Eine fertig abgeschickte Bewerbung! Das Gefühl beim Klick auf ‚Senden‘ schlägt jeden epischen Raid-Drop.“",
+
+    // 3. WOHNZIMMER
+    "WOH_001_STAGEPIANO": "„88 Tasten reines Dopamin. 20 Minuten spielen regeneriert mehr Mentale Batterie als jeder Heiltrank.“",
+    "WOH_002_SYNTH": "„So viele Regler, Kabel und blinkende Knöpfe… wenn ich den Filter-Cutoff noch weiter aufdrehe, öffnet sich ein Zeitportal ins Jahr 1993.“",
+    "WOH_003_UKULELEN": "„Vier Saiten, gute Laune und null Ladezeit. Perfekt für eine kleine musikalische Nebenquest zwischendurch.“",
+    "WOH_004_MONITORBOXEN": "„Studio-Monitore mit kristallklarem Sound. Fast so schön wie ein originaler Soundblaster-16-MIDI-Soundtrack.“",
+    "WOH_005_FOTOALBUM": "„Ein analoges Bilder-Speichermedium ganz ohne Cloud-Abo. Ein Blick hinein und die Laune steigt sofort.“",
+    "WOH_006_SOFAKISSEN": "„Ein Ort der Stille und der weichen Kissen. Ideal für einen kurzen taktischen Ruhestein-Moment.“",
+    "WOH_007_TEETASSEN": "„Zwei dampfende Tassen und ein gutes Gespräch. Besser als jede Taverne auf Melee Island.“",
+    "WOH_008_GAMEPADS": "„Zwei Controller bereit für Rimworld mit Pia. Hoffentlich überlebt unsere Kolonie diesmal länger als bis zum nächsten verrückten Eichhörnchen-Angriff.“",
+    "WOH_009_FERNSEHER": "„Ein guter Film auf dem Bildschirm. Keine täglichen Quests, kein Grind – einfach nur zurücklehnen und genießen.“",
+    "WOH_010_WANDFOKUS": "„10 Minuten lang einfach nur die Wand anstarren. Für Außenstehende rätselhaft, für ein ADHS-Gehirn ein kompletter System-Neustart (+125 XP!).“",
+    "WOH_AUF_001": "„Der Staubsauger – der natürliche Feind der Wollmäuse. Mit dem Samstagsputz glänzt das Wohnzimmer wieder wie neu.“",
+
+    // 4. KÜCHE
+    "KUE_001_01": "„Der Endgegner der Küche. Man räumt ihn aus, dreht sich einmal um, und irgendjemand hat schon wieder drei Löffel und eine Tasse gespawnt.“",
+    "KUE_002_01": "„Einmal kurz über die karierte Tischdecke wischen. Geht schneller als gedacht und bringt sofortige visuelle Ruhe.“",
+    "KUE_003_01": "„Scharfes Messer, Holzbrett und Kupfertopf. Alchemie auf Großmeister-Stufe – nur dass man das Ergebnis essen kann.“",
+    "KUE_AUF_004": "„Eine kurze Expedition vor die Tür zu den Mülltonnen. Gibt 125 XP und verhindert, dass der Eimer eigenes Bewusstsein entwickelt.“",
+    "KUE_MB_001": "„Die Siebträgermaschine glänzt. Zeit, feinstes schwarzes Elixier der Wachsamkeit zu brauen.“",
+    "KUE_MB_002": "„Fineliner und Papier. 10 Minuten Zentangle-Striche ziehen und das Gedankenkarussell schaltet brav in den Leerlauf.“",
+
+    // 5. SCHLAFZIMMER
+    "SCH_MB_001": "„Massageöl auf dem Sideboard. Der effektivste bekannte Debuff-Entferner gegen verspannte Schultern.“",
+    "SCH_MB_002": "„Gemütliche Kissen in Rostorange und Senfgelb. Ein sicherer Hafen fernab aller To-Do-Listen.“",
+    "SCH_MB_003": "„Ein echtes Messing-Teleskop am Fenster. Wenn man nachts lange genug in den Sternenhimmel schaut, relativiert sich jedes Alltagsproblem von selbst.“",
+    "SCH_MB_004": "„Die ausgerollte Matte schaut mich erwartungsvoll an. Mein Körper sagt ‚Sofa‘, aber die +2 MB und +25 XP sagen ‚Los geht’s!‘.“",
+    "SCH_MB_005": "„Meine Laufschuhe stehen bereit. 10.000 Schritte sind im Grunde auch nur eine ausgedehnte Erkundungs-Quest an der frischen Luft.“",
+    "SCH_MB_006": "„Das aufgeschlagene Journal am Nachttisch. Schwarz auf weiß festgehalten, was heute gut lief – ein echtes Schild gegen Selbstzweifel.“",
+    "SCH_MB_007": "„Warmes Kerzenlicht und Zeit zu zweit. Definitiv die schönste Koop-Quest im gesamten Spiel.“",
+    "SCH_AUF_001": "„Frische Bettwäsche und Staubwedel. Nichts schläft sich besser als in einem frisch geputzten Schlafzimmer.“",
+
+    // 6. BADEZIMMER
+    "BAD_MB_001": "„Die gepackte Badetasche wartet schon. Ein paar Bahnen ziehen wirkt auf das Gehirn wie ein kompletter Cache-Clear (+5 MB!).“",
+    "BAD_MB_002": "„Kalt duschen! Die ersten fünf Sekunden fühlen sich an wie ein Frostblitz auf Stufe 80 – danach ist man hellwach.“",
+    "BAD_MB_003": "„Der tägliche Buff für die Neurotransmitter. Klein, unspektakulär, aber hält die Basis-Stats verlässlich im grünen Bereich.“",
+    "BAD_MB_004": "„Ein kurzer Blick in den Spiegel: Fehler passieren jedem Abenteurer mal. Durchatmen, Krone bzw. Schiebermütze richten, weitergehen.“",
+    "BAD_AUF_001": "„Der Wäscheberg vor der Maschine wächst schneller als ein Respawn im Startgebiet. Hinein damit!“",
+    "BAD_AUF_002": "„Badreiniger und Abzieher. Nach 15 Minuten glänzen die Armaturen wieder wie poliertes Zwergengold.“",
+    "BAD_AUF_003": "„Warme Handtücher direkt aus dem Trockner zusammenlegen. Fast schon meditativ – solange keine einzelne Socke verschwindet.“",
+
+    // 7. KINDERZIMMER
+    "KIN_MB_001": "„Die Holzeisenbahn dreht ihre Runden um den Bauklotz-Turm. Der Fahrplan ist zwar chaotisch, aber die Stimmung beim Mitspielen erstklassig.“",
+    "KIN_MB_002": "„Buntstifte, Schere und Papier. Hier entstehen Meisterwerke, die jeden Louvre-Kurator neidisch machen würden.“",
+    "KIN_MB_003": "„Japansäge, Stecheisen und Holz. Wenn hier der Marke ‚Paddywood Est. 1979‘ gefertigt wird, gibt das satte 500 XP!“",
+    "KIN_MB_004": "„Das gerahmte ‚Gelato Girl‘-Poster an der Wand. Eine schöne Erinnerung daran, auch auf die kleinen Erfolge stolz zu sein.“",
+    "KIN_MB_005": "„Das rote Korg-Minipiano. Klein, aber oho – Frühförderung für zukünftige Synthesizer-Legenden.“",
+    "KIN_MB_006": "„Ein flauschiges Regenbogen-Einhorn. Schaut ungefähr so entspannt drein, wie ich mich nach einem erledigten Quest-Tag fühle.“",
+    "KIN_MB_007": "„Die weißen Bücherleisten voller Geschichten. Zusammen vorlesen und einfach dankbar für den Moment sein.“",
+    "KIN_AUF_001": "„Das aufgeschlagene Gute-Nacht-Buch. Die abendliche Hauptquest, bevor im Kinderzimmer endgültig Ruhe einkehrt.“",
+    "KIN_AUF_002": "„Die bunte Spielzeugkiste. Mal sehen, ob wir die Bauklötze heute gemeinsam gebändigt bekommen.“",
+
+    // 8. DYNAMISCHE PUTZ-SPRITES AN DER TÜR (STUFEN 1 BIS 3)
+    "CLEAN_STAGE_1": "„Ein einzelner Besen lehnt an der Tür. Noch ist es nur ein winziges bisschen Unordnung – wenn ich JETZT fege, kassiere ich den doppelten Frühstart-Bonus (x2.0)!“",
+    "CLEAN_STAGE_2": "„Besen und Kehrblech stehen bereit. Die Unordnung breitet sich langsam aus… aber für den x1.7-Multiplikator lohnt sich der Einsatz noch richtig!“",
+    "CLEAN_STAGE_3": "„Hier hilft kein Besen mehr, jetzt muss schweres Gerät ran! Der Staubsauger wartet schon auf seinen Einsatz (Bonus x1.4).“"
+  };
+
+  function getLucasArtsQuip(obj) {
+    if (!obj) return "";
+    if (obj.isDirtCleaner) {
+      return LUCASARTS_QUIPS[`CLEAN_STAGE_${obj.dirtLevel || 1}`] || LUCASARTS_QUIPS["CLEAN_STAGE_1"];
+    }
+    if (LUCASARTS_QUIPS[obj.id]) {
+      return LUCASARTS_QUIPS[obj.id];
+    }
+    return `„Sieht aus wie ${obj.repr || obj.name}. Wenn ich das jetzt erledige, winken +${obj.xp || 0} XP!“`;
+  }
+
   // --- TAGESZEITEN-LICHTWECHSEL ENGINE (v0.54) ---
   // Morgenlicht: 05:00–08:59 | Tageslicht: 09:00–16:59 | Golden Hour: 17:00–20:59 | Nachtlicht: 21:00–04:59
   const TIME_PHASES = {
@@ -2352,6 +2445,95 @@ const Engine = (function () {
       phaseKey = "night";
     }
     return Object.assign({ isAuto: true, currentHour: hour }, TIME_PHASES[phaseKey]);
+  }
+
+
+  // --- WOCHEN-RÜCKBLICK: "ABENTEURER-BILANZ" (7-TAGE-AUSWERTUNG FÜR XP, GOLD & MB%) ---
+  function getWeeklyAdventurerBalance() {
+    const weekdays = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
+    const logs = (state && state.questlog) || [];
+    const snapshots = (state && state.dailyMbSnapshots) || {};
+    const currentMb = Number((state && state.character && state.character.mb) ?? 95);
+
+    const days = [];
+    const now = new Date();
+
+    // Erzeuge die letzten 7 Kalendertage (von vor 6 Tagen bis Heute)
+    for (let offset = 6; offset >= 0; offset--) {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - offset);
+      const datumStr = d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
+      const shortDate = d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" });
+      const wd = weekdays[d.getDay()];
+
+      let xpGain = 0;
+      let goldGain = 0;
+      let mbDelta = 0;
+      let questsCount = 0;
+
+      logs.forEach(entry => {
+        if (entry.datum === datumStr && entry.typ !== "System") {
+          const x = Number(entry.xp) || 0;
+          const g = Number(entry.gold) || 0;
+          const m = Number(entry.mb) || 0;
+          if (x > 0) xpGain += x;
+          if (g > 0) goldGain += g; // Zählt verdientes Gold (ohne Shop-Ausgaben)
+          mbDelta += m;
+          if (entry.typ === "Aufgabe" || entry.typ === "Erholung") {
+            questsCount += 1;
+          }
+        }
+      });
+
+      days.push({
+        datum: datumStr,
+        shortDate: shortDate,
+        weekday: wd,
+        isToday: offset === 0,
+        xp: xpGain,
+        gold: goldGain,
+        mbDelta: mbDelta,
+        questsCount: questsCount,
+        mbSnapshot: typeof snapshots[datumStr] === "number" ? snapshots[datumStr] : null
+      });
+    }
+
+    // Rekonstruiere tägliche MB% rückwärts vom heutigen Stand, falls für ältere Tage noch kein Snapshot vorliegt
+    let runningMb = currentMb;
+    for (let i = days.length - 1; i >= 0; i--) {
+      if (days[i].mbSnapshot !== null) {
+        days[i].mbPct = Math.max(0, Math.min(100, Math.round(days[i].mbSnapshot)));
+        runningMb = days[i].mbPct;
+      } else {
+        days[i].mbPct = Math.max(0, Math.min(100, Math.round(runningMb)));
+      }
+      runningMb = Math.max(25, Math.min(100, runningMb - (days[i].mbDelta || 0)));
+    }
+
+    const maxXp = Math.max(100, ...days.map(d => d.xp));
+    const maxGold = Math.max(50, ...days.map(d => d.gold));
+
+    const totalXp = days.reduce((acc, d) => acc + d.xp, 0);
+    const totalGold = days.reduce((acc, d) => acc + d.gold, 0);
+    const totalQuests = days.reduce((acc, d) => acc + d.questsCount, 0);
+    const avgMb = Math.round(days.reduce((acc, d) => acc + d.mbPct, 0) / days.length);
+
+    let bestDay = days[days.length - 1];
+    days.forEach(d => {
+      if ((d.xp + d.gold * 2) >= (bestDay.xp + bestDay.gold * 2)) {
+        bestDay = d;
+      }
+    });
+
+    return {
+      days,
+      maxXp,
+      maxGold,
+      totalXp,
+      totalGold,
+      totalQuests,
+      avgMb,
+      bestDay
+    };
   }
 
   function loadState() {
@@ -2560,6 +2742,9 @@ const Engine = (function () {
       ap: apGain
     });
 
+    if (!state.dailyMbSnapshots) state.dailyMbSnapshots = {};
+    state.dailyMbSnapshots[datumStr] = state.character.mb;
+
     playObjectSound(obj.soundUrl);
     saveState();
 
@@ -2639,6 +2824,9 @@ const Engine = (function () {
     exportRoomLayoutCode,
     TIME_PHASES,
     getActiveTimePhase,
+    getWeeklyAdventurerBalance,
+    LUCASARTS_QUIPS,
+    getLucasArtsQuip,
     getState: () => state,
     saveState,
     shouldShowDailySplash,

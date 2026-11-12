@@ -1,4 +1,4 @@
-/* ADHD QUEST - Version 0.54 Stylesheet (Null-Naht Sprites für Flur & neue Wohnungs-Map) */
+/* ADHD QUEST - Version 0.56 Stylesheet (Null-Naht Sprites für Flur & neue Wohnungs-Map) */
 :root {
   --orange-main: #ff7a00;
   --orange-glow: #ffb703;
@@ -127,7 +127,7 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.54);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.56);
   transition: transform 0.15s ease, background-color 0.18s ease, box-shadow 0.18s ease;
   margin-bottom: 2px;
 }
@@ -166,7 +166,7 @@ body {
   border-radius: 50%;
   background: radial-gradient(circle at 50% 42%, #ffe066 0%, #ff922b 72%, #e8590c 100%);
   border: 5px solid var(--wood-dark);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55), 0 0 16px rgba(255, 122, 0, 0.54);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.56), 0 0 16px rgba(255, 122, 0, 0.56);
   z-index: 1;
   overflow: hidden;
 }
@@ -210,7 +210,7 @@ body {
   object-position: center bottom;
   border-radius: 0 0 74px 74px;
   image-rendering: auto;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.54));
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.56));
   z-index: 2;
   pointer-events: none;
   animation: paddyIdleBreathing 4s cubic-bezier(0.42, 0, 0.58, 1) infinite;
@@ -385,7 +385,7 @@ body {
 @keyframes pulseRoomSprite {
   0%, 100% {
     filter: drop-shadow(0 0 1.5px rgba(255, 255, 255, 0.75))
-            drop-shadow(0 0 5px rgba(255, 122, 0, 0.55));
+            drop-shadow(0 0 5px rgba(255, 122, 0, 0.56));
   }
   50% {
     filter: brightness(1.04) drop-shadow(0 0 2.5px #ffffff)
@@ -405,7 +405,7 @@ body {
   flex-direction: column;
   align-items: center;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), 0 0 10px rgba(255, 122, 0, 0.55);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), 0 0 10px rgba(255, 122, 0, 0.56);
   animation: floatBadge 2.4s infinite ease-in-out;
   z-index: 12;
 }
@@ -455,7 +455,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.54);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.56);
 }
 
 .modal-header {
@@ -583,7 +583,7 @@ body {
   font-weight: 800;
   font-size: 13px;
   z-index: 60;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.54);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.56);
   white-space: nowrap;
 }
 
@@ -615,7 +615,7 @@ body {
 
 
 /* ============================================================================
-   6. UPDATE v0.54: 3 SCHNELLZUGRIFFS-HAFTNOTIZEN AUF DER KORK-PINNWAND
+   6. UPDATE v0.56: 3 SCHNELLZUGRIFFS-HAFTNOTIZEN AUF DER KORK-PINNWAND
    ============================================================================ */
 .pinnwand-postit-hotspot {
   position: absolute;
@@ -703,7 +703,7 @@ body {
 
 
 /* ============================================================================
-   7. UPDATE v0.54: GROSSE OBJEKT-INSZENIERUNG IM INTERAKTIONS-MODAL (HERO STAGE)
+   7. UPDATE v0.56: GROSSE OBJEKT-INSZENIERUNG IM INTERAKTIONS-MODAL (HERO STAGE)
    ============================================================================ */
 #object-modal .modal-card {
   max-width: 374px;
@@ -805,7 +805,7 @@ body {
 
 
 /* ============================================================================
-   8. UPDATE v0.54: 3 WÄHLBARE UI-RAHMEN-OVERLAYS & EINSTELLUNGEN-MENÜ (⚙️)
+   8. UPDATE v0.56: 3 WÄHLBARE UI-RAHMEN-OVERLAYS & EINSTELLUNGEN-MENÜ (⚙️)
    ============================================================================ */
 .ui-frame-overlay {
   position: absolute;
@@ -884,7 +884,7 @@ body {
 
 
 /* ============================================================================
-   9. UPDATE v0.54: WOW-MINIMAP ADDON-BUTTONS AM AVATAR-RING + 3 UI-UPGRADES
+   9. UPDATE v0.56: WOW-MINIMAP ADDON-BUTTONS AM AVATAR-RING + 3 UI-UPGRADES
    ============================================================================ */
 .floating-avatar-hud {
   position: absolute;
@@ -963,7 +963,7 @@ body {
   font-size: 11px;
   font-weight: 800;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.54), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.56), inset 0 1px 1px rgba(255, 255, 255, 0.2);
   transition: transform 0.18s ease, padding 0.18s ease, background-color 0.18s ease;
 }
 
@@ -995,7 +995,7 @@ body {
 }
 
 .mini-stat-pill.pulse-loot {
-  animation: statPulsePop 0.55s ease-out;
+  animation: statPulsePop 0.56s ease-out;
 }
 
 /* UI-Vorschlag 2: Smart-Badge oben rechts (Raumname + Erledigt-Zähler + Putz-Multiplikator-Tag) */
@@ -1116,7 +1116,7 @@ body {
 
 
 /* ============================================================================
-   10. UPDATE v0.54: VERSTECKTER PC-ENTWICKLERMODUS (NUR PER TASTATUR AKTIVIERBAR)
+   10. UPDATE v0.56: VERSTECKTER PC-ENTWICKLERMODUS (NUR PER TASTATUR AKTIVIERBAR)
    ============================================================================ */
 .room-canvas.dev-mode-active .room-sprite-hotspot,
 .room-canvas.dev-mode-active .pinnwand-postit-hotspot,
@@ -1226,7 +1226,7 @@ body {
 
 
 /* ============================================================================
-   11. UPDATE v0.54: AUTOMATISCHER TAGESZEITEN-LICHTWECHSEL & LAMPEN-/KERZENSCHEIN
+   11. UPDATE v0.56: AUTOMATISCHER TAGESZEITEN-LICHTWECHSEL & LAMPEN-/KERZENSCHEIN
    ============================================================================ */
 .ambient-lighting-layer {
   position: absolute;
@@ -1355,4 +1355,229 @@ body {
 .smart-badge-time-pill:active {
   transform: scale(1.08);
   background: rgba(255, 138, 18, 0.35);
+}
+
+
+/* ============================================================================
+   12. UPDATE v0.56: WOCHEN-RÜCKBLICK "ABENTEURER-BILANZ" (7-TAGE-GRAFIK IN CHRONIK)
+   ============================================================================ */
+.adventurer-balance-card {
+  background: linear-gradient(180deg, #2b180a 0%, #1c1008 100%);
+  border: 2.5px solid #ff8a12;
+  border-radius: 14px;
+  padding: 12px;
+  margin-bottom: 12px;
+  color: #ffedd5;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+}
+
+.adv-balance-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.adv-balance-title {
+  font-weight: 900;
+  font-size: 13px;
+  color: #ffb703;
+  letter-spacing: 0.3px;
+}
+
+.adv-balance-sub {
+  font-size: 10px;
+  font-weight: 800;
+  color: #fde68a;
+  background: rgba(255, 138, 18, 0.22);
+  border: 1px solid rgba(255, 183, 3, 0.45);
+  padding: 2px 7px;
+  border-radius: 99px;
+}
+
+.adv-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.adv-kpi-box {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 183, 3, 0.35);
+  border-radius: 10px;
+  padding: 5px 6px;
+  text-align: center;
+}
+
+.adv-kpi-val {
+  font-size: 13.5px;
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+.adv-kpi-lbl {
+  font-size: 9.5px;
+  color: #cbd5e1;
+  font-weight: 700;
+}
+
+.adv-chart-wrap {
+  background: rgba(12, 8, 5, 0.58);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 11px;
+  padding: 10px 6px 6px;
+}
+
+.adv-bars-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  align-items: end;
+  height: 92px;
+  padding-top: 12px;
+  border-bottom: 1.5px solid rgba(255, 255, 255, 0.18);
+}
+
+.adv-day-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  position: relative;
+}
+
+.adv-day-bars-pair {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2px;
+  width: 100%;
+  height: 68px;
+}
+
+.adv-bar {
+  width: 7px;
+  border-radius: 3px 3px 0 0;
+  transition: height 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  min-height: 3px;
+}
+
+.adv-bar.xp-bar {
+  background: linear-gradient(180deg, #ff922b 0%, #ea580c 100%);
+  box-shadow: 0 0 6px rgba(255, 146, 43, 0.45);
+}
+
+.adv-bar.gold-bar {
+  background: linear-gradient(180deg, #fde047 0%, #eab308 100%);
+  box-shadow: 0 0 6px rgba(250, 204, 21, 0.45);
+}
+
+.adv-bar.mb-bar {
+  width: 6px;
+  background: linear-gradient(180deg, #4ade80 0%, #16a34a 100%);
+  box-shadow: 0 0 5px rgba(74, 222, 128, 0.4);
+}
+
+.adv-day-top-val {
+  font-size: 8.5px;
+  font-weight: 800;
+  color: #fed7aa;
+  margin-bottom: 2px;
+  white-space: nowrap;
+}
+
+.adv-days-labels-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-top: 5px;
+  text-align: center;
+}
+
+.adv-day-lbl {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #cbd5e1;
+  line-height: 1.1;
+}
+
+.adv-day-lbl.is-today {
+  color: #ffb703;
+  background: rgba(255, 138, 18, 0.22);
+  border-radius: 5px;
+  padding: 1px 0;
+}
+
+.adv-legend-row {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 7px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #e2e8f0;
+}
+
+.adv-legend-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  margin-right: 3px;
+  vertical-align: middle;
+}
+
+
+/* ============================================================================
+   13. UPDATE v0.56: 90er LUCASARTS POINT-&-CLICK OBJEKTKOMMENTARE ("Schau an...")
+   ============================================================================ */
+.lucasarts-quip-box {
+  position: relative;
+  background: linear-gradient(180deg, #1b112c 0%, #10091b 100%);
+  border: 2.5px solid #ffb703;
+  border-radius: 13px;
+  padding: 9px 11px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.18);
+}
+
+.lucasarts-quip-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid #ff7a00;
+  background: radial-gradient(circle at 50% 38%, #fff9db 0%, #ffd43b 65%, #f76707 100%);
+  object-fit: contain;
+  object-position: center bottom;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+}
+
+.lucasarts-quip-content {
+  flex: 1;
+}
+
+.lucasarts-verb-line {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 10px;
+  font-weight: 900;
+  color: #38bdf8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.lucasarts-quip-text {
+  font-size: 12px;
+  font-weight: 700;
+  font-style: italic;
+  color: #fef08a;
+  line-height: 1.32;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
 }
