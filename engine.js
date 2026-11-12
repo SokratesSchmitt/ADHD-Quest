@@ -13,7 +13,7 @@
  * - Achievements (Beständiger Geist, Wochenheld, Monatsveteran)
  */
 const Engine = (function () {
-  const APP_VERSION = "0.52";
+  const APP_VERSION = "0.54";
   const STORAGE_KEY = "ADHD_QUEST_SHEET_STATE_V0_38";
   const SPLASH_DATE_KEY = "adhdQuest_lastSplashDate";
 
@@ -113,7 +113,41 @@ const Engine = (function () {
         overlayUrl: "",
         showRoomBadge: false
       }
-    ]
+    ],
+    // Spezifische Lampen-, Kerzen- & Lichtquellen-Koordinaten pro Raum (für Golden Hour & Nachtlicht ab 21 Uhr)
+    roomLampGlows: {
+      "Flur": [
+        { cx: 59.0, cy: 19.0, rx: 18.0, ry: 12.0, color: "rgba(255, 196, 85, 0.52)" }, // Obere Hängelampen an der Holzempore
+        { cx: 41.8, cy: 42.8, rx: 22.0, ry: 16.0, color: "rgba(255, 184, 68, 0.58)" }  // Untere Glühbirne über der Kommode
+      ],
+      "Dashboard": [
+        { cx: 84.5, cy: 14.0, rx: 20.0, ry: 13.0, color: "rgba(255, 198, 92, 0.52)" }, // Zwei Hänge-Glühbirnen oben rechts
+        { cx: 26.8, cy: 55.5, rx: 25.0, ry: 18.0, color: "rgba(255, 208, 102, 0.62)" } // Schreibtischlampe (Vibe Coding Fokus-Licht)
+      ],
+      "Wohnzimmer": [
+        { cx: 21.5, cy: 19.0, rx: 25.0, ry: 16.0, color: "rgba(255, 196, 82, 0.58)" }, // 3-armiger Messing-Kronleuchter links oben
+        { cx: 81.5, cy: 16.5, rx: 24.0, ry: 14.0, color: "rgba(255, 190, 76, 0.52)" }, // Lichterkette & Hängelampen rechts oben
+        { cx: 68.5, cy: 48.0, rx: 20.0, ry: 14.0, color: "rgba(255, 168, 64, 0.35)" }  // Warmes Studio-Licht in der Musikecke
+      ],
+      "Küche": [
+        { cx: 76.0, cy: 16.0, rx: 24.0, ry: 15.0, color: "rgba(255, 198, 88, 0.56)" }, // Zwei Hänge-Glühbirnen oben rechts
+        { cx: 24.0, cy: 49.0, rx: 24.0, ry: 15.0, color: "rgba(255, 184, 78, 0.38)" }  // Warmes Licht über Herd & Arbeitsfläche
+      ],
+      "Schlafzimmer": [
+        { cx: 18.0, cy: 16.5, rx: 24.0, ry: 12.0, color: "rgba(255, 192, 82, 0.54)" }, // Lichterkette an der Ziegelwand links oben
+        { cx: 76.0, cy: 16.5, rx: 22.0, ry: 13.0, color: "rgba(255, 196, 88, 0.52)" }, // Hänge-Glühbirnen rechts oben
+        { cx: 27.5, cy: 55.5, rx: 16.0, ry: 12.0, color: "rgba(255, 162, 48, 0.68)", flicker: true }, // Brennende Kerzen hinten am Bett
+        { cx: 6.5,  cy: 66.5, rx: 16.0, ry: 12.0, color: "rgba(255, 162, 48, 0.68)", flicker: true }  // Brennende Kerzen vorne am Nachttisch
+      ],
+      "Badezimmer": [
+        { cx: 76.0, cy: 15.5, rx: 24.0, ry: 14.0, color: "rgba(255, 202, 96, 0.55)" }, // Zwei Hänge-Glühbirnen oben rechts
+        { cx: 88.0, cy: 46.0, rx: 18.0, ry: 16.0, color: "rgba(255, 214, 128, 0.42)" } // Warmes Spiegellicht am Waschtisch
+      ],
+      "Kinderzimmer": [
+        { cx: 92.0, cy: 36.0, rx: 22.0, ry: 26.0, color: "rgba(255, 204, 112, 0.38)" }, // Sanftes Fenster-/Abendlicht rechts
+        { cx: 65.0, cy: 48.0, rx: 28.0, ry: 20.0, color: "rgba(255, 192, 96, 0.46)" }   // Gemütliches Gute-Nacht-Leselicht am Bodenbett
+      ]
+    }
   };
 
 
@@ -1191,6 +1225,15 @@ const Engine = (function () {
     ]
   };
 
+  // 3b. Backup der Werks-Koordinaten für den PC-Entwicklermodus (Reset-Funktion)
+  const FACTORY_ROOM_OBJECTS = JSON.parse(JSON.stringify(ROOM_OBJECTS));
+  const FACTORY_POSTIT_SLOTS = [
+    { slotNr: 1, id: "POSTIT_SLOT_1", postitSprite: "assets/dashboard_sprites/sprite_dash_postit_1.png", leftPct: 24.5, topPct: 31.2, widthPct: 14.2, heightPct: 8.2, rotDeg: -3.0, zIndex: 22 },
+    { slotNr: 2, id: "POSTIT_SLOT_2", postitSprite: "assets/dashboard_sprites/sprite_dash_postit_2.png", leftPct: 39.2, topPct: 31.4, widthPct: 14.2, heightPct: 8.2, rotDeg: 2.2,  zIndex: 22 },
+    { slotNr: 3, id: "POSTIT_SLOT_3", postitSprite: "assets/dashboard_sprites/sprite_dash_postit_3.png", leftPct: 53.8, topPct: 31.0, widthPct: 14.2, heightPct: 8.2, rotDeg: -1.8, zIndex: 22 }
+  ];
+  const FACTORY_DOOR_CLEANING = JSON.parse(JSON.stringify(ASSETS.doorCleaningCoords));
+
   // 4. Tabellenblatt "Shop" (Exakt deine 6 Einträge und Preise aus A1:E17!)
   const SHOP_ITEMS = [
     { id: "SHOP_001", name: "Wow spielen", preisGold: 100, kostenAp: 1, status: false },
@@ -2075,24 +2118,12 @@ const Engine = (function () {
       }
     });
 
-    // 4. Die 3 Haftnotiz-Positionen auf der rechten & unteren Seite der Kork-Pinnwand im Dashboard
-    const postitSlots = [
-      {
-        slotNr: 1,
-        postitSprite: "assets/dashboard_sprites/sprite_dash_postit_1.png",
-        leftPct: 24.5, topPct: 31.2, widthPct: 14.2, heightPct: 8.2, rotDeg: -3.0
-      },
-      {
-        slotNr: 2,
-        postitSprite: "assets/dashboard_sprites/sprite_dash_postit_2.png",
-        leftPct: 39.2, topPct: 31.4, widthPct: 14.2, heightPct: 8.2, rotDeg: 2.2
-      },
-      {
-        slotNr: 3,
-        postitSprite: "assets/dashboard_sprites/sprite_dash_postit_3.png",
-        leftPct: 53.8, topPct: 31.0, widthPct: 14.2, heightPct: 8.2, rotDeg: -1.8
-      }
-    ];
+    // 4. Die 3 Haftnotiz-Positionen auf der Kork-Pinnwand im Dashboard (inkl. evtl. PC-Entwicklermodus-Overrides)
+    const customMap = (state && state.customObjectLayout) || {};
+    const postitSlots = FACTORY_POSTIT_SLOTS.map(s => {
+      const ov = customMap[s.id] || {};
+      return Object.assign({}, s, ov);
+    });
 
     return postitSlots.map((slot, idx) => {
       const name = sortedNames[idx] || fallbackDefaults[idx];
@@ -2142,7 +2173,8 @@ const Engine = (function () {
       uiFrame: "frame_1_wood_gold",
       showRoomBadgeOnFrame: true,
       miniStatPillCollapsed: false,
-      showBottomRoomDock: true
+      showBottomRoomDock: true,
+      timeOfDayMode: "auto"
     },
     roomDirtLevels: {
       "Flur": 1,
@@ -2151,6 +2183,7 @@ const Engine = (function () {
       "Schlafzimmer": 1,
       "Badezimmer": 1
     },
+    customObjectLayout: {},
     completedToday: {},
     questlog: [
       { datum: "01.11.2026", uhrzeit: "20:00", aktivitaet: "Tabellen-Datenstruktur geladen (Level 25 | 9424 Gold | 94% MB)", typ: "System", xp: 0, mb: 0, gold: 0, ap: 0 }
@@ -2158,6 +2191,168 @@ const Engine = (function () {
   };
 
   let state = loadState();
+  applyCustomLayoutToObjects();
+
+  function applyCustomLayoutToObjects() {
+    const custom = (state && state.customObjectLayout) || {};
+    Object.keys(ROOM_OBJECTS).forEach(rKey => {
+      const origList = FACTORY_ROOM_OBJECTS[rKey] || [];
+      ROOM_OBJECTS[rKey].forEach((obj, idx) => {
+        const baseObj = origList[idx] || obj;
+        const ov = custom[obj.id];
+        if (ov) {
+          ["leftPct", "topPct", "widthPct", "heightPct", "xPct", "yPct", "zIndex", "rotDeg"].forEach(k => {
+            if (ov[k] !== undefined) obj[k] = ov[k];
+          });
+        } else {
+          ["leftPct", "topPct", "widthPct", "heightPct", "xPct", "yPct", "zIndex", "rotDeg"].forEach(k => {
+            if (baseObj[k] !== undefined) obj[k] = baseObj[k];
+            else delete obj[k];
+          });
+        }
+      });
+    });
+
+    Object.keys(ASSETS.doorCleaningCoords).forEach(rKey => {
+      const baseCfg = FACTORY_DOOR_CLEANING[rKey];
+      const cleanId = `CLEAN_DYNAMIC_${rKey}`;
+      const ov = custom[cleanId];
+      if (ov) {
+        ["leftPct", "topPct", "widthPct", "heightPct", "zIndex", "rotDeg"].forEach(k => {
+          if (ov[k] !== undefined) ASSETS.doorCleaningCoords[rKey][k] = ov[k];
+        });
+      } else if (baseCfg) {
+        Object.assign(ASSETS.doorCleaningCoords[rKey], JSON.parse(JSON.stringify(baseCfg)));
+      }
+    });
+  }
+
+  function updateObjectLayout(objId, props) {
+    if (!state.customObjectLayout) state.customObjectLayout = {};
+    state.customObjectLayout[objId] = Object.assign({}, state.customObjectLayout[objId] || {}, props);
+    applyCustomLayoutToObjects();
+    saveState();
+  }
+
+  function resetObjectLayout(objId) {
+    if (state.customObjectLayout && state.customObjectLayout[objId]) {
+      delete state.customObjectLayout[objId];
+      applyCustomLayoutToObjects();
+      saveState();
+    }
+  }
+
+  function resetRoomLayout(roomName) {
+    if (!state.customObjectLayout) return;
+    (ROOM_OBJECTS[roomName] || []).forEach(o => {
+      delete state.customObjectLayout[o.id];
+    });
+    delete state.customObjectLayout[`CLEAN_DYNAMIC_${roomName}`];
+    if (roomName === "Dashboard") {
+      ["POSTIT_SLOT_1", "POSTIT_SLOT_2", "POSTIT_SLOT_3"].forEach(pid => delete state.customObjectLayout[pid]);
+    }
+    applyCustomLayoutToObjects();
+    saveState();
+  }
+
+  function exportRoomLayoutCode(roomName) {
+    const rName = roomName || state.settings.currentRoom || "Dashboard";
+    const objs = ROOM_OBJECTS[rName] || [];
+    const payload = {
+      room: rName,
+      updatedAt: new Date().toISOString(),
+      objects: objs.map(o => ({
+        id: o.id,
+        name: o.name,
+        leftPct: o.leftPct,
+        topPct: o.topPct,
+        widthPct: o.widthPct,
+        heightPct: o.heightPct,
+        zIndex: o.zIndex || 12,
+        rotDeg: o.rotDeg || 0
+      }))
+    };
+    if (rName === "Dashboard") {
+      payload.postitSlots = getTop3FrequentActivities().map(p => ({
+        slotId: `POSTIT_SLOT_${p.slotNr}`,
+        leftPct: p.leftPct,
+        topPct: p.topPct,
+        widthPct: p.widthPct,
+        heightPct: p.heightPct,
+        rotDeg: p.rotDeg || 0,
+        zIndex: p.zIndex || 22
+      }));
+    }
+    if (ASSETS.doorCleaningCoords[rName]) {
+      payload.doorCleaning = ASSETS.doorCleaningCoords[rName];
+    }
+    return JSON.stringify(payload, null, 2);
+  }
+
+
+  // --- TAGESZEITEN-LICHTWECHSEL ENGINE (v0.54) ---
+  // Morgenlicht: 05:00–08:59 | Tageslicht: 09:00–16:59 | Golden Hour: 17:00–20:59 | Nachtlicht: 21:00–04:59
+  const TIME_PHASES = {
+    morning: {
+      id: "morning",
+      icon: "🌅",
+      label: "Morgenlicht (5–9 Uhr)",
+      shortLabel: "Morgen",
+      hoursText: "05:00 – 09:00 Uhr",
+      desc: "Kühles, frisches Morgenlicht mit sanftem Rosa-Blau-Schimmer"
+    },
+    day: {
+      id: "day",
+      icon: "☀️",
+      label: "Tageslicht (9–17 Uhr)",
+      shortLabel: "Tag",
+      hoursText: "09:00 – 17:00 Uhr",
+      desc: "Klares, unverfälschtes Tageslicht in voller Farbbrillanz"
+    },
+    golden: {
+      id: "golden",
+      icon: "🌇",
+      label: "Golden Hour (17–21 Uhr)",
+      shortLabel: "Abend",
+      hoursText: "17:00 – 21:00 Uhr",
+      desc: "Warme, gold-orange Abendsonne mit leichtem Lampenschimmer"
+    },
+    night: {
+      id: "night",
+      icon: "🌙",
+      label: "Nachtlicht (21–5 Uhr)",
+      shortLabel: "Nacht",
+      hoursText: "21:00 – 05:00 Uhr",
+      desc: "Gemütliches Nachtblau mit warm leuchtenden Lampen & flackernden Kerzen"
+    },
+    off: {
+      id: "off",
+      icon: "⚪",
+      label: "Lichtfilter Aus",
+      shortLabel: "Aus",
+      hoursText: "Deaktiviert",
+      desc: "Ohne tageszeitlichen Lichtfilter"
+    }
+  };
+
+  function getActiveTimePhase() {
+    const mode = (state && state.settings && state.settings.timeOfDayMode) || "auto";
+    if (mode !== "auto" && TIME_PHASES[mode]) {
+      return Object.assign({ isAuto: false }, TIME_PHASES[mode]);
+    }
+    const hour = new Date().getHours();
+    let phaseKey = "day";
+    if (hour >= 5 && hour < 9) {
+      phaseKey = "morning";
+    } else if (hour >= 9 && hour < 17) {
+      phaseKey = "day";
+    } else if (hour >= 17 && hour < 21) {
+      phaseKey = "golden";
+    } else {
+      phaseKey = "night";
+    }
+    return Object.assign({ isAuto: true, currentHour: hour }, TIME_PHASES[phaseKey]);
+  }
 
   function loadState() {
     const today = new Date().toISOString().split("T")[0];
@@ -2438,6 +2633,12 @@ const Engine = (function () {
     getDirtMultiplier,
     getRoomDirtLevel,
     setRoomDirtLevel,
+    updateObjectLayout,
+    resetObjectLayout,
+    resetRoomLayout,
+    exportRoomLayoutCode,
+    TIME_PHASES,
+    getActiveTimePhase,
     getState: () => state,
     saveState,
     shouldShowDailySplash,

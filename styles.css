@@ -1,4 +1,4 @@
-/* ADHD QUEST - Version 0.52 Stylesheet (Null-Naht Sprites für Flur & neue Wohnungs-Map) */
+/* ADHD QUEST - Version 0.54 Stylesheet (Null-Naht Sprites für Flur & neue Wohnungs-Map) */
 :root {
   --orange-main: #ff7a00;
   --orange-glow: #ffb703;
@@ -127,7 +127,7 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.52);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.54);
   transition: transform 0.15s ease, background-color 0.18s ease, box-shadow 0.18s ease;
   margin-bottom: 2px;
 }
@@ -166,7 +166,7 @@ body {
   border-radius: 50%;
   background: radial-gradient(circle at 50% 42%, #ffe066 0%, #ff922b 72%, #e8590c 100%);
   border: 5px solid var(--wood-dark);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55), 0 0 16px rgba(255, 122, 0, 0.52);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55), 0 0 16px rgba(255, 122, 0, 0.54);
   z-index: 1;
   overflow: hidden;
 }
@@ -210,7 +210,7 @@ body {
   object-position: center bottom;
   border-radius: 0 0 74px 74px;
   image-rendering: auto;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.52));
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.54));
   z-index: 2;
   pointer-events: none;
   animation: paddyIdleBreathing 4s cubic-bezier(0.42, 0, 0.58, 1) infinite;
@@ -455,7 +455,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.52);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.54);
 }
 
 .modal-header {
@@ -583,7 +583,7 @@ body {
   font-weight: 800;
   font-size: 13px;
   z-index: 60;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.52);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.54);
   white-space: nowrap;
 }
 
@@ -615,7 +615,7 @@ body {
 
 
 /* ============================================================================
-   6. UPDATE v0.52: 3 SCHNELLZUGRIFFS-HAFTNOTIZEN AUF DER KORK-PINNWAND
+   6. UPDATE v0.54: 3 SCHNELLZUGRIFFS-HAFTNOTIZEN AUF DER KORK-PINNWAND
    ============================================================================ */
 .pinnwand-postit-hotspot {
   position: absolute;
@@ -703,7 +703,7 @@ body {
 
 
 /* ============================================================================
-   7. UPDATE v0.52: GROSSE OBJEKT-INSZENIERUNG IM INTERAKTIONS-MODAL (HERO STAGE)
+   7. UPDATE v0.54: GROSSE OBJEKT-INSZENIERUNG IM INTERAKTIONS-MODAL (HERO STAGE)
    ============================================================================ */
 #object-modal .modal-card {
   max-width: 374px;
@@ -805,7 +805,7 @@ body {
 
 
 /* ============================================================================
-   8. UPDATE v0.52: 3 WÄHLBARE UI-RAHMEN-OVERLAYS & EINSTELLUNGEN-MENÜ (⚙️)
+   8. UPDATE v0.54: 3 WÄHLBARE UI-RAHMEN-OVERLAYS & EINSTELLUNGEN-MENÜ (⚙️)
    ============================================================================ */
 .ui-frame-overlay {
   position: absolute;
@@ -884,7 +884,7 @@ body {
 
 
 /* ============================================================================
-   9. UPDATE v0.52: WOW-MINIMAP ADDON-BUTTONS AM AVATAR-RING + 3 UI-UPGRADES
+   9. UPDATE v0.54: WOW-MINIMAP ADDON-BUTTONS AM AVATAR-RING + 3 UI-UPGRADES
    ============================================================================ */
 .floating-avatar-hud {
   position: absolute;
@@ -963,7 +963,7 @@ body {
   font-size: 11px;
   font-weight: 800;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.52), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.54), inset 0 1px 1px rgba(255, 255, 255, 0.2);
   transition: transform 0.18s ease, padding 0.18s ease, background-color 0.18s ease;
 }
 
@@ -1112,4 +1112,247 @@ body {
   height: 8px;
   border-radius: 50%;
   border: 1px solid #1e1b24;
+}
+
+
+/* ============================================================================
+   10. UPDATE v0.54: VERSTECKTER PC-ENTWICKLERMODUS (NUR PER TASTATUR AKTIVIERBAR)
+   ============================================================================ */
+.room-canvas.dev-mode-active .room-sprite-hotspot,
+.room-canvas.dev-mode-active .pinnwand-postit-hotspot,
+.room-canvas.dev-mode-active .room-hotspot.badge-hotspot {
+  outline: 1.5px dashed rgba(0, 255, 204, 0.72);
+  cursor: grab !important;
+}
+
+.room-canvas.dev-mode-active .room-sprite-hotspot:active,
+.room-canvas.dev-mode-active .pinnwand-postit-hotspot:active {
+  cursor: grabbing !important;
+}
+
+.room-canvas.dev-mode-active .dev-selected-object {
+  outline: 2.5px solid #00ffcc !important;
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.85), 0 0 18px rgba(0, 255, 204, 0.95) !important;
+  z-index: 55 !important;
+}
+
+.dev-inspector-bar {
+  position: absolute;
+  bottom: 48px;
+  left: 8px;
+  right: 8px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 2px solid #00ffcc;
+  border-radius: 14px;
+  padding: 8px 10px;
+  color: #f8fafc;
+  font-size: 11px;
+  z-index: 80;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(6px);
+}
+
+.dev-inspector-bar.hidden {
+  display: none !important;
+}
+
+.dev-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(0, 255, 204, 0.3);
+  padding-bottom: 5px;
+  margin-bottom: 6px;
+}
+
+.dev-obj-title {
+  font-weight: 900;
+  color: #00ffcc;
+  font-size: 11.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 245px;
+}
+
+.dev-coords-readout {
+  font-family: monospace;
+  font-size: 10.5px;
+  color: #fde047;
+  margin-bottom: 6px;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 3px 6px;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.dev-btn-row {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 5px;
+}
+
+.dev-mini-btn {
+  background: #1e293b;
+  color: #e2e8f0;
+  border: 1px solid #475569;
+  border-radius: 6px;
+  padding: 4px 7px;
+  font-size: 10.5px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
+}
+
+.dev-mini-btn:hover {
+  background: #334155;
+  border-color: #00ffcc;
+  color: #ffffff;
+}
+
+.dev-mini-btn.accent {
+  background: #0f766e;
+  border-color: #14b8a6;
+  color: #ffffff;
+}
+
+.dev-mini-btn.warn {
+  background: #7c2d12;
+  border-color: #f97316;
+  color: #ffedd5;
+}
+
+
+/* ============================================================================
+   11. UPDATE v0.54: AUTOMATISCHER TAGESZEITEN-LICHTWECHSEL & LAMPEN-/KERZENSCHEIN
+   ============================================================================ */
+.ambient-lighting-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 26;
+  transition: background 0.8s ease, opacity 0.8s ease, box-shadow 0.8s ease;
+  overflow: hidden;
+}
+
+/* 1. MORGENLICHT (05:00 – 09:00 Uhr): Kühler, taufrischer Rosa-Himmelblau-Schimmer */
+.room-canvas.time-phase-morning {
+  filter: saturate(1.03) contrast(1.02) brightness(1.02);
+}
+
+.ambient-lighting-layer.phase-morning {
+  background: linear-gradient(
+    165deg,
+    rgba(135, 206, 250, 0.16) 0%,
+    rgba(255, 192, 203, 0.12) 48%,
+    rgba(255, 236, 179, 0.08) 100%
+  );
+  box-shadow: inset 0 0 42px rgba(125, 211, 252, 0.16);
+}
+
+/* 2. TAGESLICHT (09:00 – 17:00 Uhr): Klares, helles Tageslicht */
+.room-canvas.time-phase-day {
+  filter: none;
+}
+
+.ambient-lighting-layer.phase-day {
+  background: transparent;
+  box-shadow: none;
+}
+
+/* 3. GOLDEN HOUR / ABENDSONNE (17:00 – 21:00 Uhr): Warme gold-orange Abendsonne */
+.room-canvas.time-phase-golden {
+  filter: sepia(0.14) saturate(1.18) contrast(1.03) brightness(0.98);
+}
+
+.ambient-lighting-layer.phase-golden {
+  background: linear-gradient(
+    155deg,
+    rgba(255, 140, 0, 0.18) 0%,
+    rgba(255, 94, 58, 0.12) 55%,
+    rgba(120, 40, 15, 0.16) 100%
+  );
+  box-shadow: inset 0 0 55px rgba(234, 88, 12, 0.22);
+}
+
+/* 4. NACHTLICHT (ab 21:00 – 05:00 Uhr): Gemütliches Nachtblau mit warmen Lampen & Kerzen */
+.room-canvas.time-phase-night {
+  filter: brightness(0.88) contrast(1.06) saturate(0.94);
+}
+
+.ambient-lighting-layer.phase-night {
+  background: linear-gradient(
+    180deg,
+    rgba(12, 18, 42, 0.38) 0%,
+    rgba(18, 24, 52, 0.30) 55%,
+    rgba(10, 14, 32, 0.44) 100%
+  );
+  box-shadow: inset 0 0 68px rgba(8, 12, 28, 0.52);
+}
+
+/* Punktuelle warme Lampen- und Kerzen-Lichtkegel (aktiv in Golden Hour & Nachtlicht) */
+.room-lamp-glow {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  filter: blur(8px);
+  animation: lampWarmBreathe 4.2s ease-in-out infinite;
+}
+
+.room-lamp-glow.candle-flicker {
+  animation: candleWarmFlicker 2.1s ease-in-out infinite;
+}
+
+@keyframes lampWarmBreathe {
+  0%, 100% {
+    opacity: 0.88;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.06);
+  }
+}
+
+@keyframes candleWarmFlicker {
+  0%, 100% {
+    opacity: 0.86;
+    transform: translate(-50%, -50%) scale(0.96);
+  }
+  25% {
+    opacity: 1;
+    transform: translate(-50%, -51%) scale(1.08);
+  }
+  55% {
+    opacity: 0.82;
+    transform: translate(-49%, -50%) scale(0.94);
+  }
+  80% {
+    opacity: 0.98;
+    transform: translate(-50%, -49%) scale(1.05);
+  }
+}
+
+.smart-badge-time-pill {
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 900;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fde68a;
+  border: 1px solid rgba(255, 212, 59, 0.45);
+  transition: transform 0.14s ease, background-color 0.14s ease;
+}
+
+.smart-badge-time-pill:hover,
+.smart-badge-time-pill:active {
+  transform: scale(1.08);
+  background: rgba(255, 138, 18, 0.35);
 }

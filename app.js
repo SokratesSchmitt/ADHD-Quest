@@ -768,7 +768,8 @@ function renderCurrentRoom(roomName) {
   const bgUrl = (dirtyList && dirtyList[dirtLvl]) || Engine.ASSETS.backgrounds[roomName] || Engine.ASSETS.backgrounds["Flur"];
   canvas.style.backgroundImage = `url('${bgUrl}')`;
 
-  // Aktiven UI-Rahmen (Idee 1, 2, 3 oder Aus) und optionale Raum-Plakette oben rechts anwenden
+  // Aktiven Tageszeiten-Lichtfilter (Morgen, Tag, Golden Hour, Nacht + Lampen/Kerzen) & UI-Rahmen anwenden
+  renderAmbientLighting(roomName);
   renderUiFrameOverlay(roomName);
 
   const baseObjects = Engine.ROOM_OBJECTS[roomName] || [];
@@ -786,10 +787,11 @@ function renderCurrentRoom(roomName) {
           : `<span class="postit-emoji">${fav.icon || "⭐"}</span>`;
         const freqInfo = fav.countInLog > 0 ? `${fav.countInLog}× im Log` : `Top #${idx + 1}`;
         return `
-          <div class="pinnwand-postit-hotspot ${isFavDone ? 'done-today' : ''}"
-               style="left: ${fav.leftPct}%; top: ${fav.topPct}%; width: ${fav.widthPct}%; height: ${fav.heightPct}%; transform: rotate(${fav.rotDeg || 0}deg);"
+          <div class="pinnwand-postit-hotspot ${isFavDone ? 'done-today' : ''} ${(typeof isDevMode !== 'undefined' && isDevMode && devSelectedId === 'POSTIT_SLOT_' + fav.slotNr) ? 'dev-selected-object' : ''}"
+               data-dev-id="POSTIT_SLOT_${fav.slotNr}"
+               style="left: ${fav.leftPct}%; top: ${fav.topPct}%; width: ${fav.widthPct}%; height: ${fav.heightPct}%; z-index: ${fav.zIndex || 22}; transform: rotate(${fav.rotDeg || 0}deg);"
                title="⚡ Schnellzugriff #${idx + 1} (${freqInfo}): ${fav.name} — 1-Tap Direkt-Abhaken (+${fav.xp || 0} XP, +${fav.mb || 0} MB)"
-               onclick="event.stopPropagation(); quickCompleteTopActivity(${idx})">
+               onclick="event.stopPropagation(); if(typeof isDevMode !== 'undefined' && isDevMode){ selectDevObject('POSTIT_SLOT_${fav.slotNr}'); return; } quickCompleteTopActivity(${idx})">
             <img src="${fav.postitSprite}" class="postit-bg-img" alt="Post-it #${idx + 1}">
             <div class="postit-content">
               ${iconVisual}
@@ -809,11 +811,14 @@ function renderCurrentRoom(roomName) {
     // 1. Null-Naht-Rendering für freigestellte Raum-Sprites (z. B. im neuen Flur)
     if (obj.spriteUrl && obj.widthPct !== undefined) {
       const clipStyle = obj.clipPath ? `clip-path: ${obj.clipPath}; -webkit-clip-path: ${obj.clipPath};` : "";
+      const rotStyle = obj.rotDeg ? `transform: rotate(${obj.rotDeg}deg);` : "";
+      const isDevSel = (typeof isDevMode !== "undefined" && isDevMode && devSelectedId === obj.id) ? "dev-selected-object" : "";
       return `
-        <div class="room-sprite-hotspot ${isDone ? 'done-today' : ''}"
-             style="left: ${obj.leftPct}%; top: ${obj.topPct}%; width: ${obj.widthPct}%; height: ${obj.heightPct}%; z-index: ${obj.zIndex || 12}; ${clipStyle}"
+        <div class="room-sprite-hotspot ${isDone ? 'done-today' : ''} ${isDevSel}"
+             data-dev-id="${obj.id}"
+             style="left: ${obj.leftPct}%; top: ${obj.topPct}%; width: ${obj.widthPct}%; height: ${obj.heightPct}%; z-index: ${obj.zIndex || 12}; ${clipStyle} ${rotStyle}"
              title="${displayTitle}"
-             onclick="handleHotspotClick('${roomName}', '${obj.id}')">
+             onclick="if(typeof isDevMode !== 'undefined' && isDevMode){ event.stopPropagation(); selectDevObject('${obj.id}'); return; } handleHotspotClick('${roomName}', '${obj.id}')">
           <img src="${obj.spriteUrl}" alt="${displayTitle}">
           ${isDone ? '<span class="sprite-done-badge">✓</span>' : ''}
         </div>
@@ -1393,12 +1398,16 @@ function renderUiFrameOverlay(roomName) {
       }
     }
 
+    const timePhase = Engine.getActiveTimePhase ? Engine.getActiveTimePhase() : { icon: "☀️", label: "Tageslicht", shortLabel: "Tag", isAuto: true };
+    const timePillHtml = `<span class="smart-badge-time-pill" onclick="event.stopPropagation(); cycleTimeOfDayMode();" title="Tageszeit-Licht: ${timePhase.label} (${timePhase.isAuto ? 'Automatisch nach Uhrzeit' : 'Manuell fixiert'} – Antippen zum Durchschalten)">${timePhase.icon}</span>`;
+
     if (showBadge) {
       badgeEl.innerHTML = `
         <span class="smart-badge-room-btn" onclick="openMapModal()" title="Wohnungs-Grundriss öffnen">
           ${rIcon} ${displayRoom}
           <span class="smart-badge-count">${doneCount}/${totalCount} ✓</span>
         </span>
+        ${timePillHtml}
         ${dirtPillHtml}
       `;
       badgeEl.classList.remove("hidden");
@@ -1460,8 +1469,9 @@ function cycleRoomBySwipe(direction) {
   if (now - lastSwipeTimestamp < 220) return; // Entprellung gegen Doppel-Auslösung (Touch + Pointer)
   lastSwipeTimestamp = now;
 
-  // Nicht swipen, falls gerade ein Modal geöffnet ist
+  // Nicht swipen, falls gerade ein Modal geöffnet ist oder der PC-Entwicklermodus aktiv ist
   if (document.querySelector(".modal-backdrop.active")) return;
+  if (typeof isDevMode !== "undefined" && isDevMode) return;
 
   const s = Engine.getState();
   const cur = (s.settings && s.settings.currentRoom) || "Dashboard";
@@ -1536,9 +1546,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // 3. Bonus: Pfeiltasten Links/Rechts auf der Tastatur wechseln ebenfalls den Raum
+  // 3. Bonus: Pfeiltasten Links/Rechts auf der Tastatur wechseln im Spielmodus den Raum (im Dev-Modus steuern sie das Feintuning!)
   window.addEventListener("keydown", (e) => {
     if (document.querySelector(".modal-backdrop.active")) return;
+    if (typeof isDevMode !== "undefined" && isDevMode) return;
     if (e.key === "ArrowLeft") cycleRoomBySwipe(-1);
     if (e.key === "ArrowRight") cycleRoomBySwipe(1);
   });
@@ -1621,9 +1632,26 @@ function openSettingsModal() {
 
       ${dirtSettingsSectionHtml}
 
+      <div style="background:#eef2ff; border:2px solid #a5b4fc; border-radius:14px; padding:12px; margin-bottom:12px;">
+        <div style="font-weight:900; font-size:13px; color:#312e81; margin-bottom:6px;">
+          🌅 3. TAGESZEITEN-LICHTWECHSEL (${Engine.getActiveTimePhase ? Engine.getActiveTimePhase().label : "Aktiv"}):
+        </div>
+        <div style="font-size:11px; color:#4338ca; margin-bottom:8px;">
+          Passt Lichtstimmung, Abendsonne & warmen Lampen-/Kerzenschein automatisch an die echte Uhrzeit an (oder manuell zum Testen):
+        </div>
+        <div style="display:flex; gap:5px; flex-wrap:wrap;">
+          <button class="secondary-btn" style="font-size:11px; padding:5px 8px; ${((s.settings && s.settings.timeOfDayMode) || 'auto') === 'auto' ? 'background:#4f46e5; color:#fff; border-color:#4338ca;' : ''}" onclick="setTimeOfDayMode('auto')">🕒 Auto (Echtzeit)</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 8px; ${(s.settings && s.settings.timeOfDayMode) === 'morning' ? 'background:#0284c7; color:#fff; border-color:#0369a1;' : ''}" onclick="setTimeOfDayMode('morning')">🌅 Morgen (5–9h)</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 8px; ${(s.settings && s.settings.timeOfDayMode) === 'day' ? 'background:#eab308; color:#fff; border-color:#ca8a04;' : ''}" onclick="setTimeOfDayMode('day')">☀️ Tag (9–17h)</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 8px; ${(s.settings && s.settings.timeOfDayMode) === 'golden' ? 'background:#ea580c; color:#fff; border-color:#c2410c;' : ''}" onclick="setTimeOfDayMode('golden')">🌇 Golden Hour (17–21h)</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 8px; ${(s.settings && s.settings.timeOfDayMode) === 'night' ? 'background:#1e1b4b; color:#fde047; border-color:#312e81;' : ''}" onclick="setTimeOfDayMode('night')">🌙 Nacht + Lampen (ab 21h)</button>
+          <button class="secondary-btn" style="font-size:11px; padding:5px 8px; ${(s.settings && s.settings.timeOfDayMode) === 'off' ? 'background:#64748b; color:#fff;' : ''}" onclick="setTimeOfDayMode('off')">⚪ Aus</button>
+        </div>
+      </div>
+
       <div style="background:#f8fafc; border:1.5px solid #cbd5e1; border-radius:14px; padding:12px;">
         <div style="font-weight:900; font-size:13px; color:#1e293b; margin-bottom:8px;">
-          ⚡ 3. HUD, TAGES-INTRO & GOOGLE-SHEET-SYNC:
+          ⚡ 4. HUD, TAGES-INTRO & GOOGLE-SHEET-SYNC:
         </div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
           <span style="font-size:12px; font-weight:700; color:#475569;">🧢 Avatar-Modus oben links</span>
@@ -1694,3 +1722,390 @@ function toggleLiveSheetSync() {
   openSettingsModal();
   showLootToast(s.settings.liveSheetSync ? "☁️ Live Sheet-Sync aktiviert!" : "⏸️ Live Sheet-Sync pausiert.");
 }
+
+
+
+// ============================================================================
+// 9. VERSTECKTER PC-ENTWICKLERMODUS (NUR PER TASTENKOMBINATION AM PC: Strg+Shift+D oder Alt+D)
+// ============================================================================
+let isDevMode = false;
+let devSelectedId = null;
+let devDragState = null;
+
+function getEditableObjectsForCurrentRoom() {
+  const s = Engine.getState();
+  const rName = (s.settings && s.settings.currentRoom) || "Dashboard";
+  const list = [...(Engine.ROOM_OBJECTS[rName] || [])];
+  const dynClean = getDynamicCleaningObject(rName);
+  if (dynClean) list.push(dynClean);
+  if (rName === "Dashboard" && Engine.getTop3FrequentActivities) {
+    Engine.getTop3FrequentActivities().forEach(p => {
+      list.push({
+        id: `POSTIT_SLOT_${p.slotNr}`,
+        raum: "Dashboard",
+        name: `Post-it #${p.slotNr} (${p.name})`,
+        leftPct: p.leftPct,
+        topPct: p.topPct,
+        widthPct: p.widthPct,
+        heightPct: p.heightPct,
+        zIndex: p.zIndex || 22,
+        rotDeg: p.rotDeg || 0,
+        isPostitSlot: true
+      });
+    });
+  }
+  return list;
+}
+
+function getSelectedDevObject() {
+  if (!devSelectedId) return null;
+  return getEditableObjectsForCurrentRoom().find(o => o.id === devSelectedId) || null;
+}
+
+function toggleDevMode(forceState) {
+  isDevMode = typeof forceState === "boolean" ? forceState : !isDevMode;
+  const canvas = document.getElementById("room-canvas");
+  const bar = document.getElementById("dev-inspector-bar");
+  if (canvas) {
+    canvas.classList.toggle("dev-mode-active", isDevMode);
+  }
+  if (isDevMode) {
+    const objs = getEditableObjectsForCurrentRoom();
+    if (!devSelectedId || !objs.some(o => o.id === devSelectedId)) {
+      devSelectedId = objs.length ? objs[0].id : null;
+    }
+    renderAll();
+    renderDevInspector();
+    showLootToast("🛠️ PC-Entwicklermodus AKTIV (Strg+Shift+D oder Alt+D zum Beenden)");
+  } else {
+    devSelectedId = null;
+    if (bar) bar.classList.add("hidden");
+    renderAll();
+    showLootToast("🎮 Normaler Spielmodus wieder aktiv!");
+  }
+}
+
+function selectDevObject(objId) {
+  devSelectedId = objId;
+  renderAll();
+  renderDevInspector();
+}
+
+function renderDevInspector() {
+  const bar = document.getElementById("dev-inspector-bar");
+  if (!bar) return;
+  if (!isDevMode) {
+    bar.classList.add("hidden");
+    return;
+  }
+  bar.classList.remove("hidden");
+
+  const obj = getSelectedDevObject();
+  const rName = (Engine.getState().settings && Engine.getState().settings.currentRoom) || "Dashboard";
+
+  if (!obj) {
+    bar.innerHTML = `
+      <div class="dev-header-row">
+        <span class="dev-obj-title">🛠️ Dev-Editor (${rName}): Objekt anklicken!</span>
+        <button class="dev-mini-btn warn" onclick="toggleDevMode(false)">✕ Beenden</button>
+      </div>
+    `;
+    return;
+  }
+
+  const l = Number(obj.leftPct || 0).toFixed(2);
+  const t = Number(obj.topPct || 0).toFixed(2);
+  const w = Number(obj.widthPct || 10).toFixed(2);
+  const h = Number(obj.heightPct || 10).toFixed(2);
+  const z = Number(obj.zIndex || 12);
+  const rot = Number(obj.rotDeg || 0).toFixed(1);
+
+  bar.innerHTML = `
+    <div class="dev-header-row">
+      <span class="dev-obj-title" title="${obj.id}: ${obj.name}">🛠️ [${obj.id}] ${obj.name}</span>
+      <button class="dev-mini-btn warn" onclick="toggleDevMode(false)" title="Entwicklermodus schließen (Alt+D)">✕ Beenden</button>
+    </div>
+    <div class="dev-coords-readout">
+      left: <strong>${l}%</strong> | top: <strong>${t}%</strong> | width: <strong>${w}%</strong> | height: <strong>${h}%</strong> | z: <strong>${z}</strong> | rot: <strong>${rot}°</strong>
+    </div>
+    <div class="dev-btn-row">
+      <button class="dev-mini-btn" onclick="nudgeDevObject(-0.2, 0)" title="Links (Pfeiltaste Links)">◀</button>
+      <button class="dev-mini-btn" onclick="nudgeDevObject(0, -0.2)" title="Hoch (Pfeiltaste Hoch)">▲</button>
+      <button class="dev-mini-btn" onclick="nudgeDevObject(0, 0.2)" title="Runter (Pfeiltaste Runter)">▼</button>
+      <button class="dev-mini-btn" onclick="nudgeDevObject(0.2, 0)" title="Rechts (Pfeiltaste Rechts)">▶</button>
+      <button class="dev-mini-btn" onclick="scaleDevObject(1.04)" title="Größer skalieren (+4% / Mausrad hoch)">🔍+</button>
+      <button class="dev-mini-btn" onclick="scaleDevObject(0.96)" title="Kleiner skalieren (-4% / Mausrad runter)">🔍-</button>
+      <button class="dev-mini-btn" onclick="rotateDevObject(-1.5)" title="Gegen Uhrzeigersinn drehen">↺</button>
+      <button class="dev-mini-btn" onclick="rotateDevObject(1.5)" title="Im Uhrzeigersinn drehen">↻</button>
+      <button class="dev-mini-btn" onclick="changeDevZIndex(1)" title="Ebene nach vorne (Z-Index +1)">Ebene ▲</button>
+      <button class="dev-mini-btn" onclick="changeDevZIndex(-1)" title="Ebene nach hinten (Z-Index -1)">Ebene ▼</button>
+    </div>
+    <div class="dev-btn-row" style="margin-bottom:0;">
+      <button class="dev-mini-btn accent" onclick="copyDevRoomJson()" title="Koordinaten dieses Raums als JSON/JS in die Zwischenablage kopieren">📋 Raum-Coords kopieren</button>
+      <button class="dev-mini-btn" onclick="resetSelectedDevObject()" title="Nur dieses Objekt auf Werkseinstellung zurücksetzen">🔄 Objekt-Reset</button>
+      <button class="dev-mini-btn warn" onclick="resetCurrentRoomDevLayout()" title="Alle Objekte im Raum auf Werkseinstellung zurücksetzen">🗑️ Raum-Reset</button>
+    </div>
+  `;
+}
+
+function round2(val) {
+  return Math.round(Number(val) * 100) / 100;
+}
+
+function nudgeDevObject(dxPct, dyPct) {
+  const obj = getSelectedDevObject();
+  if (!obj) return;
+  const newLeft = round2((Number(obj.leftPct) || 0) + dxPct);
+  const newTop = round2((Number(obj.topPct) || 0) + dyPct);
+  Engine.updateObjectLayout(obj.id, { leftPct: newLeft, topPct: newTop });
+  renderAll();
+  renderDevInspector();
+}
+
+function scaleDevObject(factor) {
+  const obj = getSelectedDevObject();
+  if (!obj) return;
+  const oldW = Number(obj.widthPct) || 15;
+  const oldH = Number(obj.heightPct) || 15;
+  const newW = Math.max(2, round2(oldW * factor));
+  const newH = Math.max(2, round2(oldH * factor));
+  // Zentriert skalieren
+  const newLeft = round2((Number(obj.leftPct) || 0) - (newW - oldW) / 2);
+  const newTop = round2((Number(obj.topPct) || 0) - (newH - oldH) / 2);
+  Engine.updateObjectLayout(obj.id, {
+    leftPct: newLeft,
+    topPct: newTop,
+    widthPct: newW,
+    heightPct: newH
+  });
+  renderAll();
+  renderDevInspector();
+}
+
+function rotateDevObject(deltaDeg) {
+  const obj = getSelectedDevObject();
+  if (!obj) return;
+  const newRot = Math.round(((Number(obj.rotDeg) || 0) + deltaDeg) * 10) / 10;
+  Engine.updateObjectLayout(obj.id, { rotDeg: newRot });
+  renderAll();
+  renderDevInspector();
+}
+
+function changeDevZIndex(deltaZ) {
+  const obj = getSelectedDevObject();
+  if (!obj) return;
+  const newZ = Math.max(1, Math.min(50, (Number(obj.zIndex) || 12) + deltaZ));
+  Engine.updateObjectLayout(obj.id, { zIndex: newZ });
+  renderAll();
+  renderDevInspector();
+}
+
+function resetSelectedDevObject() {
+  const obj = getSelectedDevObject();
+  if (!obj) return;
+  Engine.resetObjectLayout(obj.id);
+  renderAll();
+  renderDevInspector();
+  showLootToast(`🔄 "${obj.name}" auf Original-Position zurückgesetzt!`);
+}
+
+function resetCurrentRoomDevLayout() {
+  const rName = (Engine.getState().settings && Engine.getState().settings.currentRoom) || "Dashboard";
+  Engine.resetRoomLayout(rName);
+  renderAll();
+  renderDevInspector();
+  showLootToast(`🗑️ Raum "${rName}" komplett auf Werks-Layout zurückgesetzt!`);
+}
+
+function copyDevRoomJson() {
+  const rName = (Engine.getState().settings && Engine.getState().settings.currentRoom) || "Dashboard";
+  const codeStr = Engine.exportRoomLayoutCode(rName);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(codeStr).then(() => {
+      showLootToast(`📋 Koordinaten für "${rName}" in die Zwischenablage kopiert!`);
+    }).catch(() => {
+      prompt("Koordinaten kopieren (Strg+C):", codeStr);
+    });
+  } else {
+    prompt("Koordinaten kopieren (Strg+C):", codeStr);
+  }
+}
+
+// PC-Tastatur-Steuerung & Maus-Drag-Handler für den Entwicklermodus
+document.addEventListener("DOMContentLoaded", () => {
+  const canvas = document.getElementById("room-canvas");
+  if (!canvas) return;
+
+  // 1. AUSSCHLIESSLICH PC-Tastenkombination: Strg + Shift + D oder Alt + D (bzw. F2)
+  window.addEventListener("keydown", (e) => {
+    const isCtrlShiftD = (e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === "D" || e.key === "d");
+    const isAltD = e.altKey && (e.key === "d" || e.key === "D");
+    if (isCtrlShiftD || isAltD) {
+      e.preventDefault();
+      toggleDevMode();
+      return;
+    }
+
+    if (!isDevMode) return;
+
+    // Escape beendet den Entwicklermodus
+    if (e.key === "Escape") {
+      e.preventDefault();
+      toggleDevMode(false);
+      return;
+    }
+
+    // Im aktiven Entwicklermodus: Pfeiltasten verschieben das markierte Objekt um 0.1% (mit Shift um 1.0%)
+    const step = e.shiftKey ? 1.0 : 0.1;
+    if (e.key === "ArrowLeft")  { e.preventDefault(); nudgeDevObject(-step, 0); }
+    if (e.key === "ArrowRight") { e.preventDefault(); nudgeDevObject(step, 0); }
+    if (e.key === "ArrowUp")    { e.preventDefault(); nudgeDevObject(0, -step); }
+    if (e.key === "ArrowDown")  { e.preventDefault(); nudgeDevObject(0, step); }
+    if (e.key === "+" || e.key === "=") { e.preventDefault(); scaleDevObject(1.03); }
+    if (e.key === "-")                  { e.preventDefault(); scaleDevObject(0.97); }
+  });
+
+  // 2. Freies Ziehen (Drag & Drop) mit der Maus im aktiven Entwicklermodus
+  canvas.addEventListener("pointerdown", (e) => {
+    if (!isDevMode) return;
+    // Ignoriere Klicks auf die Dev-Inspektor-Leiste selbst
+    if (e.target.closest("#dev-inspector-bar") || e.target.closest("#bottom-room-dock") || e.target.closest(".floating-avatar-hud")) {
+      return;
+    }
+    const hotspotEl = e.target.closest("[data-dev-id]");
+    if (!hotspotEl) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    const objId = hotspotEl.getAttribute("data-dev-id");
+    devSelectedId = objId;
+    const obj = getSelectedDevObject();
+    if (!obj) return;
+
+    const rect = canvas.getBoundingClientRect();
+    devDragState = {
+      id: objId,
+      el: hotspotEl,
+      startX: e.clientX,
+      startY: e.clientY,
+      origLeft: Number(obj.leftPct) || 0,
+      origTop: Number(obj.topPct) || 0,
+      canvasW: rect.width || 390,
+      canvasH: rect.height || 844
+    };
+
+    document.querySelectorAll(".dev-selected-object").forEach(el => el.classList.remove("dev-selected-object"));
+    hotspotEl.classList.add("dev-selected-object");
+    renderDevInspector();
+  });
+
+  window.addEventListener("pointermove", (e) => {
+    if (!isDevMode || !devDragState) return;
+    const dxPx = e.clientX - devDragState.startX;
+    const dyPx = e.clientY - devDragState.startY;
+    const newLeft = round2(devDragState.origLeft + (dxPx / devDragState.canvasW) * 100);
+    const newTop = round2(devDragState.origTop + (dyPx / devDragState.canvasH) * 100);
+
+    // Direktes Live-Update im DOM für butterweiches 60fps Ziehen
+    if (devDragState.el) {
+      devDragState.el.style.left = `${newLeft}%`;
+      devDragState.el.style.top = `${newTop}%`;
+    }
+    Engine.updateObjectLayout(devDragState.id, { leftPct: newLeft, topPct: newTop });
+    renderDevInspector();
+  });
+
+  window.addEventListener("pointerup", () => {
+    if (!isDevMode || !devDragState) return;
+    devDragState = null;
+    renderAll();
+    renderDevInspector();
+  });
+
+  // 3. Mausrad-Skalierung (Wheel) auf dem ausgewählten Objekt im Entwicklermodus
+  canvas.addEventListener("wheel", (e) => {
+    if (!isDevMode || !devSelectedId) return;
+    if (e.target.closest("#dev-inspector-bar")) return;
+    e.preventDefault();
+    const factor = e.deltaY < 0 ? 1.03 : 0.97;
+    scaleDevObject(factor);
+  }, { passive: false });
+});
+
+
+
+// ============================================================================
+// 10. AUTOMATISCHER TAGESZEITEN-LICHTWECHSEL & WARMER LAMPEN-/KERZENSCHEIN (v0.54)
+// ============================================================================
+function renderAmbientLighting(roomName) {
+  const canvas = document.getElementById("room-canvas");
+  const ambientEl = document.getElementById("ambient-lighting-layer");
+  if (!canvas || !ambientEl || !Engine.getActiveTimePhase) return;
+
+  const rName = roomName || (Engine.getState().settings && Engine.getState().settings.currentRoom) || "Dashboard";
+  const phase = Engine.getActiveTimePhase();
+
+  // Entferne alte Phasen-Klassen
+  ["time-phase-morning", "time-phase-day", "time-phase-golden", "time-phase-night"].forEach(cls => {
+    canvas.classList.remove(cls);
+  });
+  ["phase-morning", "phase-day", "phase-golden", "phase-night"].forEach(cls => {
+    ambientEl.classList.remove(cls);
+  });
+
+  if (phase.id === "off" || phase.id === "day") {
+    canvas.classList.add("time-phase-day");
+    ambientEl.classList.add("phase-day");
+    ambientEl.innerHTML = "";
+    return;
+  }
+
+  canvas.classList.add(`time-phase-${phase.id}`);
+  ambientEl.classList.add(`phase-${phase.id}`);
+
+  // In der Golden Hour (dezent, 55% Intensität) und vor allem im Nachtlicht (ab 21 Uhr, 100% Intensität)
+  // leuchten die raumspezifischen Hängelampen, Kronleuchter, Schreibtischlampen und Kerzen warm auf!
+  if (phase.id === "night" || phase.id === "golden") {
+    const glows = (Engine.ASSETS.roomLampGlows && Engine.ASSETS.roomLampGlows[rName]) || [];
+    const scaleAlpha = phase.id === "golden" ? 0.55 : 1.0;
+    ambientEl.innerHTML = glows.map(g => {
+      const flickerCls = g.flicker ? "candle-flicker" : "";
+      return `
+        <div class="room-lamp-glow ${flickerCls}"
+             style="left: ${g.cx}%; top: ${g.cy}%; width: ${g.rx * 2.2}%; height: ${g.ry * 2.2}%; opacity: ${scaleAlpha}; background: radial-gradient(circle, ${g.color} 0%, rgba(255, 160, 40, 0.18) 52%, transparent 76%);">
+        </div>
+      `;
+    }).join("");
+  } else {
+    ambientEl.innerHTML = "";
+  }
+}
+
+function setTimeOfDayMode(mode) {
+  const s = Engine.getState();
+  s.settings.timeOfDayMode = mode;
+  Engine.saveState();
+  renderAll();
+  if (document.getElementById("settings-modal").classList.contains("active")) {
+    openSettingsModal();
+  }
+  const phase = Engine.getActiveTimePhase();
+  showLootToast(`${phase.icon} Lichtstimmung: ${phase.label} (${mode === 'auto' ? 'Auto nach Uhrzeit' : 'Manuell'})`);
+}
+
+function cycleTimeOfDayMode() {
+  const order = ["auto", "morning", "day", "golden", "night", "off"];
+  const s = Engine.getState();
+  const cur = (s.settings && s.settings.timeOfDayMode) || "auto";
+  const next = order[(order.indexOf(cur) + 1) % order.length];
+  setTimeOfDayMode(next);
+}
+
+// Prüft jede Minute automatisch, ob ein Tageszeiten-Wechsel (z. B. 17:00 Golden Hour oder 21:00 Nachtlicht) ansteht
+setInterval(() => {
+  const s = Engine.getState();
+  if (!s.settings || s.settings.timeOfDayMode === "auto") {
+    const rName = (s.settings && s.settings.currentRoom) || "Dashboard";
+    renderAmbientLighting(rName);
+  }
+}, 60000);
