@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }, 4500);
 });
 
-// --- 1. TÄGLICHER 5-SEKUNDEN INTRO-SPLASH-SCREEN (1x pro Tag) ---
+// --- 1. TÄGLICHER 5-SEKUNDEN INTRO-SPLASH-SCREEN (1x pro Tag | v0.70) ---
 function initDailyIntroScreen(forceShow = false) {
   const introEl = document.getElementById("intro-screen");
   const splashImg = document.getElementById("intro-splash-img");
@@ -772,7 +772,7 @@ function renderCurrentRoom(roomName) {
   renderAmbientLighting(roomName);
   renderUiFrameOverlay(roomName);
 
-  const baseObjects = Engine.ROOM_OBJECTS[roomName] || [];
+  const baseObjects = (Engine.ROOM_OBJECTS[roomName] || []).filter(o => !(Engine.isObjectInLuggage && Engine.isObjectInLuggage(o.id)));
   const dynCleanObj = getDynamicCleaningObject(roomName);
   const objects = dynCleanObj ? [...baseObjects, dynCleanObj] : baseObjects;
   const completed = Engine.getState().completedToday || {};
@@ -813,13 +813,32 @@ function renderCurrentRoom(roomName) {
       const clipStyle = obj.clipPath ? `clip-path: ${obj.clipPath}; -webkit-clip-path: ${obj.clipPath};` : "";
       const rotStyle = obj.rotDeg ? `transform: rotate(${obj.rotDeg}deg);` : "";
       const isDevSel = (typeof isDevMode !== "undefined" && isDevMode && devSelectedId === obj.id) ? "dev-selected-object" : "";
+      let piggyGoalHtml = "";
+      let piggyReadyClass = "";
+      if (obj.isShopTrigger && Engine.getPinnedShopGoal) {
+        const pg = Engine.getPinnedShopGoal();
+        if (pg) {
+          const shortGoal = pg.name.replace(/\s*kaufen/i, "").trim();
+          piggyReadyClass = pg.canAffordAll ? "piggy-goal-ready" : "";
+          piggyGoalHtml = `
+            <div class="piggybank-goal-tag ${pg.canAffordAll ? 'goal-ready' : ''}">
+              <div class="piggybank-goal-label">🎯 ${shortGoal}: <strong>${pg.pct}%</strong></div>
+              <div class="piggybank-goal-bar-track">
+                <div class="piggybank-goal-bar-fill" style="width:${pg.pct}%;"></div>
+              </div>
+            </div>
+          `;
+        }
+      }
+      const isParalyseTarget = (typeof activeParalyseTargetId !== "undefined" && activeParalyseTargetId === obj.id) ? "paralyse-highlight-pulse" : "";
       return `
-        <div class="room-sprite-hotspot ${isDone ? 'done-today' : ''} ${isDevSel}"
+        <div class="room-sprite-hotspot ${isDone ? 'done-today' : ''} ${isDevSel} ${piggyReadyClass} ${isParalyseTarget}"
              data-dev-id="${obj.id}"
              style="left: ${obj.leftPct}%; top: ${obj.topPct}%; width: ${obj.widthPct}%; height: ${obj.heightPct}%; z-index: ${obj.zIndex || 12}; ${clipStyle} ${rotStyle}"
              title="${displayTitle}"
              onclick="if(typeof isDevMode !== 'undefined' && isDevMode){ event.stopPropagation(); selectDevObject('${obj.id}'); return; } handleHotspotClick('${roomName}', '${obj.id}')">
           <img src="${obj.spriteUrl}" alt="${displayTitle}">
+          ${piggyGoalHtml}
           ${isDone ? '<span class="sprite-done-badge">✓</span>' : ''}
         </div>
       `;
@@ -849,22 +868,22 @@ function quickCompleteTopActivity(slotIdx) {
   const fav = top3[slotIdx];
   if (!fav) return;
 
-  const rName = fav.raum || Engine.getState().settings.currentRoom || "Dashboard";
-  const dirtBefore = Engine.getRoomDirtLevel ? Engine.getRoomDirtLevel(rName) : 0;
-  const isClean = !!(fav.isDirtCleaner || (fav.name && (fav.name.includes("Samstagsputz") || fav.name.includes("aufräumen") || fav.name.includes("Tisch abwischen"))));
-  const mult = (isClean && dirtBefore >= 1 && Engine.getDirtMultiplier) ? Engine.getDirtMultiplier(dirtBefore) : 1.0;
-  const finalXp = Math.round((Number(fav.xp) || 0) * mult);
-  const finalGold = Math.round((Number(fav.gold) || 0) * mult);
+  const res = Engine.completeObject(fav) || {};
+  const finalXp = res.xpGain !== undefined ? res.xpGain : (Number(fav.xp) || 0);
+  const finalGold = res.goldGain !== undefined ? res.goldGain : (Number(fav.gold) || 0);
+  const finalMb = res.mbGain !== undefined ? res.mbGain : (Number(fav.mb) || 0);
+  const finalAp = res.apGain !== undefined ? res.apGain : (Number(fav.ap) || 0);
 
-  Engine.completeObject(fav);
+  spawnLootParticlesToRing(fav, { xp: finalXp, gold: finalGold, mb: finalMb, ap: finalAp });
   triggerExcitedAvatar();
   renderAll();
-  const bonusTxt = mult > 1.0 ? ` [🧹 Putz-Bonus x${mult.toFixed(1)}!]` : "";
-  showLootToast(`📌 Schnell-Quest #${slotIdx + 1}: "${fav.name}" erledigt! (+${finalXp} XP, +${finalGold} G, +${fav.mb || 0} MB)${bonusTxt}`);
+  const bonusTxt = (res.dirtMult && res.dirtMult > 1.0) ? ` [🧹 Putz-Bonus x${res.dirtMult.toFixed(1)}!]` : "";
+  const comboTxt = (res.comboCount && res.comboCount >= 2) ? ` [🔥 Flow-Combo x${res.comboMult.toFixed(1)}!]` : "";
+  showLootToast(`📌 Schnell-Quest #${slotIdx + 1}: "${fav.name}" (+${finalXp} XP, +${finalGold} G, +${finalMb} MB)${bonusTxt}${comboTxt}`, { allowUndo: true });
 }
 
 function handleHotspotClick(roomName, objId) {
-  const baseObjects = Engine.ROOM_OBJECTS[roomName] || [];
+  const baseObjects = (Engine.ROOM_OBJECTS[roomName] || []).filter(o => !(Engine.isObjectInLuggage && Engine.isObjectInLuggage(o.id)));
   const dynCleanObj = getDynamicCleaningObject(roomName);
   const objects = dynCleanObj ? [...baseObjects, dynCleanObj] : baseObjects;
   const obj = objects.find(o => o.id === objId);
@@ -928,24 +947,173 @@ function handleHotspotClick(roomName, objId) {
     <span class="reward-pill">+${obj.mb || 0} MB</span>
     <span class="reward-pill">+${obj.ap || 0} AP</span>
   `;
+  const microBtn = document.getElementById("obj-micro-step-btn");
+  if (microBtn) {
+    const mXp = (Number(obj.xp) || 0) > 0 ? Math.max(1, Math.round((Number(obj.xp) || 0) * 0.25)) : 0;
+    microBtn.innerHTML = `👣 Nur 2 Min. (+${mXp} XP / 25%)`;
+  }
+  const timerBtn = document.getElementById("obj-focus-timer-btn");
+  if (timerBtn) {
+    const mins = Engine.getQuestDurationMinutes ? Engine.getQuestDurationMinutes(obj) : 5;
+    if (activeFocusTimer && activeFocusTimer.objId === obj.id) {
+      timerBtn.innerHTML = `⏹️ Timer (${formatFocusSeconds(activeFocusTimer.remainingSec)}) stoppen`;
+      timerBtn.classList.add("timer-running");
+    } else {
+      timerBtn.innerHTML = `⏳ ${mins} Min. Fokus-Ring`;
+      timerBtn.classList.remove("timer-running");
+    }
+  }
   openModal("object-modal");
+}
+
+let activeStageAnimTimer = null;
+let pendingStageCloseCallback = null;
+
+function playHeroStageCompletionAnimation(obj, durationMs = 3400, onFinish) {
+  const stageEl = document.getElementById("obj-modal-preview-wrap");
+  if (!stageEl) {
+    if (onFinish) onFinish();
+    return;
+  }
+
+  const animCfg = (Engine.getObjectStageAnimation && Engine.getObjectStageAnimation(obj)) || {
+    motionClass: "stage-anim-generic-celebrate",
+    auraColor: "rgba(255, 146, 43, 0.55)",
+    bannerText: `✨ ${obj.name} erledigt!`,
+    particles: ["✨", "⭐", "🎵", "🎉", "✨", "⭐", "💫", "🎉"],
+    trajectory: "float-up-notes"
+  };
+
+  // Deaktiviere Aktions-Buttons während die 3.4s Bühnen-Animation läuft (Antippen der Stage überspringt vorzeitig)
+  const completeBtn = document.getElementById("obj-complete-btn");
+  const microBtn = document.getElementById("obj-micro-step-btn");
+  const timerBtn = document.getElementById("obj-focus-timer-btn");
+  if (completeBtn) {
+    completeBtn.disabled = true;
+    completeBtn.innerHTML = "🎬 Animation läuft… (Tippen = Weiter)";
+  }
+  if (microBtn) microBtn.disabled = true;
+  if (timerBtn) timerBtn.disabled = true;
+
+  const heroImg = stageEl.querySelector(".obj-hero-img, .obj-hero-emoji");
+  if (heroImg) {
+    heroImg.classList.remove("zoomed");
+    heroImg.classList.add(animCfg.motionClass);
+  }
+
+  stageEl.classList.add("stage-celebrating");
+  stageEl.style.setProperty("--stage-aura-color", animCfg.auraColor || "rgba(255, 146, 43, 0.55)");
+
+  // Erzeuge Overlay für schwebende Effekt-Sprites, Soundwellen & 4s-Fortschrittsbalken
+  let fxLayer = stageEl.querySelector(".stage-fx-overlay");
+  if (fxLayer) fxLayer.remove();
+  fxLayer = document.createElement("div");
+  fxLayer.className = `stage-fx-overlay traj-${animCfg.trajectory || 'float-up-notes'}`;
+
+  const particlesHtml = (animCfg.particles || []).map((sym, i) => {
+    const angle = (i / (animCfg.particles.length || 8)) * 360;
+    const dist = 46 + (i % 3) * 18;
+    const delay = (i * 0.22).toFixed(2);
+    const leftPct = 18 + ((i * 11) % 64);
+    return `<span class="stage-fx-particle" style="--p-idx:${i}; --p-angle:${angle}deg; --p-dist:${dist}px; --p-delay:${delay}s; left:${leftPct}%;">${sym}</span>`;
+  }).join("");
+
+  fxLayer.innerHTML = `
+    <div class="stage-fx-aura-ring"></div>
+    <div class="stage-fx-particles-wrap">${particlesHtml}</div>
+    <div class="stage-fx-banner">${animCfg.bannerText}</div>
+    <div class="stage-fx-progress-bar"><div class="stage-fx-progress-fill" style="animation-duration:${durationMs}ms;"></div></div>
+  `;
+  stageEl.appendChild(fxLayer);
+
+  const finishNow = () => {
+    clearTimeout(activeStageAnimTimer);
+    activeStageAnimTimer = null;
+    pendingStageCloseCallback = null;
+    stageEl.onclick = null;
+    if (heroImg) heroImg.classList.remove(animCfg.motionClass);
+    stageEl.classList.remove("stage-celebrating");
+    if (fxLayer) fxLayer.remove();
+    if (completeBtn) {
+      completeBtn.disabled = false;
+      completeBtn.innerHTML = "✨ Loot sammeln & abhaken!";
+    }
+    if (microBtn) microBtn.disabled = false;
+    if (timerBtn) timerBtn.disabled = false;
+    if (onFinish) onFinish();
+  };
+
+  pendingStageCloseCallback = finishNow;
+  stageEl.onclick = (e) => {
+    e.stopPropagation();
+    finishNow();
+  };
+  if (completeBtn) {
+    completeBtn.onclick = (e) => {
+      e.stopPropagation();
+      finishNow();
+    };
+  }
+
+  activeStageAnimTimer = setTimeout(finishNow, durationMs);
 }
 
 function confirmObjectAction() {
   if (!selectedObject) return;
-  const rName = selectedObject.raum || Engine.getState().settings.currentRoom || "Flur";
-  const dirtBefore = Engine.getRoomDirtLevel(rName);
-  const isClean = !!(selectedObject.isDirtCleaner || (selectedObject.name && (selectedObject.name.includes("Samstagsputz") || selectedObject.name.includes("aufräumen") || selectedObject.name.includes("Tisch abwischen"))));
-  const mult = (isClean && dirtBefore >= 1) ? Engine.getDirtMultiplier(dirtBefore) : 1.0;
-  const finalXp = Math.round((Number(selectedObject.xp) || 0) * mult);
-  const finalGold = Math.round((Number(selectedObject.gold) || 0) * mult);
+  if (activeStageAnimTimer) {
+    if (pendingStageCloseCallback) pendingStageCloseCallback();
+    return;
+  }
+  const targetObj = selectedObject;
 
-  Engine.completeObject(selectedObject);
-  closeModal("object-modal");
+  if (typeof activeFocusTimer !== "undefined" && activeFocusTimer && activeFocusTimer.objId === targetObj.id) {
+    stopFocusTimer(true);
+  }
+  const res = Engine.completeObject(targetObj) || {};
+  const finalXp = res.xpGain !== undefined ? res.xpGain : (Number(targetObj.xp) || 0);
+  const finalGold = res.goldGain !== undefined ? res.goldGain : (Number(targetObj.gold) || 0);
+  const finalMb = res.mbGain !== undefined ? res.mbGain : (Number(targetObj.mb) || 0);
+  const finalAp = res.apGain !== undefined ? res.apGain : (Number(targetObj.ap) || 0);
+
   triggerExcitedAvatar();
   renderAll();
-  const bonusTxt = mult > 1.0 ? ` [🧹 Früh-Putz-Bonus x${mult.toFixed(1)} – Raum blitzblank!]` : "";
-  showLootToast(`✅ "${selectedObject.name}" (+${finalXp} XP, +${finalGold} G, +${selectedObject.mb} MB)${bonusTxt}`);
+
+  // Spiele die maßgeschneiderte Objekt-Animation NUR in der Großansicht (#obj-modal-preview-wrap) für 3,4 Sekunden ab (max 4s)
+  playHeroStageCompletionAnimation(targetObj, 3400, () => {
+    const completeBtn = document.getElementById("obj-complete-btn");
+    if (completeBtn) completeBtn.onclick = confirmObjectAction;
+    closeModal("object-modal");
+    spawnLootParticlesToRing(targetObj, { xp: finalXp, gold: finalGold, mb: finalMb, ap: finalAp });
+    const bonusTxt = (res.dirtMult && res.dirtMult > 1.0) ? ` [🧹 Früh-Putz-Bonus x${res.dirtMult.toFixed(1)} – Raum blitzblank!]` : "";
+    const comboTxt = (res.comboCount && res.comboCount >= 2) ? ` [🔥 Flow-Combo x${res.comboMult.toFixed(1)}!]` : "";
+    showLootToast(`✅ "${targetObj.name}" (+${finalXp} XP, +${finalGold} G, +${finalMb} MB)${bonusTxt}${comboTxt}`, { allowUndo: true });
+  });
+}
+
+function confirmMicroStepAction() {
+  if (!selectedObject) return;
+  if (activeStageAnimTimer) {
+    if (pendingStageCloseCallback) pendingStageCloseCallback();
+    return;
+  }
+  const targetObj = selectedObject;
+
+  const res = Engine.completeObject(targetObj, { isMicroStep: true }) || {};
+  const finalXp = res.xpGain !== undefined ? res.xpGain : 1;
+  const finalGold = res.goldGain !== undefined ? res.goldGain : 0;
+  const finalMb = res.mbGain !== undefined ? res.mbGain : 0;
+  const finalAp = res.apGain !== undefined ? res.apGain : 0;
+
+  triggerThumbsUpPopout(true);
+  renderAll();
+
+  playHeroStageCompletionAnimation(targetObj, 2600, () => {
+    const completeBtn = document.getElementById("obj-complete-btn");
+    if (completeBtn) completeBtn.onclick = confirmObjectAction;
+    closeModal("object-modal");
+    spawnLootParticlesToRing(targetObj, { xp: finalXp, gold: finalGold, mb: finalMb, ap: finalAp });
+    showLootToast(`👣 2-Min-Mikroschritt: "${targetObj.name}" angetestet! (+${finalXp} XP, +${finalGold} G – starker Einstieg!)`, { allowUndo: true });
+  });
 }
 
 function setCurrentRoomDirt(level) {
@@ -962,12 +1130,12 @@ function setCurrentRoomDirt(level) {
   showLootToast(`${rName}: ${labels[level]}`);
 }
 
-// --- 4. NEUE INTERAKTIVE WOHNUNGS-MAP ---
+// --- 4. INTERAKTIVE WOHNUNGS-MAP MIT LIVE-RADAR (OFFENE QUESTS & PUTZ-MULTIPLIKATOR) (v0.61) ---
 function openMapModal() {
   const currentRoom = Engine.getState().settings.currentRoom;
   const mapCanvas = document.getElementById("interactive-map-canvas");
   if (mapCanvas) {
-    mapCanvas.innerHTML = Engine.ROOMS.map(r => {
+    const spritesHtml = Engine.ROOMS.map(r => {
       const clipStyle = r.clipPath ? `clip-path: ${r.clipPath}; -webkit-clip-path: ${r.clipPath};` : "";
       return `
         <div class="map-room-sprite ${r.id === currentRoom ? 'active-room' : ''}"
@@ -978,6 +1146,30 @@ function openMapModal() {
         </div>
       `;
     }).join("");
+
+    // Live-Radar-Pills separat über den geclippten Raum-Sprites rendern, damit kein Clip-Path die Badges abschneidet
+    const radarHtml = Engine.ROOMS.map(r => {
+      const stats = Engine.getRoomRadarStats ? Engine.getRoomRadarStats(r.id) : { doneCount: 0, totalCount: 0, openCount: 0, hasDirt: false, dirtLvl: 0, dirtMult: 1.0 };
+      const centerX = (r.leftPct + r.widthPct / 2).toFixed(1);
+      const centerY = (r.topPct + r.heightPct / 2).toFixed(1);
+      const allDone = stats.totalCount > 0 && stats.openCount === 0;
+      let dirtChip = "";
+      if (stats.hasDirt && stats.dirtLvl > 0) {
+        const dCol = stats.dirtLvl === 1 ? "#16a34a" : (stats.dirtLvl === 2 ? "#ea580c" : "#dc2626");
+        const dIcon = stats.dirtLvl === 3 ? "🔌" : "🧹";
+        dirtChip = `<span class="map-radar-dirt" style="background:${dCol};">${dIcon}x${stats.dirtMult.toFixed(1)}</span>`;
+      }
+      return `
+        <div class="map-radar-badge ${r.id === currentRoom ? 'is-current' : ''} ${allDone ? 'all-done' : ''}"
+             style="left:${centerX}%; top:${centerY}%;"
+             onclick="selectRoom('${r.id}')">
+          <span>${r.icon} ${stats.doneCount}/${stats.totalCount}✓</span>
+          ${dirtChip}
+        </div>
+      `;
+    }).join("");
+
+    mapCanvas.innerHTML = spritesHtml + radarHtml;
   }
   openModal("map-modal");
 }
@@ -990,23 +1182,78 @@ function selectRoom(roomId) {
   renderAll();
 }
 
-// --- 5. SHOP MODAL (EXAKT DEINE 6 ITEMS AUS TABELLENBLATT "Shop") ---
+// --- 5. SHOP MODAL INKL. SPARZIEL-TRACKER FÜR GROSSPROJEKTE (v0.58) ---
 function openShopModal() {
   const body = document.getElementById("shop-modal-body");
-  body.innerHTML = Engine.SHOP_ITEMS.map(item => `
-    <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border:2px solid #fed7aa; border-radius:12px; margin-bottom:8px;">
-      <div>
-        <div style="font-weight:800; font-size:14px;">🛒 ${item.name}</div>
-        <div style="font-size:12px; color:#64748b;">Preis: <strong>${item.preisGold} Gold</strong> • AP-Kosten: <strong>${item.kostenAp} AP</strong></div>
+  const pg = Engine.getPinnedShopGoal ? Engine.getPinnedShopGoal() : null;
+
+  let goalBannerHtml = "";
+  if (pg) {
+    const statusText = pg.canAffordAll
+      ? `🎉 <strong>Ziel erreicht!</strong> Du hast genug Gold (${pg.currentGold} G) und AP zum Einlösen!`
+      : `Noch <strong>${pg.missingGold} Gold</strong> bis zum Ziel (${pg.currentGold} / ${pg.targetGold} G • ${pg.exactPct}%)`;
+    goalBannerHtml = `
+      <div class="shop-goal-hero-card ${pg.canAffordAll ? 'goal-complete' : ''}">
+        <div class="shop-goal-hero-header">
+          <span>🎯 Aktives Sparziel (Sparschwein)</span>
+          <span class="shop-goal-pct-badge">${pg.exactPct}%</span>
+        </div>
+        <div class="shop-goal-hero-title">🐷 ${pg.name}</div>
+        <div class="shop-goal-bar-outer">
+          <div class="shop-goal-bar-inner" style="width:${pg.pct}%;"></div>
+        </div>
+        <div class="shop-goal-hero-sub">${statusText}</div>
       </div>
-      <button class="top-btn" onclick="redeemShopItem('${item.id}')">Kaufen</button>
-    </div>
-  `).join("");
+    `;
+  }
+
+  const itemsHtml = Engine.SHOP_ITEMS.map((item, idx) => {
+    const isPinned = pg && (
+      pg.name === item.name ||
+      (pg.id && item.id && pg.id === item.id)
+    );
+    return `
+      <div class="shop-item-row ${isPinned ? 'pinned-goal-row' : ''}">
+        <div style="flex:1;">
+          <div style="font-weight:800; font-size:13.5px; color:#1e293b;">
+            ${isPinned ? '🎯 ' : '🛒 '}${item.name}
+          </div>
+          <div style="font-size:11.5px; color:#64748b; margin-top:2px;">
+            Preis: <strong>${item.preisGold} Gold</strong> • AP: <strong>${item.kostenAp} AP</strong>
+          </div>
+        </div>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <button type="button"
+                  class="secondary-btn ${isPinned ? 'pin-active-btn' : ''}"
+                  style="padding:6px 8px; font-size:11px;"
+                  onclick="event.stopPropagation(); pinShopGoal(${idx});"
+                  title="Als aktives Sparziel auf dem Dashboard-Sparschwein anpinnen">
+            ${isPinned ? '📌 Aktiv' : '🎯 Pin'}
+          </button>
+          <button type="button" class="top-btn" onclick="event.stopPropagation(); redeemShopItem(${idx});">Kaufen</button>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  body.innerHTML = goalBannerHtml + itemsHtml;
   openModal("shop-modal");
 }
 
-function redeemShopItem(itemId) {
-  const item = Engine.SHOP_ITEMS.find(i => i.id === itemId);
+function pinShopGoal(itemId) {
+  if (!Engine.setPinnedShopGoal) return;
+  const pg = Engine.setPinnedShopGoal(itemId);
+  renderAll();
+  openShopModal();
+  if (pg) {
+    showLootToast(`🎯 Sparziel ans Sparschwein gepinnt: "${pg.name}" (${pg.exactPct}% erreicht)`);
+  }
+}
+
+function redeemShopItem(itemIdOrIdx) {
+  const item = (typeof itemIdOrIdx === "number" && Engine.SHOP_ITEMS[itemIdOrIdx])
+    ? Engine.SHOP_ITEMS[itemIdOrIdx]
+    : Engine.SHOP_ITEMS.find(i => i.id === itemIdOrIdx || i.name === itemIdOrIdx);
   if (!item) return;
   const res = Engine.buyShopItem(item);
   showLootToast(res.msg);
@@ -1150,7 +1397,7 @@ function openCharacterModal() {
   if (body) {
     body.innerHTML = `
       <div style="display:flex; align-items:center; gap:14px; background:#fff7ed; border:2px solid #fed7aa; border-radius:14px; padding:12px; margin-bottom:12px;">
-        <img id="modal-profile-ref-img" src="${getIdleAvatarFrameUrl()}" alt="Profilbild Referenz" style="width:96px; height:96px; border-radius:50%; object-fit:contain; object-position:center bottom; padding-top:4px; border:3.5px solid #ff7a00; image-rendering:auto; background:radial-gradient(circle at 50% 40%, #fff9db 0%, #ffd43b 70%, #f76707 100%); flex-shrink:0;">
+        <img id="modal-profile-ref-img" src="${getIdleAvatarFrameUrl()}" alt="Profilbild Referenz" style="width:116px; height:116px; border-radius:50%; object-fit:contain; object-position:center bottom; padding-top:2px; border:3.5px solid #ff7a00; image-rendering:auto; background:radial-gradient(circle at 50% 40%, #fff9db 0%, #ffd43b 70%, #f76707 100%); flex-shrink:0;">
         <div style="flex:1;">
           <div style="font-weight:900; font-size:15px; color:#9a3412;">Offizielle Designreferenz (Paddy)</div>
           <div style="font-size:12px; color:#475569; margin-top:2px;">
@@ -1278,16 +1525,47 @@ function openModal(id) {
 }
 
 function closeModal(id) {
+  if (id === "object-modal" && activeStageAnimTimer && pendingStageCloseCallback) {
+    const cb = pendingStageCloseCallback;
+    pendingStageCloseCallback = null;
+    clearTimeout(activeStageAnimTimer);
+    activeStageAnimTimer = null;
+    cb();
+    return;
+  }
   const el = document.getElementById(id);
   if (el) el.classList.remove("active");
 }
 
-function showLootToast(text) {
+let lootToastTimer = null;
+function showLootToast(text, options = {}) {
   const t = document.getElementById("loot-toast");
   if (!t) return;
-  t.textContent = text;
+  clearTimeout(lootToastTimer);
+
+  const canUndo = options.allowUndo && Engine.canUndoLastAction && Engine.canUndoLastAction();
+  if (canUndo) {
+    t.innerHTML = `
+      <div class="loot-toast-row">
+        <span class="loot-toast-msg">${text}</span>
+        <button type="button" class="loot-undo-btn" onclick="event.stopPropagation(); triggerUndoLastAction();">↩ Rückgängig</button>
+      </div>
+    `;
+  } else {
+    t.textContent = text;
+  }
+
   t.classList.remove("hidden");
-  setTimeout(() => t.classList.add("hidden"), 2800);
+  lootToastTimer = setTimeout(() => t.classList.add("hidden"), canUndo ? 5000 : 2800);
+}
+
+function triggerUndoLastAction() {
+  if (!Engine.undoLastAction) return;
+  const res = Engine.undoLastAction();
+  if (res && res.ok) {
+    renderAll();
+    showLootToast(`↩ Rückgängig gemacht: "${res.objName}" wurde zurückgesetzt.`);
+  }
 }
 
 
@@ -1374,11 +1652,22 @@ function completeCatalogEntry(zielTabelle, cellRef, currentFilterRoom) {
   const item = list.find(x => x.cellRef === cellRef);
   if (!item) return;
 
-  Engine.completeObject(item);
+  const rName = item.raum || Engine.getState().settings.currentRoom || "Flur";
+  const dirtBefore = Engine.getRoomDirtLevel ? Engine.getRoomDirtLevel(rName) : 0;
+  const isClean = !!(item.isDirtCleaner || (item.name && (item.name.includes("Samstagsputz") || item.name.includes("aufräumen") || item.name.includes("Tisch abwischen"))));
+  const mult = (isClean && dirtBefore >= 1 && Engine.getDirtMultiplier) ? Engine.getDirtMultiplier(dirtBefore) : 1.0;
+  const finalXp = Math.round((Number(item.xp) || 0) * mult);
+  const finalGold = Math.round((Number(item.gold) || 0) * mult);
+
+  const res = Engine.completeObject(item) || {};
+  const effXp = res.xpGain !== undefined ? res.xpGain : finalXp;
+  const effGold = res.goldGain !== undefined ? res.goldGain : finalGold;
+  spawnLootParticlesToRing(item, { xp: effXp, gold: effGold, mb: Number(item.mb) || 0, ap: Number(item.ap) || 0 });
   triggerExcitedAvatar();
   renderAll();
   openRoomBookModal(currentFilterRoom);
-  showLootToast(`✅ "${item.name}" erledigt (+${item.xp} XP, +${item.gold || 0} G, +${item.mb} MB)`);
+  const comboTxt = (res.comboCount && res.comboCount >= 2) ? ` [🔥 Combo x${res.comboMult.toFixed(1)}!]` : "";
+  showLootToast(`✅ "${item.name}" erledigt (+${effXp} XP, +${effGold} G, +${item.mb} MB)${comboTxt}`, { allowUndo: true });
 }
 
 
@@ -1460,8 +1749,8 @@ function renderUiFrameOverlay(roomName) {
     const displayRoom = rName;
     const showBadge = (frameObj && frameObj.showRoomBadge) || (s.settings && s.settings.showRoomBadgeOnFrame);
 
-    // Zähle heute erledigte Quests im aktuellen Raum
-    const roomObjs = (Engine.ROOM_OBJECTS[rName] || []).filter(o => !o.isMapDoor && !o.isShopTrigger);
+    // Zähle heute erledigte Quests im aktuellen Raum (ohne in die Truhe gelegte Objekte)
+    const roomObjs = (Engine.ROOM_OBJECTS[rName] || []).filter(o => !o.isMapDoor && !o.isShopTrigger && !(Engine.isObjectInLuggage && Engine.isObjectInLuggage(o.id)));
     const completed = s.completedToday || {};
     const doneCount = roomObjs.filter(o => !!completed[o.id]).length;
     const totalCount = roomObjs.length;
@@ -1484,12 +1773,18 @@ function renderUiFrameOverlay(roomName) {
     const timePhase = Engine.getActiveTimePhase ? Engine.getActiveTimePhase() : { icon: "☀️", label: "Tageslicht", shortLabel: "Tag", isAuto: true };
     const timePillHtml = `<span class="smart-badge-time-pill" onclick="event.stopPropagation(); cycleTimeOfDayMode();" title="Tageszeit-Licht: ${timePhase.label} (${timePhase.isAuto ? 'Automatisch nach Uhrzeit' : 'Manuell fixiert'} – Antippen zum Durchschalten)">${timePhase.icon}</span>`;
 
+    const comboInfo = Engine.getFlowComboInfo ? Engine.getFlowComboInfo() : { active: false };
+    const comboPillHtml = comboInfo.active
+      ? `<span class="smart-badge-combo-pill" onclick="event.stopPropagation(); showLootToast('🔥 Flow-Combo aktiv (${comboInfo.count} Quests in Folge = x${comboInfo.multiplier.toFixed(1)} XP)!');" title="Flow-Combo aktiv: ${comboInfo.count} Quests innerhalb von 15 Min.">🔥 x${comboInfo.multiplier.toFixed(1)}</span>`
+      : "";
+
     if (showBadge) {
       badgeEl.innerHTML = `
-        <span class="smart-badge-room-btn" onclick="openMapModal()" title="Wohnungs-Grundriss öffnen">
+        <span class="smart-badge-room-btn" onclick="openMapModal()" title="Wohnungs-Grundriss & Live-Radar öffnen">
           ${rIcon} ${displayRoom}
           <span class="smart-badge-count">${doneCount}/${totalCount} ✓</span>
         </span>
+        ${comboPillHtml}
         ${timePillHtml}
         ${dirtPillHtml}
       `;
@@ -1809,16 +2104,17 @@ function toggleLiveSheetSync() {
 
 
 // ============================================================================
-// 9. VERSTECKTER PC-ENTWICKLERMODUS (NUR PER TASTENKOMBINATION AM PC: Strg+Shift+D oder Alt+D)
+// 9. VERSTECKTER PC-ENTWICKLERMODUS INKL. SCHEIBENWELT-TRUHE ("THE LUGGAGE") (v0.64)
 // ============================================================================
 let isDevMode = false;
 let devSelectedId = null;
 let devDragState = null;
+let isLuggageDrawerOpen = false;
 
 function getEditableObjectsForCurrentRoom() {
   const s = Engine.getState();
   const rName = (s.settings && s.settings.currentRoom) || "Dashboard";
-  const list = [...(Engine.ROOM_OBJECTS[rName] || [])];
+  const list = [...(Engine.ROOM_OBJECTS[rName] || [])].filter(o => !(Engine.isObjectInLuggage && Engine.isObjectInLuggage(o.id)));
   const dynClean = getDynamicCleaningObject(rName);
   if (dynClean) list.push(dynClean);
   if (rName === "Dashboard" && Engine.getTop3FrequentActivities) {
@@ -1849,6 +2145,8 @@ function toggleDevMode(forceState) {
   isDevMode = typeof forceState === "boolean" ? forceState : !isDevMode;
   const canvas = document.getElementById("room-canvas");
   const bar = document.getElementById("dev-inspector-bar");
+  const luggageAsset = document.getElementById("dev-luggage-asset");
+  const luggageDrawer = document.getElementById("dev-luggage-drawer");
   if (canvas) {
     canvas.classList.toggle("dev-mode-active", isDevMode);
   }
@@ -1857,12 +2155,17 @@ function toggleDevMode(forceState) {
     if (!devSelectedId || !objs.some(o => o.id === devSelectedId)) {
       devSelectedId = objs.length ? objs[0].id : null;
     }
+    if (luggageAsset) luggageAsset.classList.remove("hidden");
+    updateLuggageBadgeAndGrid();
     renderAll();
     renderDevInspector();
-    showLootToast("🛠️ PC-Entwicklermodus AKTIV (Strg+Shift+D oder Alt+D zum Beenden)");
+    showLootToast("🛠️ PC-Entwicklermodus AKTIV • 🧰 Die Scheibenwelt-Truhe steht unten rechts bereit!");
   } else {
     devSelectedId = null;
+    isLuggageDrawerOpen = false;
     if (bar) bar.classList.add("hidden");
+    if (luggageAsset) luggageAsset.classList.add("hidden");
+    if (luggageDrawer) luggageDrawer.classList.add("hidden");
     renderAll();
     showLootToast("🎮 Normaler Spielmodus wieder aktiv!");
   }
@@ -1872,6 +2175,7 @@ function selectDevObject(objId) {
   devSelectedId = objId;
   renderAll();
   renderDevInspector();
+  updateLuggageBadgeAndGrid();
 }
 
 function renderDevInspector() {
@@ -1885,12 +2189,16 @@ function renderDevInspector() {
 
   const obj = getSelectedDevObject();
   const rName = (Engine.getState().settings && Engine.getState().settings.currentRoom) || "Dashboard";
+  const chestCount = Engine.getLuggageChestItems ? Engine.getLuggageChestItems().length : 0;
 
   if (!obj) {
     bar.innerHTML = `
       <div class="dev-header-row">
         <span class="dev-obj-title">🛠️ Dev-Editor (${rName}): Objekt anklicken!</span>
-        <button class="dev-mini-btn warn" onclick="toggleDevMode(false)">✕ Beenden</button>
+        <div style="display:flex; gap:4px;">
+          <button class="dev-mini-btn accent" onclick="toggleLuggageDrawer()">🧰 Truhe (${chestCount})</button>
+          <button class="dev-mini-btn warn" onclick="toggleDevMode(false)">✕ Beenden</button>
+        </div>
       </div>
     `;
     return;
@@ -1902,6 +2210,7 @@ function renderDevInspector() {
   const h = Number(obj.heightPct || 10).toFixed(2);
   const z = Number(obj.zIndex || 12);
   const rot = Number(obj.rotDeg || 0).toFixed(1);
+  const canStoreInChest = !obj.isPostitSlot && !obj.isDirtCleaner;
 
   bar.innerHTML = `
     <div class="dev-header-row">
@@ -1924,11 +2233,144 @@ function renderDevInspector() {
       <button class="dev-mini-btn" onclick="changeDevZIndex(-1)" title="Ebene nach hinten (Z-Index -1)">Ebene ▼</button>
     </div>
     <div class="dev-btn-row" style="margin-bottom:0;">
-      <button class="dev-mini-btn accent" onclick="copyDevRoomJson()" title="Koordinaten dieses Raums als JSON/JS in die Zwischenablage kopieren">📋 Raum-Coords kopieren</button>
-      <button class="dev-mini-btn" onclick="resetSelectedDevObject()" title="Nur dieses Objekt auf Werkseinstellung zurücksetzen">🔄 Objekt-Reset</button>
+      ${canStoreInChest ? `<button class="dev-mini-btn luggage-btn" onclick="storeSelectedDevObjectInLuggage()" title="Gegenstand aus dem Raum entfernen und in die endlose Scheibenwelt-Truhe legen (Entf-Taste)">🧰 In Truhe legen</button>` : ''}
+      <button class="dev-mini-btn accent" onclick="copyDevRoomJson()" title="Koordinaten dieses Raums als JSON/JS in die Zwischenablage kopieren">📋 Coords</button>
+      <button class="dev-mini-btn" onclick="resetSelectedDevObject()" title="Nur dieses Objekt auf Werkseinstellung zurücksetzen">🔄 Reset</button>
       <button class="dev-mini-btn warn" onclick="resetCurrentRoomDevLayout()" title="Alle Objekte im Raum auf Werkseinstellung zurücksetzen">🗑️ Raum-Reset</button>
     </div>
   `;
+}
+
+// --- SCHEIBENWELT-TRUHE ("THE LUGGAGE") UI-LOGIK (v0.64) ---
+function toggleLuggageDrawer(forceOpen) {
+  if (!isDevMode) return;
+  const drawerEl = document.getElementById("dev-luggage-drawer");
+  if (!drawerEl) return;
+  isLuggageDrawerOpen = typeof forceOpen === "boolean" ? forceOpen : !isLuggageDrawerOpen;
+  drawerEl.classList.toggle("hidden", !isLuggageDrawerOpen);
+  updateLuggageBadgeAndGrid();
+}
+
+function closeLuggageDrawer() {
+  toggleLuggageDrawer(false);
+}
+
+function triggerLuggageChompAnim() {
+  const assetEl = document.getElementById("dev-luggage-asset");
+  if (!assetEl) return;
+  assetEl.classList.remove("luggage-chomp");
+  void assetEl.offsetWidth;
+  assetEl.classList.add("luggage-chomp");
+}
+
+function storeSelectedDevObjectInLuggage() {
+  const obj = getSelectedDevObject();
+  if (!obj) {
+    showLootToast("🧰 Bitte zuerst im Raum einen Gegenstand anklicken (oder direkt auf die Truhe ziehen)!");
+    return;
+  }
+  const res = Engine.storeObjectInLuggage(obj.id);
+  if (!res || !res.ok) {
+    showLootToast(res && res.msg ? res.msg : "⚠️ Dieses Element kann nicht in die Truhe gelegt werden.");
+    return;
+  }
+  triggerLuggageChompAnim();
+  const remaining = getEditableObjectsForCurrentRoom();
+  devSelectedId = remaining.length ? remaining[0].id : null;
+  renderAll();
+  renderDevInspector();
+  updateLuggageBadgeAndGrid();
+  showLootToast(`🧰 *Schnapp!* "${obj.name}" liegt jetzt in der endlosen Scheibenwelt-Truhe!`);
+}
+
+function restoreObjectFromLuggageToRoom(objId, placeInCurrentRoom = false) {
+  const s = Engine.getState();
+  const curRoom = (s.settings && s.settings.currentRoom) || "Dashboard";
+  const res = Engine.restoreObjectFromLuggage(objId, placeInCurrentRoom ? curRoom : null);
+  if (!res || !res.ok) return;
+
+  triggerLuggageChompAnim();
+  devSelectedId = objId;
+  renderAll();
+  renderDevInspector();
+  updateLuggageBadgeAndGrid();
+  const destRoom = placeInCurrentRoom ? curRoom : (res.obj ? res.obj.raum : curRoom);
+  showLootToast(`📦 "${res.obj ? res.obj.name : objId}" aus der Truhe zurück in den Raum (${destRoom}) gestellt!`);
+}
+
+function restoreAllFromLuggage() {
+  const count = Engine.getLuggageChestItems ? Engine.getLuggageChestItems().length : 0;
+  if (count === 0) {
+    showLootToast("🧰 Die Truhe ist bereits komplett leer!");
+    return;
+  }
+  Engine.emptyLuggageChest();
+  triggerLuggageChompAnim();
+  renderAll();
+  renderDevInspector();
+  updateLuggageBadgeAndGrid();
+  showLootToast(`🧰 Alle ${count} Gegenstände wurden wieder aus der Truhe in ihre Räume gestellt!`);
+}
+
+function updateLuggageBadgeAndGrid() {
+  const storedObjs = Engine.getLuggageChestObjectsDetailed ? Engine.getLuggageChestObjectsDetailed() : [];
+  const badgeEl = document.getElementById("luggage-count-badge");
+  if (badgeEl) {
+    badgeEl.textContent = String(storedObjs.length);
+    badgeEl.classList.toggle("has-items", storedObjs.length > 0);
+  }
+
+  const subEl = document.getElementById("luggage-drawer-subtitle");
+  if (subEl) {
+    const selObj = getSelectedDevObject();
+    const selHint = (selObj && !selObj.isPostitSlot && !selObj.isDirtCleaner)
+      ? ` • Freies Kästchen klicken = "${selObj.name}" ablegen`
+      : " • Gegenstand anklicken = zurück in den Raum";
+    subEl.textContent = `${storedObjs.length} Gegenstände eingelagert (∞ Kapazität)${selHint}`;
+  }
+
+  const gridEl = document.getElementById("luggage-drawer-grid");
+  if (!gridEl) return;
+
+  // Endlose Kiste: Zeige immer mindestens 24 Kästchen (und sobald mehr drin liegt, wachsen automatisch weitere leere Kästchen nach!)
+  const totalSlots = Math.max(24, Math.ceil((storedObjs.length + 9) / 3) * 3);
+  const cellsHtml = [];
+
+  for (let i = 0; i < totalSlots; i++) {
+    const item = storedObjs[i];
+    if (item) {
+      const imgUrl = item.spriteUrl || item.iconUrl || "";
+      const visualHtml = imgUrl
+        ? `<img src="${imgUrl}" alt="${item.name}" class="luggage-slot-img" onerror="this.outerHTML='<div class=\'luggage-slot-emoji\'>${item.icon || '📦'}</div>'">`
+        : `<div class="luggage-slot-emoji">${item.icon || "📦"}</div>`;
+      cellsHtml.push(`
+        <div class="luggage-slot-cell occupied"
+             onclick="restoreObjectFromLuggageToRoom('${item.id}', false)"
+             title="In Original-Raum (${item.raum}) zurücklegen: ${item.name} [${item.id}]">
+          <span class="luggage-slot-index">#${i + 1}</span>
+          <span class="luggage-slot-room-tag">${item.raum}</span>
+          ${visualHtml}
+          <div class="luggage-slot-name">${item.name}</div>
+          <div class="luggage-slot-actions">
+            <button type="button" class="luggage-slot-btn" onclick="event.stopPropagation(); restoreObjectFromLuggageToRoom('${item.id}', false);" title="Zurück in ${item.raum}">↩ ${item.raum}</button>
+            <button type="button" class="luggage-slot-btn here" onclick="event.stopPropagation(); restoreObjectFromLuggageToRoom('${item.id}', true);" title="Hier im aktuellen Raum platzieren">📍 Hier</button>
+          </div>
+        </div>
+      `);
+    } else {
+      cellsHtml.push(`
+        <div class="luggage-slot-cell empty-slot"
+             onclick="storeSelectedDevObjectInLuggage()"
+             title="Freies Kästchen #${i + 1}: Klicken, um das aktuell markierte Raum-Objekt hier abzulegen (oder Objekt per Maus in die Truhe ziehen)">
+          <span class="luggage-slot-index">#${i + 1}</span>
+          <div class="luggage-empty-plus">＋</div>
+          <div class="luggage-empty-lbl">Freies Fach</div>
+        </div>
+      `);
+    }
+  }
+
+  gridEl.innerHTML = cellsHtml.join("");
 }
 
 function round2(val) {
@@ -2046,13 +2488,17 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.key === "ArrowDown")  { e.preventDefault(); nudgeDevObject(0, step); }
     if (e.key === "+" || e.key === "=") { e.preventDefault(); scaleDevObject(1.03); }
     if (e.key === "-")                  { e.preventDefault(); scaleDevObject(0.97); }
+    if (e.key === "Delete" || e.key === "Backspace") {
+      e.preventDefault();
+      storeSelectedDevObjectInLuggage();
+    }
   });
 
-  // 2. Freies Ziehen (Drag & Drop) mit der Maus im aktiven Entwicklermodus
+  // 2. Freies Ziehen (Drag & Drop) mit der Maus im aktiven Entwicklermodus (inkl. Drop in die Scheibenwelt-Truhe!)
   canvas.addEventListener("pointerdown", (e) => {
     if (!isDevMode) return;
-    // Ignoriere Klicks auf die Dev-Inspektor-Leiste selbst
-    if (e.target.closest("#dev-inspector-bar") || e.target.closest("#bottom-room-dock") || e.target.closest(".floating-avatar-hud")) {
+    // Ignoriere Klicks auf die Dev-Inspektor-Leiste & die Scheibenwelt-Truhe selbst
+    if (e.target.closest("#dev-inspector-bar") || e.target.closest("#dev-luggage-asset") || e.target.closest("#dev-luggage-drawer") || e.target.closest("#bottom-room-dock") || e.target.closest(".floating-avatar-hud")) {
       return;
     }
     const hotspotEl = e.target.closest("[data-dev-id]");
@@ -2089,10 +2535,30 @@ document.addEventListener("DOMContentLoaded", () => {
     const newLeft = round2(devDragState.origLeft + (dxPx / devDragState.canvasW) * 100);
     const newTop = round2(devDragState.origTop + (dyPx / devDragState.canvasH) * 100);
 
+    // Prüfe, ob der Mauszeiger über der Scheibenwelt-Truhe (oder dem offenen Truhen-Fenster) schwebt
+    const luggageEl = document.getElementById("dev-luggage-asset");
+    const drawerEl = document.getElementById("dev-luggage-drawer");
+    let overLuggage = false;
+    if (luggageEl && !luggageEl.classList.contains("hidden")) {
+      const r = luggageEl.getBoundingClientRect();
+      if (e.clientX >= r.left - 8 && e.clientX <= r.right + 8 && e.clientY >= r.top - 8 && e.clientY <= r.bottom + 8) {
+        overLuggage = true;
+      }
+      luggageEl.classList.toggle("drag-over-target", overLuggage);
+    }
+    if (!overLuggage && drawerEl && !drawerEl.classList.contains("hidden")) {
+      const r2 = drawerEl.getBoundingClientRect();
+      if (e.clientX >= r2.left && e.clientX <= r2.right && e.clientY >= r2.top && e.clientY <= r2.bottom) {
+        overLuggage = true;
+      }
+    }
+    devDragState.overLuggage = overLuggage;
+
     // Direktes Live-Update im DOM für butterweiches 60fps Ziehen
     if (devDragState.el) {
       devDragState.el.style.left = `${newLeft}%`;
       devDragState.el.style.top = `${newTop}%`;
+      devDragState.el.style.opacity = overLuggage ? "0.55" : "1";
     }
     Engine.updateObjectLayout(devDragState.id, { leftPct: newLeft, topPct: newTop });
     renderDevInspector();
@@ -2100,7 +2566,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.addEventListener("pointerup", () => {
     if (!isDevMode || !devDragState) return;
+    const droppedId = devDragState.id;
+    const wasOverLuggage = !!devDragState.overLuggage;
+    const origL = devDragState.origLeft;
+    const origT = devDragState.origTop;
+    const luggageEl = document.getElementById("dev-luggage-asset");
+    if (luggageEl) luggageEl.classList.remove("drag-over-target");
     devDragState = null;
+
+    if (wasOverLuggage) {
+      // Stelle ursprüngliche Koordinaten vor dem Einlagern wieder her, damit das Objekt beim späteren Rausholen an seinem alten Platz steht
+      Engine.updateObjectLayout(droppedId, { leftPct: origL, topPct: origT });
+      devSelectedId = droppedId;
+      storeSelectedDevObjectInLuggage();
+      return;
+    }
+
     renderAll();
     renderDevInspector();
   });
@@ -2192,3 +2673,408 @@ setInterval(() => {
     renderAmbientLighting(rName);
   }
 }, 60000);
+
+
+// ============================================================================
+// 11. FLIEGENDE MÜNZ-, XP-, MB- & AP-PARTIKEL IN DEN AVATAR-RING (v0.57)
+// ============================================================================
+function resolveObjectCenterPct(obj) {
+  if (!obj) return { xPct: 50, yPct: 55 };
+
+  // 1. Direkte Prozent-Koordinaten vorhanden (Raum-Sprites & Post-its)
+  if (typeof obj.leftPct === "number" && typeof obj.topPct === "number") {
+    const w = typeof obj.widthPct === "number" ? obj.widthPct : 14;
+    const h = typeof obj.heightPct === "number" ? obj.heightPct : 10;
+    return {
+      xPct: Math.min(92, Math.max(8, obj.leftPct + w / 2)),
+      yPct: Math.min(90, Math.max(12, obj.topPct + h / 2))
+    };
+  }
+  if (typeof obj.xPct === "number" && typeof obj.yPct === "number") {
+    return { xPct: obj.xPct, yPct: obj.yPct };
+  }
+
+  // 2. Falls aus dem Raum-Buch ausgelöst: Passendes Raum-Sprite über Name oder Verknüpfung suchen
+  const allRooms = Object.keys(Engine.ROOM_OBJECTS || {});
+  for (const rKey of allRooms) {
+    const list = Engine.ROOM_OBJECTS[rKey] || [];
+    const match = list.find(ro =>
+      (obj.id && ro.id === obj.id) ||
+      (obj.name && ro.name === obj.name) ||
+      (obj.cellRef && ro.verknuepfung === obj.cellRef && ro.zielTabelle === obj.zielTabelle)
+    );
+    if (match) {
+      if (typeof match.leftPct === "number" && typeof match.topPct === "number") {
+        const w = typeof match.widthPct === "number" ? match.widthPct : 14;
+        const h = typeof match.heightPct === "number" ? match.heightPct : 10;
+        return {
+          xPct: Math.min(92, Math.max(8, match.leftPct + w / 2)),
+          yPct: Math.min(90, Math.max(12, match.topPct + h / 2))
+        };
+      }
+      if (typeof match.xPct === "number" && typeof match.yPct === "number") {
+        return { xPct: match.xPct, yPct: match.yPct };
+      }
+    }
+  }
+
+  return { xPct: 50, yPct: 55 };
+}
+
+function triggerRingImpactFlash() {
+  const ringEl = document.getElementById("avatar-progress-ring");
+  const wrapperEl = document.querySelector(".avatar-popout-wrapper");
+  if (ringEl) {
+    ringEl.classList.remove("ring-impact-flash");
+    void ringEl.offsetWidth;
+    ringEl.classList.add("ring-impact-flash");
+  }
+  if (wrapperEl) {
+    wrapperEl.classList.remove("ring-impact-bounce");
+    void wrapperEl.offsetWidth;
+    wrapperEl.classList.add("ring-impact-bounce");
+  }
+}
+
+function spawnLootParticlesToRing(sourceObj, rewards = {}) {
+  const canvas = document.getElementById("room-canvas");
+  const ringEl = document.getElementById("avatar-progress-ring");
+  if (!canvas || !ringEl) return;
+
+  let layer = document.getElementById("loot-particles-layer");
+  if (!layer) {
+    layer = document.createElement("div");
+    layer.id = "loot-particles-layer";
+    layer.className = "loot-particles-layer";
+    canvas.appendChild(layer);
+  }
+
+  const canvasRect = canvas.getBoundingClientRect();
+  const ringRect = ringEl.getBoundingClientRect();
+  if (!canvasRect.width || !canvasRect.height) return;
+
+  // Startpunkt in exakt den Prozent-Koordinaten des jeweiligen Objekts
+  const startCoords = resolveObjectCenterPct(sourceObj);
+  const startX = (startCoords.xPct / 100) * canvasRect.width;
+  const startY = (startCoords.yPct / 100) * canvasRect.height;
+
+  // Zielpunkt: Zentrum des Avatar-Rings (#avatar-progress-ring) oben links
+  const targetX = (ringRect.left - canvasRect.left) + ringRect.width / 2;
+  const targetY = (ringRect.top - canvasRect.top) + ringRect.height / 2;
+
+  const xpVal = Number(rewards.xp !== undefined ? rewards.xp : (sourceObj && sourceObj.xp)) || 0;
+  const goldVal = Number(rewards.gold !== undefined ? rewards.gold : (sourceObj && sourceObj.gold)) || 0;
+  const mbVal = Number(rewards.mb !== undefined ? rewards.mb : (sourceObj && sourceObj.mb)) || 0;
+  const apVal = Number(rewards.ap !== undefined ? rewards.ap : (sourceObj && sourceObj.ap)) || 0;
+
+  // Baue 6 bis 8 leuchtende Loot-Partikel (+XP, 🪙 +Gold, 🧠 +MB%, ⚡ +AP & Funken/Münzen)
+  const descriptors = [];
+  if (xpVal > 0) {
+    descriptors.push({ text: `+${xpVal} XP`, type: "xp" });
+  }
+  if (goldVal > 0) {
+    descriptors.push({ text: `🪙 +${goldVal}`, type: "gold" });
+  }
+  if (mbVal !== 0) {
+    descriptors.push({ text: `🧠 ${mbVal > 0 ? "+" : ""}${mbVal}% MB`, type: "mb" });
+  }
+  if (apVal > 0) {
+    descriptors.push({ text: `⚡ +${apVal} AP`, type: "ap" });
+  }
+
+  // Mit leuchtenden Münz-, XP-, MB- und AP-Begleitpartikeln auf 7 Partikel auffüllen (immer zwischen 6 und 8)
+  const fillerPool = [
+    { text: "🪙", type: "gold-coin" },
+    { text: "✨ +XP", type: "xp" },
+    { text: "🧠 +MB", type: "mb" },
+    { text: "⚡ +AP", type: "ap" },
+    { text: "🪙 +G", type: "gold" },
+    { text: "⭐", type: "xp-star" }
+  ];
+  let fillerIdx = 0;
+  while (descriptors.length < 7) {
+    descriptors.push(fillerPool[fillerIdx % fillerPool.length]);
+    fillerIdx++;
+  }
+  const finalParticles = descriptors.slice(0, 8);
+
+  // Kurzer Aufblitz-Impuls an der Startposition
+  const burstEl = document.createElement("div");
+  burstEl.className = "loot-origin-burst";
+  burstEl.style.left = `${startX}px`;
+  burstEl.style.top = `${startY}px`;
+  layer.appendChild(burstEl);
+  setTimeout(() => burstEl.remove(), 550);
+
+  // Jedes Partikel fliegt auf einer leicht geschwungenen quadratischen Bézier-Kurve nach oben links in den Ring
+  finalParticles.forEach((item, idx) => {
+    const pEl = document.createElement("div");
+    pEl.className = `loot-flying-particle loot-type-${item.type}`;
+    pEl.textContent = item.text;
+    pEl.style.left = "0px";
+    pEl.style.top = "0px";
+    pEl.style.opacity = "0";
+    layer.appendChild(pEl);
+
+    // Individuelle Streuung & geschwungener Bogen-Kontrollpunkt für organischen Schwarm-Flug
+    const scatterAngle = (idx / finalParticles.length) * Math.PI * 2;
+    const scatterRadius = 10 + (idx % 3) * 8;
+    const p0x = startX + Math.cos(scatterAngle) * scatterRadius;
+    const p0y = startY + Math.sin(scatterAngle) * scatterRadius;
+
+    const dx = targetX - p0x;
+    const dy = targetY - p0y;
+    // Geschwungene Kurve (Auslenkung abwechselnd leicht nach außen/oben für echten 90s-LucasArts/WoW-Loot-Look)
+    const curveSide = (idx % 2 === 0 ? 1 : -1) * (28 + (idx % 4) * 14);
+    const ctrlX = p0x + dx * 0.45 + curveSide;
+    const ctrlY = Math.min(p0y, targetY) - (32 + (idx % 3) * 18);
+
+    const delayMs = idx * 65;
+    const durationMs = 680 + (idx % 3) * 55;
+
+    setTimeout(() => {
+      const tStart = performance.now();
+
+      function stepFrame(now) {
+        const rawT = Math.min(1, (now - tStart) / durationMs);
+        // Ease-In-Out Cubic mit knackigem End-Zug in den Ring
+        const t = rawT < 0.5
+          ? 2 * rawT * rawT
+          : 1 - Math.pow(-2 * rawT + 2, 2) / 2;
+
+        const inv = 1 - t;
+        const curX = inv * inv * p0x + 2 * inv * t * ctrlX + t * t * targetX;
+        const curY = inv * inv * p0y + 2 * inv * t * ctrlY + t * t * targetY;
+
+        // Pop-In am Start, volle Sichtbarkeit im Flug, sanftes Einsaugen ins Ring-Zentrum am Ende
+        let scale = 1.0;
+        let alpha = 1.0;
+        if (rawT < 0.16) {
+          scale = 0.45 + (rawT / 0.16) * 0.7;
+          alpha = rawT / 0.16;
+        } else if (rawT > 0.82) {
+          const endPhase = (rawT - 0.82) / 0.18;
+          scale = 1.15 - endPhase * 0.65;
+          alpha = 1 - endPhase * 0.85;
+        }
+
+        pEl.style.opacity = String(Math.max(0, Math.min(1, alpha)));
+        pEl.style.transform = `translate3d(${curX}px, ${curY}px, 0) translate(-50%, -50%) scale(${scale.toFixed(3)})`;
+
+        if (rawT < 1) {
+          requestAnimationFrame(stepFrame);
+        } else {
+          pEl.remove();
+          triggerRingImpactFlash();
+        }
+      }
+
+      requestAnimationFrame(stepFrame);
+    }, delayMs);
+  });
+}
+
+
+// ============================================================================
+// 12. PARALYSE-BRECHER (🎲 RING-BUTTON #1) & VISUELLER FOKUS-TIMER IM AVATAR-RING (#3) (v0.58)
+// ============================================================================
+let activeParalyseTargetId = null;
+let paralyseHighlightTimer = null;
+
+function triggerParalyseBreaker() {
+  const s = Engine.getState();
+  const currentRoom = (s.settings && s.settings.currentRoom) || "Dashboard";
+  const completed = s.completedToday || {};
+
+  // Würfel-Button kurz animieren
+  const diceBtn = document.getElementById("paralyse-breaker-btn");
+  if (diceBtn) {
+    diceBtn.classList.remove("dice-rolling");
+    void diceBtn.offsetWidth;
+    diceBtn.classList.add("dice-rolling");
+  }
+
+  // Sammle offene, schnelle Aufgaben (bevorzugt <= 15 Min oder <= 1 AP) im aktuellen Raum
+  const getCandidatesForRoom = (rName) => {
+    const base = (Engine.ROOM_OBJECTS[rName] || []).filter(o => !o.isMapDoor && !o.isShopTrigger && !(Engine.isObjectInLuggage && Engine.isObjectInLuggage(o.id)));
+    const dynClean = getDynamicCleaningObject(rName);
+    const all = dynClean ? [...base, dynClean] : base;
+    return all.filter(o => !completed[o.id]);
+  };
+
+  let pool = getCandidatesForRoom(currentRoom);
+  let targetRoom = currentRoom;
+
+  // Bevorzuge kleine/schnelle 5-bis-15-Minuten-Aufgaben im aktuellen Raum
+  const quickPool = pool.filter(o => {
+    const mins = Engine.getQuestDurationMinutes ? Engine.getQuestDurationMinutes(o) : 5;
+    return mins <= 15 && (Number(o.ap) || 0) <= 1;
+  });
+  if (quickPool.length > 0) {
+    pool = quickPool;
+  }
+
+  // Falls im aktuellen Raum schon alles erledigt ist: Wohnungsweit in allen 7 Räumen suchen!
+  if (pool.length === 0) {
+    const allOpen = [];
+    Object.keys(Engine.ROOM_OBJECTS).forEach(rKey => {
+      getCandidatesForRoom(rKey).forEach(o => allOpen.push({ room: rKey, obj: o }));
+    });
+    if (allOpen.length === 0) {
+      showLootToast("🎉 Wahnsinn! Du hast heute bereits alle Raum-Quests erledigt!");
+      return;
+    }
+    const quickAll = allOpen.filter(x => {
+      const mins = Engine.getQuestDurationMinutes ? Engine.getQuestDurationMinutes(x.obj) : 5;
+      return mins <= 15 && (Number(x.obj.ap) || 0) <= 1;
+    });
+    const pickList = quickAll.length > 0 ? quickAll : allOpen;
+    const chosen = pickList[Math.floor(Math.random() * pickList.length)];
+    targetRoom = chosen.room;
+    pool = [chosen.obj];
+  }
+
+  const picked = pool[Math.floor(Math.random() * pool.length)];
+  if (!picked) return;
+
+  if (targetRoom !== currentRoom) {
+    selectRoom(targetRoom);
+  }
+
+  activeParalyseTargetId = picked.id;
+  renderAll();
+
+  clearTimeout(paralyseHighlightTimer);
+  paralyseHighlightTimer = setTimeout(() => {
+    activeParalyseTargetId = null;
+    renderAll();
+  }, 4500);
+
+  const mins = Engine.getQuestDurationMinutes ? Engine.getQuestDurationMinutes(picked) : 5;
+  showLootToast(`🎲 Paralyse-Brecher: "${picked.name}" (${targetRoom} • ~${mins} Min.) ausgewählt!`);
+
+  setTimeout(() => {
+    handleHotspotClick(targetRoom, picked.id);
+  }, 420);
+}
+
+// --- VISUELLER POMODORO- / FOKUS-TIMER ALS GOLDENER COUNTDOWN-BOGEN IM AVATAR-RING (#3) ---
+let activeFocusTimer = null;
+
+function formatFocusSeconds(sec) {
+  const s = Math.max(0, Math.floor(sec));
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  return `${String(m).padStart(2, "0")}:${String(r).padStart(2, "0")}`;
+}
+
+function startObjectFocusTimer(customMinutes) {
+  if (!selectedObject) return;
+
+  // Falls der Timer für genau dieses Objekt schon läuft -> Stoppen
+  if (activeFocusTimer && activeFocusTimer.objId === selectedObject.id) {
+    stopFocusTimer(false);
+    closeModal("object-modal");
+    return;
+  }
+
+  const mins = customMinutes || (Engine.getQuestDurationMinutes ? Engine.getQuestDurationMinutes(selectedObject) : 5);
+  const totalSec = Math.max(10, mins * 60);
+
+  if (activeFocusTimer && activeFocusTimer.intervalId) {
+    clearInterval(activeFocusTimer.intervalId);
+  }
+
+  activeFocusTimer = {
+    obj: selectedObject,
+    objId: selectedObject.id,
+    room: selectedObject.raum || Engine.getState().settings.currentRoom || "Dashboard",
+    title: selectedObject.name,
+    totalSec: totalSec,
+    remainingSec: totalSec,
+    startedAt: Date.now(),
+    intervalId: null
+  };
+
+  closeModal("object-modal");
+  updateFocusTimerHud();
+  showLootToast(`⏳ Fokus-Timer gestartet: ${mins} Min. für "${selectedObject.name}" (läuft golden im Avatar-Ring!)`);
+
+  activeFocusTimer.intervalId = setInterval(() => {
+    if (!activeFocusTimer) return;
+    const elapsed = Math.floor((Date.now() - activeFocusTimer.startedAt) / 1000);
+    activeFocusTimer.remainingSec = Math.max(0, activeFocusTimer.totalSec - elapsed);
+    updateFocusTimerHud();
+
+    if (activeFocusTimer.remainingSec <= 0) {
+      completeFocusTimerSession();
+    }
+  }, 250);
+}
+
+function updateFocusTimerHud() {
+  const ringEl = document.getElementById("focus-timer-ring");
+  const pillEl = document.getElementById("focus-timer-hud-pill");
+  const txtEl = document.getElementById("focus-timer-hud-text");
+  if (!ringEl || !pillEl || !txtEl) return;
+
+  if (!activeFocusTimer) {
+    ringEl.classList.add("hidden");
+    pillEl.classList.add("hidden");
+    return;
+  }
+
+  ringEl.classList.remove("hidden");
+  pillEl.classList.remove("hidden");
+
+  const pctRemaining = Math.max(0, Math.min(100, (activeFocusTimer.remainingSec / activeFocusTimer.totalSec) * 100));
+  ringEl.style.background = `conic-gradient(#fde047 0% ${pctRemaining.toFixed(1)}%, rgba(250, 204, 21, 0.08) ${pctRemaining.toFixed(1)}% 100%)`;
+  txtEl.textContent = formatFocusSeconds(activeFocusTimer.remainingSec);
+}
+
+function stopFocusTimer(silent = false) {
+  if (activeFocusTimer && activeFocusTimer.intervalId) {
+    clearInterval(activeFocusTimer.intervalId);
+  }
+  const oldTitle = activeFocusTimer ? activeFocusTimer.title : "";
+  activeFocusTimer = null;
+  updateFocusTimerHud();
+  if (!silent && oldTitle) {
+    showLootToast(`⏹️ Fokus-Timer für "${oldTitle}" beendet.`);
+  }
+}
+
+function handleFocusTimerPillClick() {
+  if (!activeFocusTimer) return;
+  const targetRoom = activeFocusTimer.room;
+  const currentRoom = Engine.getState().settings.currentRoom || "Dashboard";
+  if (targetRoom && targetRoom !== currentRoom) {
+    selectRoom(targetRoom);
+  }
+  handleHotspotClick(targetRoom, activeFocusTimer.objId);
+}
+
+function completeFocusTimerSession() {
+  if (!activeFocusTimer) return;
+  const finishedObj = activeFocusTimer.obj;
+  const finishedRoom = activeFocusTimer.room;
+  stopFocusTimer(true);
+
+  const currentRoom = Engine.getState().settings.currentRoom || "Dashboard";
+  if (finishedRoom && finishedRoom !== currentRoom) {
+    selectRoom(finishedRoom);
+  }
+
+  const dirtBefore = Engine.getRoomDirtLevel ? Engine.getRoomDirtLevel(finishedRoom) : 0;
+  const isClean = !!(finishedObj.isDirtCleaner || (finishedObj.name && (finishedObj.name.includes("Samstagsputz") || finishedObj.name.includes("aufräumen") || finishedObj.name.includes("Tisch abwischen"))));
+  const mult = (isClean && dirtBefore >= 1 && Engine.getDirtMultiplier) ? Engine.getDirtMultiplier(dirtBefore) : 1.0;
+  const finalXp = Math.round((Number(finishedObj.xp) || 0) * mult);
+  const finalGold = Math.round((Number(finishedObj.gold) || 0) * mult);
+
+  Engine.completeObject(finishedObj);
+  spawnLootParticlesToRing(finishedObj, { xp: finalXp, gold: finalGold, mb: Number(finishedObj.mb) || 0, ap: Number(finishedObj.ap) || 0 });
+  triggerConfettiThrow(true);
+  triggerExcitedAvatar();
+  renderAll();
+  showLootToast(`🔔 Fokus-Zeit abgelaufen! "${finishedObj.name}" erledigt (+${finalXp} XP, +${finalGold} G, +${finishedObj.mb || 0} MB)!`);
+}

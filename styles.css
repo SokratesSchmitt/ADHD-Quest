@@ -1,444 +1,738 @@
-/* ADHD QUEST - Version 0.56 Stylesheet (Null-Naht Sprites für Flur & neue Wohnungs-Map) */
-:root {
-  --orange-main: #ff7a00;
-  --orange-glow: #ffb703;
-  --wood-dark: #3b2314;
-  --wood-mid: #5c3a21;
-  --panel-white: #ffffff;
-  --text-main: #1e293b;
-}
+/* ==========================================================================
+   ADHD QUEST – STYLESHEET v0.70 (CLEAN FULLSCREEN + CEL-SHADING / LUCASARTS)
+   ========================================================================== */
 
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  user-select: none;
   -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-body {
-  background-color: #0f0b14;
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  color: var(--text-main);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100dvh;
+html, body {
+  width: 100%;
+  height: 100%;
+  background-color: #120d16;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #1e293b;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
+/* 9:16 Smartphone-Vollbild-Rahmen (390x844 Referenz) */
 .app-shell {
   position: relative;
   width: 100vw;
   height: 100dvh;
   max-width: 390px;
   max-height: 844px;
-  background: var(--panel-white);
-  display: flex;
-  flex-direction: column;
+  background: #1a120b;
   overflow: hidden;
-  box-shadow: 0 0 35px rgba(0, 0, 0, 0.65);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.75);
 }
 
-/* ============================================================================
-   1. TÄGLICHER 5-SEKUNDEN INTRO-SPLASH-SCREEN MIT SANFTEM ZOOM-OUT
-   ============================================================================ */
+.hidden {
+  display: none !important;
+}
+
+/* ==========================================================================
+   1. TÄGLICHER 5-SEKUNDEN INTRO-SPLASH-SCREEN
+   ========================================================================== */
 .intro-overlay {
   position: absolute;
   inset: 0;
-  background-color: #120d16;
-  z-index: 9999;
+  z-index: 950;
+  background: #0f0b14;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  opacity: 1;
-  transition: opacity 0.7s ease, visibility 0.7s ease;
-}
-
-.intro-overlay.hidden {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
+  justify-content: center;
+  cursor: pointer;
 }
 
 .intro-zoom-container {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  position: relative;
 }
 
 .intro-splash-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  image-rendering: auto;
-  transform: scale(1.16);
+  transform: scale(1);
 }
 
 .intro-splash-img.animate-zoom {
-  animation: introSlowZoomOut 4.8s ease-out forwards;
+  animation: splashZoom 5.2s ease-out forwards;
 }
 
-@keyframes introSlowZoomOut {
-  0% { transform: scale(1.16); }
-  100% { transform: scale(1.0); }
+@keyframes splashZoom {
+  0%   { transform: scale(1); }
+  100% { transform: scale(1.08); }
 }
 
 .intro-version-badge {
   position: absolute;
   bottom: 24px;
-  background: rgba(18, 13, 22, 0.85);
-  color: #ffcc33;
-  border: 2px solid #ff7a00;
-  border-radius: 999px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 11, 20, 0.82);
+  color: #fde047;
+  border: 1.5px solid #ff7a00;
   padding: 6px 14px;
+  border-radius: 999px;
   font-size: 12px;
-  font-weight: 700;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
 }
 
-/* ============================================================================
-   2. SCHWEBENDER POP-OUT AVATAR-RING AUF VOLLBILD-KULISSE (v0.37)
-   ============================================================================ */
+/* ==========================================================================
+   2. SCHWEBENDER POP-OUT AVATAR-RING OBEN LINKS + WOW-MINIMAP-ADDONS + STAT-PILLE
+   ========================================================================== */
 .floating-avatar-hud {
   position: absolute;
-  top: 12px;
-  left: 12px;
-  z-index: 35;
-  pointer-events: auto;
+  top: 10px;
+  left: 10px;
+  z-index: 120;
   display: flex;
-  align-items: flex-end;
-  gap: 8px;
-}
-
-.hint-magnifier-btn {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: rgba(59, 35, 20, 0.92);
-  border: 2.5px solid var(--orange-main);
-  color: #fff;
-  font-size: 17px;
-  display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.56);
-  transition: transform 0.15s ease, background-color 0.18s ease, box-shadow 0.18s ease;
-  margin-bottom: 2px;
+  gap: 7px;
+  pointer-events: none;
 }
 
-.hint-magnifier-btn:hover,
-.hint-magnifier-btn:active,
-.hint-magnifier-btn.active-hint {
-  background: var(--orange-main);
-  transform: scale(1.08);
-  box-shadow: 0 0 14px rgba(255, 122, 0, 0.85);
-}
-
-.top-header,
-.title-and-controls,
-.quick-actions,
-.stats-bar {
-  display: none !important;
-}
-
+/* v0.60: Großer Pop-Out Avatar-Ring mit Radius R = 74px (148x148 px Durchmesser) */
 .avatar-popout-wrapper {
   position: relative;
-  width: 164px;
-  height: 164px;
-  margin-top: 10px;
-  flex-shrink: 0;
-  overflow: visible;
+  width: 148px;
+  height: 148px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  pointer-events: auto;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.avatar-popout-wrapper:active {
+  transform: scale(0.96);
 }
 
 .avatar-ring-bg {
   position: absolute;
-  inset: 6px;
+  inset: 0;
   border-radius: 50%;
-  background: radial-gradient(circle at 50% 42%, #ffe066 0%, #ff922b 72%, #e8590c 100%);
-  border: 5px solid var(--wood-dark);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.56), 0 0 16px rgba(255, 122, 0, 0.56);
-  z-index: 1;
-  overflow: hidden;
+  background: conic-gradient(#ff7a00 0% 95%, #3b2314 95% 100%);
+  padding: 7px;
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.65),
+    inset 0 0 0 2.5px #1a120b,
+    0 0 0 3px #1a120b;
+  transition: box-shadow 0.25s ease, filter 0.25s ease;
 }
 
 .avatar-ring-bg::after {
   content: "";
   position: absolute;
-  inset: 6px;
+  inset: 8px;
   border-radius: 50%;
-  background: radial-gradient(circle at 50% 38%, #fff9db 0%, #ffd43b 65%, #f76707 100%);
-  border: 2.5px solid rgba(255, 255, 255, 0.85);
-  z-index: 0;
+  background: radial-gradient(circle at 50% 38%, #fff9db 0%, #ffd43b 68%, #f76707 100%);
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.38);
 }
 
-/* ============================================================================
-   IDLE-ANIMATION #1 (BEREICH 1): RUHIGES ATMEN (4-Sekunden-Zyklus)
-   Sanftes Heben und Senken der Schultern & Brustkorb-Atmung, während der Kopf
-   minimal mitschwingt und die untere Kreis-Naht (bottom: 11px) 100% dicht bleibt.
-   ============================================================================ */
-@keyframes paddyIdleBreathing {
-  0%, 100% {
-    transform: translateX(-50%) translateY(0px) scaleX(1) scaleY(1);
+/* v0.57: Gold-Grüner Impact-Flash beim Einschlag der Loot-Partikel in den Ring */
+.avatar-ring-bg.ring-impact-flash {
+  animation: ringImpactFlash 0.62s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes ringImpactFlash {
+  0% {
+    filter: brightness(1);
+    box-shadow:
+      0 6px 18px rgba(0, 0, 0, 0.55),
+      inset 0 0 0 2px #1a120b,
+      0 0 0 2.5px #1a120b;
   }
-  45% {
-    transform: translateX(-50%) translateY(-1.5px) scaleX(1.016) scaleY(1.028);
+  30% {
+    filter: brightness(1.45) saturate(1.35);
+    box-shadow:
+      0 0 26px 8px rgba(250, 204, 21, 0.95),
+      0 0 44px 16px rgba(74, 222, 128, 0.85),
+      inset 0 0 14px rgba(254, 240, 138, 0.95),
+      0 0 0 3px #fde047;
   }
-  52% {
-    transform: translateX(-50%) translateY(-1.5px) scaleX(1.016) scaleY(1.028);
+  65% {
+    filter: brightness(1.2);
+    box-shadow:
+      0 0 18px 4px rgba(74, 222, 128, 0.75),
+      0 0 28px 8px rgba(255, 146, 43, 0.65),
+      inset 0 0 0 2px #1a120b,
+      0 0 0 2.5px #4ade80;
   }
+  100% {
+    filter: brightness(1);
+    box-shadow:
+      0 6px 18px rgba(0, 0, 0, 0.55),
+      inset 0 0 0 2px #1a120b,
+      0 0 0 2.5px #1a120b;
+  }
+}
+
+.avatar-popout-wrapper.ring-impact-bounce {
+  animation: ringImpactBounce 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes ringImpactBounce {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.11); }
+  100% { transform: scale(1); }
 }
 
 .avatar-popout-sprite {
   position: absolute;
-  left: 50%;
-  bottom: 11px;
-  transform: translateX(-50%);
-  transform-origin: 50% 96%;
-  width: 156px;
-  height: 174px;
+  left: 8px;
+  top: -6px;
+  width: 132px;
+  height: 146px;
+  border-radius: 0 0 66px 66px;
   object-fit: contain;
   object-position: center bottom;
-  border-radius: 0 0 74px 74px;
-  image-rendering: auto;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.56));
-  z-index: 2;
+  z-index: 3;
   pointer-events: none;
-  animation: paddyIdleBreathing 4s cubic-bezier(0.42, 0, 0.58, 1) infinite;
-  transition: filter 0.22s ease;
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.48));
 }
 
-.avatar-popout-wrapper:hover .avatar-popout-sprite {
-  animation-play-state: paused;
-  transform: translateX(-50%) scale(1.03);
-}
-
-.title-and-controls {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.brand-row {
+/* WoW-Minimap-Style Addon-Buttons exakt auf der Kreisbahn R = 74px (Zentrum 74,74) */
+.wow-ring-addon-btn {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid #f59e0b;
+  background: radial-gradient(circle at 35% 30%, #3b2314 0%, #1a120b 100%);
+  color: #fef3c7;
+  font-size: 15px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-}
-
-.brand-title {
-  font-weight: 900;
-  font-size: 18px;
-  color: var(--wood-dark);
-  letter-spacing: 0.5px;
-}
-
-.version-pill {
-  background: #fff3e0;
-  color: var(--orange-main);
-  border: 1px solid var(--orange-main);
-  font-size: 11px;
-  font-weight: 800;
-  padding: 2px 7px;
-  border-radius: 99px;
-}
-
-.quick-actions {
-  display: flex;
-  gap: 6px;
-}
-
-.top-btn {
-  background: #fff8f0;
-  border: 2px solid var(--orange-main);
-  border-radius: 10px;
-  padding: 5px 9px;
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--wood-dark);
+  justify-content: center;
   cursor: pointer;
+  z-index: 6;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7);
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  padding: 0;
 }
 
-.room-Trigger-btn {
-  flex: 1;
-  text-align: left;
+.wow-ring-addon-btn:hover,
+.wow-ring-addon-btn:active,
+.wow-ring-addon-btn.active-hint {
+  transform: scale(1.14);
+  border-color: #fde047;
+  box-shadow: 0 0 14px rgba(250, 204, 21, 0.9);
 }
 
-.stats-bar {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-  background: var(--wood-dark);
-  padding: 6px;
-  border-radius: 12px;
+/* Lupe exakt bei 18° auf R = 74px: x = 74 + 74*cos(18°) - 16 = 128.4px, y = 74 + 74*sin(18°) - 16 = 80.9px */
+.addon-pos-lupe {
+  left: 128.4px;
+  top: 80.9px;
 }
 
-.stat-card {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 122, 0, 0.5);
-  border-radius: 8px;
-  padding: 4px 6px;
-  text-align: center;
-  color: #ffffff;
+/* Einstellungen exakt bei 52° auf R = 74px: x = 74 + 74*cos(52°) - 16 = 103.6px, y = 74 + 74*sin(52°) - 16 = 116.3px */
+.addon-pos-settings {
+  left: 103.6px;
+  top: 116.3px;
 }
 
-.stat-label {
-  font-size: 10px;
-  color: #fed7aa;
-  font-weight: 700;
+/* Ausklappbare Mini-Stat-Pille unter dem Avatar-Ring */
+.mini-stat-pill {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(26, 18, 11, 0.88);
+  border: 1.5px solid #f59e0b;
+  color: #fef3c7;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  transition: transform 0.2s ease, background 0.2s ease;
 }
 
-.stat-value {
-  font-size: 15px;
-  font-weight: 900;
-  color: #ffedd5;
+.mini-stat-pill.collapsed .stat-pill-details {
+  display: none;
 }
 
-.stat-sub {
-  font-size: 10px;
-  color: #cbd5e1;
+.mini-stat-pill.pulse-loot {
+  animation: statPillPulse 0.6s ease;
 }
 
-/* ============================================================================
-   3. RAUM-KULISSE & NULL-NAHT ORIGINAL-SPRITES ("sprite-hotspot")
-   ============================================================================ */
+@keyframes statPillPulse {
+  0%   { transform: scale(1); }
+  45%  { transform: scale(1.12); background: rgba(234, 88, 12, 0.95); border-color: #fde047; }
+  100% { transform: scale(1); }
+}
+
+/* ==========================================================================
+   3. HAUPT-RAUMKULISSE, HOTSPOTS & PINNWAND-POST-ITS
+   ========================================================================== */
 .room-canvas {
   position: relative;
-  flex: 1;
   width: 100%;
-  background-color: #1e1b24;
+  height: 100%;
   background-size: 100% 100%;
   background-position: center;
   background-repeat: no-repeat;
-  image-rendering: auto;
   overflow: hidden;
-  touch-action: pan-y;
+  transition: filter 0.6s ease;
 }
 
 .hotspots-layer {
   position: absolute;
   inset: 0;
+  z-index: 10;
 }
 
-/* Null-Naht Original-Sprites: Komplett ruhig im Normalzustand (kein Dauer-Blinken!), leuchten nur bei Hover/Touch oder Lupen-Hinweis */
+/* Freigestellte Null-Naht-Sprites in den 7 Räumen */
 .room-sprite-hotspot {
   position: absolute;
   cursor: pointer;
-  display: block;
-  transition: filter 0.22s ease, transform 0.18s ease;
-  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.28));
-  animation: none;
-}
-
-.room-canvas.show-object-hints .room-sprite-hotspot:not(.done-today) {
-  filter: brightness(1.06)
-          drop-shadow(0 0 3px #ffffff)
-          drop-shadow(0 0 12px #ff7a00);
-  animation: pulseRoomSprite 1.2s infinite ease-in-out;
+  transition: transform 0.16s ease, filter 0.2s ease;
 }
 
 .room-sprite-hotspot img {
   width: 100%;
   height: 100%;
+  object-fit: fill;
   display: block;
-  image-rendering: auto;
   pointer-events: none;
 }
 
-.room-sprite-hotspot:hover,
-.room-sprite-hotspot:active {
-  filter: brightness(1.06) sepia(0.24) saturate(2.4) hue-rotate(-10deg)
-          drop-shadow(0 0 3px #ffffff) drop-shadow(0 0 13px #ff7a00);
-  z-index: 25 !important;
+.room-sprite-hotspot:hover {
+  filter: drop-shadow(0 0 8px rgba(255, 180, 50, 0.65));
 }
 
-.room-sprite-hotspot.done-today {
-  filter: drop-shadow(0 0 2px #4ade80) drop-shadow(0 0 8px rgba(34, 197, 94, 0.75));
-  animation: none;
+.room-sprite-hotspot:active {
+  transform: scale(0.97);
 }
 
 .sprite-done-badge {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  top: 6px;
+  right: 6px;
   background: rgba(22, 163, 74, 0.92);
-  color: #fff;
-  font-size: 13px;
+  color: #ffffff;
+  font-size: 11px;
   font-weight: 900;
   padding: 2px 6px;
-  border-radius: 99px;
-  border: 1.5px solid #ffffff;
+  border-radius: 999px;
+  border: 1.5px solid #bbf7d0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
   pointer-events: none;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
 }
 
-@keyframes pulseRoomSprite {
-  0%, 100% {
-    filter: drop-shadow(0 0 1.5px rgba(255, 255, 255, 0.75))
-            drop-shadow(0 0 5px rgba(255, 122, 0, 0.56));
-  }
-  50% {
-    filter: brightness(1.04) drop-shadow(0 0 2.5px #ffffff)
-            drop-shadow(0 0 11px rgba(255, 136, 0, 0.95));
-  }
+/* Dezenter Lupen-Hinweis für noch offene Aufgaben im Raum */
+.room-canvas.show-object-hints .room-sprite-hotspot:not(.done-today),
+.room-canvas.show-object-hints .pinnwand-postit-hotspot:not(.done-today),
+.room-canvas.show-object-hints .badge-hotspot:not(.done-today) {
+  animation: objectHintGlow 1.1s ease-in-out infinite alternate;
 }
 
-/* Fallback Badge-Hotspots für Räume ohne lokale Sprite-Cuts */
-.room-hotspot.badge-hotspot {
+@keyframes objectHintGlow {
+  0%   { filter: drop-shadow(0 0 4px rgba(250, 204, 21, 0.6)) brightness(1.05); }
+  100% { filter: drop-shadow(0 0 14px rgba(255, 122, 0, 0.98)) brightness(1.22); }
+}
+
+/* Klassische Badge-Hotspots (Fallback) */
+.badge-hotspot {
   position: absolute;
   transform: translate(-50%, -50%);
-  background: rgba(255, 255, 255, 0.94);
-  border: 2.5px solid var(--orange-main);
-  border-radius: 14px;
-  padding: 5px 9px;
+  background: rgba(255, 247, 237, 0.92);
+  border: 2px solid #ea580c;
+  border-radius: 12px;
+  padding: 4px 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 2px;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), 0 0 10px rgba(255, 122, 0, 0.56);
-  animation: floatBadge 2.4s infinite ease-in-out;
-  z-index: 12;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
 }
 
 .badge-hotspot-icon {
-  font-size: 20px;
-  line-height: 1.1;
+  font-size: 18px;
 }
 
 .badge-hotspot-label {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
-  color: var(--wood-dark);
+  color: #9a3412;
   white-space: nowrap;
 }
 
-@keyframes floatBadge {
-  0%, 100% { transform: translate(-50%, -50%) translateY(0); }
-  50% { transform: translate(-50%, -50%) translateY(-4px); }
+/* 3 Speed-Dial Haftnotizen (Post-its) auf der Kork-Pinnwand im Dashboard */
+.pinnwand-postit-hotspot {
+  position: absolute;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.18s ease, filter 0.18s ease;
 }
 
-/* ============================================================================
-   4. INTERAKTIVE WOHNUNGS-KARTE (MIT 6 FREIGESTELLTEN RAUM-SPRITES!)
-   ============================================================================ */
+.pinnwand-postit-hotspot:hover {
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.45)) brightness(1.05);
+}
+
+.pinnwand-postit-hotspot:active {
+  transform: scale(0.93) !important;
+}
+
+.postit-bg-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.postit-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4px;
+  width: 86%;
+  pointer-events: none;
+}
+
+.postit-icon-img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  margin-bottom: 1px;
+}
+
+.postit-emoji {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.postit-title {
+  font-size: 8.5px;
+  font-weight: 900;
+  color: #1e293b;
+  line-height: 1.05;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.postit-xp-tag {
+  font-size: 7.5px;
+  font-weight: 800;
+  color: #9a3412;
+  margin-top: 1px;
+}
+
+/* ==========================================================================
+   4. FLIEGENDE MÜNZ-, XP-, MB- & AP-PARTIKEL IN DEN AVATAR-RING (v0.57)
+   ========================================================================== */
+.loot-particles-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 140;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.loot-origin-burst {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(254, 240, 138, 0.95) 0%, rgba(255, 122, 0, 0.65) 50%, transparent 75%);
+  animation: lootOriginBurst 0.52s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes lootOriginBurst {
+  0%   { transform: translate(-50%, -50%) scale(0.3); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1.75); opacity: 0; }
+}
+
+.loot-flying-particle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+  pointer-events: none;
+  will-change: transform, opacity;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.55);
+  border: 1.5px solid #ffffff;
+}
+
+.loot-flying-particle.loot-type-xp {
+  background: linear-gradient(135deg, #ff922b 0%, #ea580c 100%);
+  color: #fffbeb;
+  border-color: #fde047;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.loot-flying-particle.loot-type-gold {
+  background: linear-gradient(135deg, #fef08a 0%, #eab308 100%);
+  color: #422006;
+  border-color: #ffffff;
+}
+
+.loot-flying-particle.loot-type-mb {
+  background: linear-gradient(135deg, #4ade80 0%, #16a34a 100%);
+  color: #052e16;
+  border-color: #dcfce7;
+}
+
+.loot-flying-particle.loot-type-ap {
+  background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+  color: #f0f9ff;
+  border-color: #bae6fd;
+}
+
+.loot-flying-particle.loot-type-gold-coin,
+.loot-flying-particle.loot-type-xp-star {
+  padding: 2px 6px;
+  font-size: 14px;
+  background: radial-gradient(circle, #fef08a 0%, #f59e0b 100%);
+  border-color: #fffbeb;
+}
+
+/* ==========================================================================
+   5. TAGESZEITEN-LICHTWECHSEL & WARMER LAMPEN-/KERZENSCHEIN (v0.54)
+   ========================================================================== */
+.room-canvas.time-phase-morning {
+  filter: saturate(1.06) contrast(1.02) hue-rotate(-4deg);
+}
+
+.room-canvas.time-phase-day {
+  filter: none;
+}
+
+.room-canvas.time-phase-golden {
+  filter: sepia(0.16) saturate(1.18) brightness(0.97);
+}
+
+.room-canvas.time-phase-night {
+  filter: brightness(0.78) saturate(0.92) contrast(1.06);
+}
+
+.ambient-lighting-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 24;
+  pointer-events: none;
+  overflow: hidden;
+  transition: background 0.6s ease;
+}
+
+.ambient-lighting-layer.phase-morning {
+  background: linear-gradient(180deg, rgba(254, 215, 170, 0.14) 0%, rgba(186, 230, 253, 0.08) 100%);
+}
+
+.ambient-lighting-layer.phase-golden {
+  background: linear-gradient(180deg, rgba(251, 146, 60, 0.22) 0%, rgba(154, 52, 18, 0.14) 100%);
+}
+
+.ambient-lighting-layer.phase-night {
+  background: radial-gradient(circle at 50% 45%, rgba(15, 23, 42, 0.28) 0%, rgba(10, 15, 32, 0.58) 100%);
+}
+
+.room-lamp-glow {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.room-lamp-glow.candle-flicker {
+  animation: candleFlicker 2.6s ease-in-out infinite alternate;
+}
+
+@keyframes candleFlicker {
+  0%   { transform: translate(-50%, -50%) scale(0.95); opacity: 0.85; }
+  50%  { transform: translate(-50%, -50%) scale(1.06); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(0.98); opacity: 0.9; }
+}
+
+/* ==========================================================================
+   6. UI-UMRAHMUNG, SMART-BADGE OBEN RECHTS & UNTERES 7-RAUM-DOCK
+   ========================================================================== */
+.ui-frame-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.ui-frame-room-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 115;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(26, 18, 11, 0.88);
+  border: 2px solid #f59e0b;
+  border-radius: 999px;
+  padding: 4px 10px;
+  color: #fef3c7;
+  font-size: 12px;
+  font-weight: 800;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+}
+
+.smart-badge-room-btn {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.smart-badge-count {
+  background: rgba(255, 122, 0, 0.25);
+  border: 1px solid #f59e0b;
+  color: #fde047;
+  font-size: 10.5px;
+  padding: 1px 6px;
+  border-radius: 999px;
+}
+
+.smart-badge-time-pill {
+  cursor: pointer;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 12px;
+}
+
+.smart-badge-dirt-pill {
+  cursor: pointer;
+  padding: 2px 7px;
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 10.5px;
+  font-weight: 900;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
+}
+
+/* 1-Tap Raum-Dock am unteren Bildschirmrand */
+.bottom-room-dock {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 115;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(26, 18, 11, 0.86);
+  border: 2px solid #b45309;
+  padding: 5px 10px;
+  border-radius: 999px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+}
+
+.dock-room-btn {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(254, 215, 170, 0.35);
+  background: rgba(59, 35, 20, 0.85);
+  color: #fff7ed;
+  font-size: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.dock-room-btn.active-dock-room {
+  background: linear-gradient(135deg, #ff7a00 0%, #c2410c 100%);
+  border-color: #fde047;
+  transform: translateY(-3px) scale(1.08);
+  box-shadow: 0 4px 10px rgba(255, 122, 0, 0.55);
+}
+
+.dock-dirt-dot {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid #1a120b;
+}
+
+/* Loot-Toast unten über dem Raum-Dock */
+.loot-toast {
+  position: absolute;
+  bottom: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 260;
+  width: 90%;
+  max-width: 356px;
+  background: rgba(26, 18, 11, 0.95);
+  color: #fef3c7;
+  border: 2px solid #ff7a00;
+  border-radius: 14px;
+  padding: 10px 14px;
+  font-size: 12.5px;
+  font-weight: 800;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.65);
+  pointer-events: auto;
+}
+
+/* ==========================================================================
+   7. MODALS, HERO-STAGE, 90er LUCASARTS-QUIPS & 7-TAGE ABENTEURER-BILANZ
+   ========================================================================== */
 .modal-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(15, 23, 42, 0.74);
+  z-index: 400;
+  background: rgba(15, 11, 20, 0.72);
+  backdrop-filter: blur(4px);
   display: none;
-  justify-content: center;
   align-items: center;
-  padding: 12px;
-  z-index: 100;
+  justify-content: center;
+  padding: 14px;
 }
 
 .modal-backdrop.active {
@@ -446,52 +740,212 @@ body {
 }
 
 .modal-card {
-  background: #ffffff;
-  border: 3px solid var(--orange-main);
-  border-radius: 18px;
   width: 100%;
-  max-width: 368px;
-  max-height: 86%;
-  display: flex;
-  flex-direction: column;
+  max-width: 362px;
+  background: #fffaf5;
+  border: 3px solid #7c2d12;
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.56);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65);
+  animation: modalPopIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalPopIn {
+  0%   { transform: scale(0.92); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 .modal-header {
-  background: var(--wood-dark);
-  color: #ffffff;
-  padding: 10px 14px;
-  font-weight: 800;
+  background: linear-gradient(135deg, #431407 0%, #7c2d12 100%);
+  color: #fef3c7;
+  padding: 11px 14px;
   font-size: 14px;
+  font-weight: 900;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #f59e0b;
 }
 
 .modal-close {
-  background: var(--orange-main);
-  color: #fff;
-  border: none;
-  width: 26px;
-  height: 26px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1.5px solid #fdba74;
+  color: #ffffff;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
+  font-size: 13px;
   font-weight: 900;
   cursor: pointer;
 }
 
 .modal-body {
   padding: 14px;
+  max-height: 76vh;
   overflow-y: auto;
 }
 
+/* Große Hero-Stage im Objekt-Modal mit 1-Tap Zoom */
+.obj-hero-stage {
+  position: relative;
+  width: 100%;
+  height: 170px;
+  background: radial-gradient(circle at 50% 50%, #fff7ed 0%, #ffedd5 70%, #fed7aa 100%);
+  border: 2px solid #fdba74;
+  border-radius: 16px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.obj-hero-img {
+  max-width: 88%;
+  max-height: 152px;
+  object-fit: contain;
+  cursor: zoom-in;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.22));
+}
+
+.obj-hero-img.zoomed {
+  transform: scale(1.65);
+  cursor: zoom-out;
+}
+
+.obj-hero-emoji {
+  font-size: 54px;
+}
+
+.obj-hero-zoom-hint {
+  position: absolute;
+  bottom: 6px;
+  right: 8px;
+  background: rgba(26, 18, 11, 0.72);
+  color: #fef3c7;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+/* 90er LucasArts SCUMM-Objektkommentar ("👁️ Schau an...") */
+.lucasarts-quip-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #1a120b;
+  border: 2px solid #f59e0b;
+  border-radius: 14px;
+  padding: 9px 11px;
+  margin-bottom: 10px;
+  text-align: left;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.lucasarts-quip-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 2px solid #ff7a00;
+  object-fit: contain;
+  object-position: center bottom;
+  background: radial-gradient(circle at 50% 40%, #fff9db 0%, #ffd43b 70%, #f76707 100%);
+  flex-shrink: 0;
+}
+
+.lucasarts-quip-content {
+  flex: 1;
+}
+
+.lucasarts-verb-line {
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #fde047;
+  margin-bottom: 2px;
+}
+
+.lucasarts-quip-text {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #fffbeb;
+  line-height: 1.32;
+  font-style: italic;
+}
+
+.reward-badges-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.reward-pill {
+  background: #fff7ed;
+  border: 1.5px solid #fb923c;
+  color: #9a3412;
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 4px 9px;
+  border-radius: 999px;
+}
+
+.primary-action-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #ff7a00 0%, #ea580c 100%);
+  color: #ffffff;
+  border: 2px solid #9a3412;
+  border-radius: 14px;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(234, 88, 12, 0.35);
+}
+
+.primary-action-btn:active {
+  transform: scale(0.98);
+}
+
+.secondary-btn, .top-btn {
+  background: #fff7ed;
+  color: #9a3412;
+  border: 1.5px solid #fdba74;
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.top-btn {
+  background: #ff7a00;
+  color: #ffffff;
+  border-color: #c2410c;
+}
+
+.room-book-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  border: 1.5px solid #fed7aa;
+  background: #fff7ed;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* Interaktive Wohnungs-Map (7 Räume - Original-Querformat 1376x768 ohne Verzerrung!) */
 .map-only-card {
-  max-width: 382px;
+  max-width: 378px;
 }
 
 .map-only-body {
-  padding: 8px !important;
-  background: #0d0a12;
+  padding: 8px;
 }
 
 .interactive-map-canvas {
@@ -502,873 +956,38 @@ body {
   background-size: 100% 100%;
   background-position: center;
   background-repeat: no-repeat;
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  border: 2px solid #7c2d12;
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.35);
 }
 
 .map-room-sprite {
   position: absolute;
   cursor: pointer;
-  display: block;
-  transition: filter 0.18s ease, transform 0.16s ease;
-  filter: drop-shadow(0 0 2px rgba(255, 122, 0, 0.65));
+  transition: filter 0.18s ease, transform 0.18s ease;
 }
 
 .map-room-sprite img {
   width: 100%;
   height: 100%;
+  object-fit: fill;
   display: block;
-  image-rendering: auto;
-  pointer-events: none;
 }
 
 .map-room-sprite:hover,
 .map-room-sprite.active-room {
-  filter: brightness(1.06) sepia(0.26) saturate(2.5) hue-rotate(-10deg)
-          drop-shadow(0 0 3px #ffffff) drop-shadow(0 0 11px #ff7a00);
-  z-index: 10 !important;
+  filter: drop-shadow(0 0 10px rgba(255, 122, 0, 0.95)) brightness(1.1);
 }
 
-.reward-badges-row {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 14px;
-  flex-wrap: wrap;
-}
-
-.reward-pill {
-  background: #fff7ed;
-  border: 1.5px solid var(--orange-main);
-  color: var(--wood-dark);
-  padding: 4px 10px;
-  border-radius: 99px;
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.primary-action-btn {
-  width: 100%;
-  background: linear-gradient(180deg, #ff922b 0%, #ff7a00 100%);
-  color: #fff;
-  border: 2px solid var(--wood-dark);
-  border-radius: 12px;
-  padding: 12px;
-  font-size: 15px;
-  font-weight: 900;
-  cursor: pointer;
-}
-
-.secondary-btn {
-  background: #f1f5f9;
-  border: 2px solid #cbd5e1;
-  border-radius: 8px;
-  padding: 6px 10px;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.loot-toast {
-  position: absolute;
-  top: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--wood-dark);
-  color: #ffcc33;
-  border: 2px solid var(--orange-main);
-  padding: 8px 16px;
-  border-radius: 99px;
-  font-weight: 800;
-  font-size: 13px;
-  z-index: 60;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.56);
-  white-space: nowrap;
-}
-
-.loot-toast.hidden {
-  display: none;
-}
-
-
-/* --- SPIELERFIGUR IM RAUM DEAKTIVIERT (v0.37: Ruhiger Hintergrund ohne Figur) --- */
-.room-player-container {
-  display: none !important;
-}
-
-/* ============================================================================
-   5. UPDATE v0.27: 44x44px TOUCH-TARGETS & ENHANCED SPRITE HOVER GLOW
-   ============================================================================ */
-.top-btn {
-  min-height: 38px;
-  min-width: 38px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  transition: transform 0.12s ease, background-color 0.15s ease;
-}
-.top-btn:active {
-  transform: scale(0.95);
-}
-
-
-/* ============================================================================
-   6. UPDATE v0.56: 3 SCHNELLZUGRIFFS-HAFTNOTIZEN AUF DER KORK-PINNWAND
-   ============================================================================ */
-.pinnwand-postit-hotspot {
-  position: absolute;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 4px 6px;
-  transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.18s ease;
-  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.35));
-  z-index: 22;
-}
-
-.pinnwand-postit-hotspot .postit-bg-img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.pinnwand-postit-hotspot .postit-content {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  width: 82%;
-  margin-top: 4px;
-  pointer-events: none;
-}
-
-.pinnwand-postit-hotspot .postit-icon-img {
-  width: 22px;
-  height: 22px;
-  object-fit: contain;
-  margin-bottom: 1px;
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
-}
-
-.pinnwand-postit-hotspot .postit-emoji {
-  font-size: 16px;
-  line-height: 1.05;
-  margin-bottom: 1px;
-}
-
-.pinnwand-postit-hotspot .postit-title {
-  font-size: 8.5px;
-  font-weight: 900;
-  color: #2b180a;
-  line-height: 1.05;
-  max-width: 100%;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  text-overflow: ellipsis;
-}
-
-.pinnwand-postit-hotspot .postit-xp-tag {
-  font-size: 7.5px;
-  font-weight: 800;
-  color: #9a3412;
-  background: rgba(255, 255, 255, 0.68);
-  padding: 0px 4px;
-  border-radius: 4px;
-  margin-top: 1px;
-}
-
-.pinnwand-postit-hotspot:hover,
-.pinnwand-postit-hotspot:active {
-  transform: scale(1.12) translateY(-2px) !important;
-  filter: brightness(1.06) drop-shadow(0 0 3px #ffffff) drop-shadow(0 0 10px #ff7a00);
-  z-index: 28 !important;
-}
-
-.pinnwand-postit-hotspot.done-today {
-  filter: drop-shadow(0 0 2px #4ade80) drop-shadow(0 0 7px rgba(34, 197, 94, 0.7));
-}
-
-
-/* ============================================================================
-   7. UPDATE v0.56: GROSSE OBJEKT-INSZENIERUNG IM INTERAKTIONS-MODAL (HERO STAGE)
-   ============================================================================ */
-#object-modal .modal-card {
-  max-width: 374px;
-}
-
-.obj-hero-stage {
-  position: relative;
-  width: 100%;
-  min-height: 236px;
-  background: radial-gradient(circle at 50% 48%, #fffdf5 0%, #ffedd5 56%, #fed7aa 100%);
-  border: 2.5px solid #fdba74;
-  border-radius: 16px;
-  padding: 14px;
-  margin-bottom: 12px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-  box-shadow: inset 0 0 24px rgba(255, 122, 0, 0.14), 0 6px 16px rgba(59, 35, 20, 0.12);
-}
-
-.obj-hero-stage::before {
-  content: "";
-  position: absolute;
-  width: 210px;
-  height: 210px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.85) 0%, rgba(255, 183, 3, 0.18) 62%, transparent 75%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-@keyframes heroObjectFloat {
-  0%, 100% {
-    transform: translateY(0px) scale(1);
-  }
-  50% {
-    transform: translateY(-4px) scale(1.03);
-  }
-}
-
-.obj-hero-img {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  max-width: 288px;
-  height: 214px;
-  object-fit: contain;
-  image-rendering: auto;
-  filter: drop-shadow(0 8px 16px rgba(43, 24, 10, 0.35))
-          drop-shadow(0 0 6px rgba(255, 255, 255, 0.75));
-  animation: heroObjectFloat 3.2s ease-in-out infinite;
-  cursor: zoom-in;
-  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.obj-hero-img.zoomed {
-  transform: scale(1.26) !important;
-  animation: none;
-  cursor: zoom-out;
-}
-
-.obj-hero-emoji {
-  position: relative;
-  z-index: 1;
-  font-size: 96px;
-  line-height: 1.1;
-  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.25));
-  animation: heroObjectFloat 3.2s ease-in-out infinite;
-}
-
-.obj-hero-zoom-hint {
-  position: absolute;
-  bottom: 6px;
-  right: 10px;
-  font-size: 10px;
-  font-weight: 800;
-  color: #9a3412;
-  background: rgba(255, 255, 255, 0.82);
-  padding: 2px 7px;
-  border-radius: 99px;
-  border: 1px solid #fed7aa;
-  z-index: 2;
-  pointer-events: none;
-}
-
-/* Größere Objekt-Thumbnails auch im Raum-Aufgabenbuch (56x56px statt bisher nur Text) */
-.room-book-thumb {
-  width: 56px;
-  height: 56px;
-  border-radius: 10px;
-  background: radial-gradient(circle at 50% 45%, #fffdf7 0%, #ffedd5 100%);
-  border: 1.5px solid #fdba74;
-  padding: 4px;
-  object-fit: contain;
-  flex-shrink: 0;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.18));
-}
-
-
-/* ============================================================================
-   8. UPDATE v0.56: 3 WÄHLBARE UI-RAHMEN-OVERLAYS & EINSTELLUNGEN-MENÜ (⚙️)
-   ============================================================================ */
-.ui-frame-overlay {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 30;
-  background-size: 100% 100%;
-  background-position: center;
-  background-repeat: no-repeat;
-  transition: opacity 0.25s ease;
-}
-
-.ui-frame-room-badge {
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  background: rgba(43, 24, 12, 0.90);
-  color: #ffe8b2;
-  border: 2px solid #ff8a12;
-  border-radius: 12px;
-  padding: 4px 11px;
-  font-size: 11.5px;
-  font-weight: 800;
-  z-index: 32;
-  pointer-events: auto;
-  cursor: pointer;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45);
-  transition: transform 0.15s ease, background-color 0.18s ease;
-}
-
-.ui-frame-room-badge:hover,
-.ui-frame-room-badge:active {
-  transform: scale(1.05);
-  background: #5c3a21;
-}
-
-.ui-frame-room-badge.hidden {
-  display: none !important;
-}
-
-.settings-option-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 10px 12px;
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
-  margin-bottom: 8px;
-  background: #ffffff;
-  cursor: pointer;
-  transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.12s ease;
-}
-
-.settings-option-card:hover {
-  border-color: #fdba74;
-}
-
-.settings-option-card.active-frame {
-  border-color: #ff7a00;
-  background: #fff7ed;
-  box-shadow: 0 2px 8px rgba(255, 122, 0, 0.15);
-}
-
-.settings-frame-thumb {
-  width: 44px;
-  height: 76px;
-  border-radius: 6px;
-  object-fit: cover;
-  border: 1.5px solid #cbd5e1;
-  background: #1e1b24;
-  flex-shrink: 0;
-}
-
-
-/* ============================================================================
-   9. UPDATE v0.56: WOW-MINIMAP ADDON-BUTTONS AM AVATAR-RING + 3 UI-UPGRADES
-   ============================================================================ */
-.floating-avatar-hud {
-  position: absolute;
-  top: 8px;
-  left: 10px;
-  z-index: 35;
-  pointer-events: none;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
-}
-
-.avatar-popout-wrapper {
-  pointer-events: auto;
-}
-
-/* WoW-Minimap-Style Addon-Buttons direkt auf der Kreisbahn des Avatar-Rings (R = 74px) */
-.wow-ring-addon-btn {
-  position: absolute;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #5c3a21 0%, #2b180a 75%, #1a0f07 100%);
-  border: 2.5px solid #ffb703;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.65),
-              inset 0 1px 2px rgba(255, 255, 255, 0.35),
-              0 0 0 1.5px #3b2314;
-  color: #fff;
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 6;
-  pointer-events: auto;
-  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1),
-              border-color 0.18s ease,
-              box-shadow 0.18s ease;
-}
-
-/* Lupe (🔍) auf 18° am rechten unteren Ringbogen */
-.wow-ring-addon-btn.addon-pos-lupe {
-  left: 134px;
-  top: 87px;
-}
-
-/* Einstellungen (⚙️) auf 52° am unteren rechten Ringbogen */
-.wow-ring-addon-btn.addon-pos-settings {
-  left: 109px;
-  top: 122px;
-}
-
-.wow-ring-addon-btn:hover,
-.wow-ring-addon-btn:active,
-.wow-ring-addon-btn.active-hint {
-  transform: scale(1.16);
-  border-color: #ffffff;
-  background: radial-gradient(circle at 35% 30%, #ff922b 0%, #ea580c 80%);
-  box-shadow: 0 0 14px rgba(255, 138, 0, 0.95), 0 3px 8px rgba(0, 0, 0, 0.6);
-}
-
-/* UI-Vorschlag 1: Ausklappbare Mini-Stat-Pille direkt unter dem Avatar-Ring */
-.mini-stat-pill {
-  pointer-events: auto;
-  margin-left: 6px;
-  margin-top: -2px;
-  background: rgba(38, 22, 12, 0.92);
-  border: 2px solid #ff8a12;
-  border-radius: 999px;
-  padding: 3px 10px;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  color: #ffedd5;
-  font-size: 11px;
-  font-weight: 800;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.56), inset 0 1px 1px rgba(255, 255, 255, 0.2);
-  transition: transform 0.18s ease, padding 0.18s ease, background-color 0.18s ease;
-}
-
-.mini-stat-pill:hover {
-  background: rgba(59, 35, 20, 0.96);
-  transform: translateY(-1px);
-}
-
-.mini-stat-pill.collapsed {
-  padding: 3px 8px;
-  gap: 4px;
-}
-
-.mini-stat-pill.collapsed .stat-pill-details {
-  display: none;
-}
-
-.stat-pill-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  white-space: nowrap;
-}
-
-@keyframes statPulsePop {
-  0% { transform: scale(1); }
-  45% { transform: scale(1.12); border-color: #fde047; box-shadow: 0 0 16px rgba(250, 204, 21, 0.85); }
-  100% { transform: scale(1); }
-}
-
-.mini-stat-pill.pulse-loot {
-  animation: statPulsePop 0.56s ease-out;
-}
-
-/* UI-Vorschlag 2: Smart-Badge oben rechts (Raumname + Erledigt-Zähler + Putz-Multiplikator-Tag) */
-.ui-frame-room-badge {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: rgba(38, 22, 12, 0.92);
-  color: #ffe8b2;
-  border: 2px solid #ff8a12;
-  border-radius: 14px;
-  padding: 4px 8px 4px 10px;
-  font-size: 11px;
-  font-weight: 800;
-  z-index: 34;
-  pointer-events: auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-}
-
-.smart-badge-room-btn {
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.smart-badge-count {
-  background: rgba(255, 255, 255, 0.14);
-  color: #fde68a;
-  padding: 1px 6px;
-  border-radius: 99px;
-  font-size: 10px;
-  font-weight: 900;
-}
-
-.smart-badge-dirt-pill {
-  cursor: pointer;
-  padding: 2px 7px;
-  border-radius: 99px;
-  font-size: 10px;
-  font-weight: 900;
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.65);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
-  transition: transform 0.14s ease;
-}
-
-.smart-badge-dirt-pill:hover,
-.smart-badge-dirt-pill:active {
-  transform: scale(1.08);
-}
-
-/* UI-Vorschlag 3: Kompaktes 1-Tap Schnell-Dock am unteren Rahmenrand + Swipe-Hint */
-.bottom-room-dock {
-  position: absolute;
-  bottom: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 34;
-  background: rgba(28, 16, 9, 0.88);
-  border: 2px solid rgba(255, 138, 18, 0.85);
-  border-radius: 999px;
-  padding: 3px 7px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.58);
-  backdrop-filter: blur(4px);
-}
-
-.bottom-room-dock.hidden {
-  display: none !important;
-}
-
-.dock-room-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1.5px solid transparent;
-  background: rgba(255, 255, 255, 0.07);
-  color: #ffedd5;
-  font-size: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  position: relative;
-  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1),
-              background-color 0.15s ease,
-              border-color 0.15s ease;
-}
-
-.dock-room-btn:hover,
-.dock-room-btn:active {
-  transform: translateY(-2px) scale(1.1);
-  background: rgba(255, 122, 0, 0.32);
-}
-
-.dock-room-btn.active-dock-room {
-  background: radial-gradient(circle at 50% 35%, #ff922b 0%, #ea580c 100%);
-  border-color: #fde047;
-  transform: translateY(-2px) scale(1.12);
-  box-shadow: 0 0 10px rgba(255, 122, 0, 0.8);
-}
-
-.dock-dirt-dot {
-  position: absolute;
-  top: 1px;
-  right: 1px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  border: 1px solid #1e1b24;
-}
-
-
-/* ============================================================================
-   10. UPDATE v0.56: VERSTECKTER PC-ENTWICKLERMODUS (NUR PER TASTATUR AKTIVIERBAR)
-   ============================================================================ */
-.room-canvas.dev-mode-active .room-sprite-hotspot,
-.room-canvas.dev-mode-active .pinnwand-postit-hotspot,
-.room-canvas.dev-mode-active .room-hotspot.badge-hotspot {
-  outline: 1.5px dashed rgba(0, 255, 204, 0.72);
-  cursor: grab !important;
-}
-
-.room-canvas.dev-mode-active .room-sprite-hotspot:active,
-.room-canvas.dev-mode-active .pinnwand-postit-hotspot:active {
-  cursor: grabbing !important;
-}
-
-.room-canvas.dev-mode-active .dev-selected-object {
-  outline: 2.5px solid #00ffcc !important;
-  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.85), 0 0 18px rgba(0, 255, 204, 0.95) !important;
-  z-index: 55 !important;
-}
-
-.dev-inspector-bar {
-  position: absolute;
-  bottom: 48px;
-  left: 8px;
-  right: 8px;
-  background: rgba(15, 23, 42, 0.95);
-  border: 2px solid #00ffcc;
-  border-radius: 14px;
-  padding: 8px 10px;
-  color: #f8fafc;
-  font-size: 11px;
-  z-index: 80;
-  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(6px);
-}
-
-.dev-inspector-bar.hidden {
-  display: none !important;
-}
-
-.dev-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid rgba(0, 255, 204, 0.3);
-  padding-bottom: 5px;
-  margin-bottom: 6px;
-}
-
-.dev-obj-title {
-  font-weight: 900;
-  color: #00ffcc;
-  font-size: 11.5px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 245px;
-}
-
-.dev-coords-readout {
-  font-family: monospace;
-  font-size: 10.5px;
-  color: #fde047;
-  margin-bottom: 6px;
-  background: rgba(0, 0, 0, 0.4);
-  padding: 3px 6px;
-  border-radius: 6px;
-  text-align: center;
-}
-
-.dev-btn-row {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-bottom: 5px;
-}
-
-.dev-mini-btn {
-  background: #1e293b;
-  color: #e2e8f0;
-  border: 1px solid #475569;
-  border-radius: 6px;
-  padding: 4px 7px;
-  font-size: 10.5px;
-  font-weight: 800;
-  cursor: pointer;
-  transition: background-color 0.12s ease, border-color 0.12s ease;
-}
-
-.dev-mini-btn:hover {
-  background: #334155;
-  border-color: #00ffcc;
-  color: #ffffff;
-}
-
-.dev-mini-btn.accent {
-  background: #0f766e;
-  border-color: #14b8a6;
-  color: #ffffff;
-}
-
-.dev-mini-btn.warn {
-  background: #7c2d12;
-  border-color: #f97316;
-  color: #ffedd5;
-}
-
-
-/* ============================================================================
-   11. UPDATE v0.56: AUTOMATISCHER TAGESZEITEN-LICHTWECHSEL & LAMPEN-/KERZENSCHEIN
-   ============================================================================ */
-.ambient-lighting-layer {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 26;
-  transition: background 0.8s ease, opacity 0.8s ease, box-shadow 0.8s ease;
-  overflow: hidden;
-}
-
-/* 1. MORGENLICHT (05:00 – 09:00 Uhr): Kühler, taufrischer Rosa-Himmelblau-Schimmer */
-.room-canvas.time-phase-morning {
-  filter: saturate(1.03) contrast(1.02) brightness(1.02);
-}
-
-.ambient-lighting-layer.phase-morning {
-  background: linear-gradient(
-    165deg,
-    rgba(135, 206, 250, 0.16) 0%,
-    rgba(255, 192, 203, 0.12) 48%,
-    rgba(255, 236, 179, 0.08) 100%
-  );
-  box-shadow: inset 0 0 42px rgba(125, 211, 252, 0.16);
-}
-
-/* 2. TAGESLICHT (09:00 – 17:00 Uhr): Klares, helles Tageslicht */
-.room-canvas.time-phase-day {
-  filter: none;
-}
-
-.ambient-lighting-layer.phase-day {
-  background: transparent;
-  box-shadow: none;
-}
-
-/* 3. GOLDEN HOUR / ABENDSONNE (17:00 – 21:00 Uhr): Warme gold-orange Abendsonne */
-.room-canvas.time-phase-golden {
-  filter: sepia(0.14) saturate(1.18) contrast(1.03) brightness(0.98);
-}
-
-.ambient-lighting-layer.phase-golden {
-  background: linear-gradient(
-    155deg,
-    rgba(255, 140, 0, 0.18) 0%,
-    rgba(255, 94, 58, 0.12) 55%,
-    rgba(120, 40, 15, 0.16) 100%
-  );
-  box-shadow: inset 0 0 55px rgba(234, 88, 12, 0.22);
-}
-
-/* 4. NACHTLICHT (ab 21:00 – 05:00 Uhr): Gemütliches Nachtblau mit warmen Lampen & Kerzen */
-.room-canvas.time-phase-night {
-  filter: brightness(0.88) contrast(1.06) saturate(0.94);
-}
-
-.ambient-lighting-layer.phase-night {
-  background: linear-gradient(
-    180deg,
-    rgba(12, 18, 42, 0.38) 0%,
-    rgba(18, 24, 52, 0.30) 55%,
-    rgba(10, 14, 32, 0.44) 100%
-  );
-  box-shadow: inset 0 0 68px rgba(8, 12, 28, 0.52);
-}
-
-/* Punktuelle warme Lampen- und Kerzen-Lichtkegel (aktiv in Golden Hour & Nachtlicht) */
-.room-lamp-glow {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  pointer-events: none;
-  mix-blend-mode: screen;
-  filter: blur(8px);
-  animation: lampWarmBreathe 4.2s ease-in-out infinite;
-}
-
-.room-lamp-glow.candle-flicker {
-  animation: candleWarmFlicker 2.1s ease-in-out infinite;
-}
-
-@keyframes lampWarmBreathe {
-  0%, 100% {
-    opacity: 0.88;
-    transform: translate(-50%, -50%) scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1.06);
-  }
-}
-
-@keyframes candleWarmFlicker {
-  0%, 100% {
-    opacity: 0.86;
-    transform: translate(-50%, -50%) scale(0.96);
-  }
-  25% {
-    opacity: 1;
-    transform: translate(-50%, -51%) scale(1.08);
-  }
-  55% {
-    opacity: 0.82;
-    transform: translate(-49%, -50%) scale(0.94);
-  }
-  80% {
-    opacity: 0.98;
-    transform: translate(-50%, -49%) scale(1.05);
-  }
-}
-
-.smart-badge-time-pill {
-  cursor: pointer;
-  padding: 2px 6px;
-  border-radius: 99px;
-  font-size: 10px;
-  font-weight: 900;
-  background: rgba(255, 255, 255, 0.14);
-  color: #fde68a;
-  border: 1px solid rgba(255, 212, 59, 0.45);
-  transition: transform 0.14s ease, background-color 0.14s ease;
-}
-
-.smart-badge-time-pill:hover,
-.smart-badge-time-pill:active {
-  transform: scale(1.08);
-  background: rgba(255, 138, 18, 0.35);
-}
-
-
-/* ============================================================================
-   12. UPDATE v0.56: WOCHEN-RÜCKBLICK "ABENTEURER-BILANZ" (7-TAGE-GRAFIK IN CHRONIK)
-   ============================================================================ */
+/* 7-Tage Abenteurer-Bilanz (v0.55) */
 .adventurer-balance-card {
-  background: linear-gradient(180deg, #2b180a 0%, #1c1008 100%);
-  border: 2.5px solid #ff8a12;
+  background: linear-gradient(145deg, #1e1b4b 0%, #1a120b 100%);
+  color: #fef3c7;
+  border: 2px solid #f59e0b;
   border-radius: 14px;
-  padding: 12px;
+  padding: 11px;
   margin-bottom: 12px;
-  color: #ffedd5;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.15);
 }
 
 .adv-balance-header {
@@ -1379,20 +998,15 @@ body {
 }
 
 .adv-balance-title {
+  font-size: 12.5px;
   font-weight: 900;
-  font-size: 13px;
-  color: #ffb703;
-  letter-spacing: 0.3px;
+  color: #fde047;
 }
 
 .adv-balance-sub {
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 800;
-  color: #fde68a;
-  background: rgba(255, 138, 18, 0.22);
-  border: 1px solid rgba(255, 183, 3, 0.45);
-  padding: 2px 7px;
-  border-radius: 99px;
+  color: #bbf7d0;
 }
 
 .adv-kpi-grid {
@@ -1403,40 +1017,36 @@ body {
 }
 
 .adv-kpi-box {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 183, 3, 0.35);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(253, 224, 71, 0.25);
   border-radius: 10px;
-  padding: 5px 6px;
+  padding: 6px;
   text-align: center;
 }
 
 .adv-kpi-val {
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 900;
-  line-height: 1.15;
 }
 
 .adv-kpi-lbl {
   font-size: 9.5px;
   color: #cbd5e1;
-  font-weight: 700;
+  margin-top: 1px;
 }
 
 .adv-chart-wrap {
-  background: rgba(12, 8, 5, 0.58);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 11px;
-  padding: 10px 6px 6px;
+  background: rgba(0, 0, 0, 0.28);
+  border-radius: 10px;
+  padding: 8px 6px 6px;
 }
 
 .adv-bars-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 4px;
+  height: 78px;
   align-items: end;
-  height: 92px;
-  padding-top: 12px;
-  border-bottom: 1.5px solid rgba(255, 255, 255, 0.18);
 }
 
 .adv-day-col {
@@ -1445,78 +1055,55 @@ body {
   align-items: center;
   justify-content: flex-end;
   height: 100%;
-  position: relative;
-}
-
-.adv-day-bars-pair {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 2px;
-  width: 100%;
-  height: 68px;
-}
-
-.adv-bar {
-  width: 7px;
-  border-radius: 3px 3px 0 0;
-  transition: height 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-  min-height: 3px;
-}
-
-.adv-bar.xp-bar {
-  background: linear-gradient(180deg, #ff922b 0%, #ea580c 100%);
-  box-shadow: 0 0 6px rgba(255, 146, 43, 0.45);
-}
-
-.adv-bar.gold-bar {
-  background: linear-gradient(180deg, #fde047 0%, #eab308 100%);
-  box-shadow: 0 0 6px rgba(250, 204, 21, 0.45);
-}
-
-.adv-bar.mb-bar {
-  width: 6px;
-  background: linear-gradient(180deg, #4ade80 0%, #16a34a 100%);
-  box-shadow: 0 0 5px rgba(74, 222, 128, 0.4);
 }
 
 .adv-day-top-val {
   font-size: 8.5px;
   font-weight: 800;
-  color: #fed7aa;
+  color: #fde047;
   margin-bottom: 2px;
-  white-space: nowrap;
 }
+
+.adv-day-bars-pair {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.adv-bar {
+  width: 6px;
+  border-radius: 3px 3px 0 0;
+}
+
+.adv-bar.xp-bar   { background: #ff922b; }
+.adv-bar.gold-bar { background: #fde047; }
+.adv-bar.mb-bar   { background: #4ade80; }
 
 .adv-days-labels-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 4px;
-  margin-top: 5px;
+  margin-top: 4px;
   text-align: center;
 }
 
 .adv-day-lbl {
   font-size: 9.5px;
-  font-weight: 800;
+  font-weight: 700;
   color: #cbd5e1;
-  line-height: 1.1;
 }
 
 .adv-day-lbl.is-today {
-  color: #ffb703;
-  background: rgba(255, 138, 18, 0.22);
-  border-radius: 5px;
-  padding: 1px 0;
+  color: #fde047;
+  font-weight: 900;
 }
 
 .adv-legend-row {
   display: flex;
   justify-content: center;
   gap: 12px;
-  margin-top: 7px;
+  margin-top: 6px;
   font-size: 10px;
-  font-weight: 800;
   color: #e2e8f0;
 }
 
@@ -1524,60 +1111,1694 @@ body {
   display: inline-block;
   width: 8px;
   height: 8px;
-  border-radius: 2px;
-  margin-right: 3px;
-  vertical-align: middle;
+  border-radius: 50%;
+  margin-right: 4px;
 }
 
-
-/* ============================================================================
-   13. UPDATE v0.56: 90er LUCASARTS POINT-&-CLICK OBJEKTKOMMENTARE ("Schau an...")
-   ============================================================================ */
-.lucasarts-quip-box {
-  position: relative;
-  background: linear-gradient(180deg, #1b112c 0%, #10091b 100%);
-  border: 2.5px solid #ffb703;
-  border-radius: 13px;
-  padding: 9px 11px;
-  margin-bottom: 12px;
+/* Einstellungen Frame-Karten */
+.settings-option-card {
   display: flex;
   align-items: center;
   gap: 10px;
-  text-align: left;
-  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.18);
+  padding: 8px;
+  border: 2px solid #e2e8f0;
+  background: #ffffff;
+  border-radius: 12px;
+  margin-bottom: 6px;
+  cursor: pointer;
 }
 
-.lucasarts-quip-avatar {
+.settings-option-card.active-frame {
+  border-color: #ff7a00;
+  background: #fff7ed;
+}
+
+.settings-frame-thumb {
   width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: 2px solid #ff7a00;
-  background: radial-gradient(circle at 50% 38%, #fff9db 0%, #ffd43b 65%, #f76707 100%);
-  object-fit: contain;
-  object-position: center bottom;
+  height: 64px;
+  border-radius: 6px;
+  border: 1.5px solid #94a3b8;
   flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
 }
 
-.lucasarts-quip-content {
-  flex: 1;
+/* ==========================================================================
+   8. VERSTECKTER PC-ENTWICKLERMODUS (Alt+D / Strg+Shift+D)
+   ========================================================================== */
+.room-canvas.dev-mode-active .room-sprite-hotspot,
+.room-canvas.dev-mode-active .pinnwand-postit-hotspot {
+  outline: 1.5px dashed rgba(56, 189, 248, 0.75);
 }
 
-.lucasarts-verb-line {
-  font-family: 'Courier New', Courier, monospace;
+.dev-selected-object {
+  outline: 2.5px solid #facc15 !important;
+  box-shadow: 0 0 16px rgba(250, 204, 21, 0.9);
+}
+
+.dev-inspector-bar {
+  position: absolute;
+  bottom: 58px;
+  left: 8px;
+  right: 8px;
+  z-index: 320;
+  background: rgba(15, 23, 42, 0.95);
+  color: #f8fafc;
+  border: 2px solid #38bdf8;
+  border-radius: 12px;
+  padding: 8px 10px;
+  font-size: 11px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.75);
+}
+
+.dev-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.dev-obj-title {
+  font-weight: 900;
+  color: #fde047;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dev-coords-readout {
+  font-family: monospace;
+  font-size: 10.5px;
+  color: #bae6fd;
+  margin-bottom: 6px;
+}
+
+.dev-btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 5px;
+}
+
+.dev-mini-btn {
+  background: #1e293b;
+  color: #e2e8f0;
+  border: 1px solid #475569;
+  border-radius: 6px;
+  padding: 3px 7px;
+  font-size: 10.5px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.dev-mini-btn.accent {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #38bdf8;
+}
+
+.dev-mini-btn.warn {
+  background: #991b1b;
+  color: #fef2f2;
+  border-color: #f87171;
+}
+
+
+/* ==========================================================================
+   9. NEU IN VERSION 0.58:
+      - 🎲 PARALYSE-BRECHER (3. WOW-RING-BUTTON)
+      - ⏳ VISUELLER FOKUS-/POMODORO-TIMER IM AVATAR-RING
+      - 🐷 SPARZIEL-TRACKER AM DASHBOARD-SPARSCHWEIN & IM SHOP-MODAL
+   ========================================================================== */
+
+/* 3. WoW-Ring-Button: 🎲 Paralyse-Brecher exakt bei -16° auf R = 74px: left = 129.1px, top = 37.6px */
+.addon-pos-dice {
+  left: 129.1px;
+  top: 37.6px;
+  border-color: #38bdf8;
+  background: radial-gradient(circle at 35% 30%, #1e3a8a 0%, #0f172a 100%);
+}
+
+.addon-pos-dice.dice-rolling {
+  animation: diceSpinRoll 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes diceSpinRoll {
+  0%   { transform: rotate(0deg) scale(1); }
+  50%  { transform: rotate(200deg) scale(1.28); border-color: #fde047; box-shadow: 0 0 16px #fde047; }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+/* Pulsierender Gold-Fokus auf dem vom Paralyse-Brecher ausgewählten Raum-Sprite */
+.room-sprite-hotspot.paralyse-highlight-pulse {
+  animation: paralyseTargetPulse 0.85s ease-in-out infinite alternate;
+  z-index: 28 !important;
+}
+
+@keyframes paralyseTargetPulse {
+  0%   { filter: drop-shadow(0 0 6px #fde047) brightness(1.08); transform: scale(1); }
+  100% { filter: drop-shadow(0 0 18px #ff7a00) drop-shadow(0 0 28px #fde047) brightness(1.25); transform: scale(1.05); }
+}
+
+/* Goldener Pomodoro-/Fokus-Countdown-Bogen direkt über dem Avatar-Ring */
+.avatar-focus-timer-ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  padding: 4px;
+  z-index: 4;
+  pointer-events: none;
+  background: conic-gradient(#fde047 0% 100%, transparent 100%);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4.5px), #000 calc(100% - 4px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 4.5px), #000 calc(100% - 4px));
+  filter: drop-shadow(0 0 8px rgba(253, 224, 71, 0.9));
+  animation: focusRingGlow 1.8s ease-in-out infinite alternate;
+}
+
+@keyframes focusRingGlow {
+  0%   { filter: drop-shadow(0 0 5px rgba(253, 224, 71, 0.7)); }
+  100% { filter: drop-shadow(0 0 13px rgba(250, 204, 21, 1)); }
+}
+
+/* Kompaktes Countdown-Badge unten am Avatar-Ring während eines Fokus-Timers */
+.focus-timer-hud-pill {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 7;
+  background: linear-gradient(135deg, #ca8a04 0%, #854d0e 100%);
+  color: #fef9c3;
+  border: 1.5px solid #fde047;
+  border-radius: 999px;
+  padding: 1px 7px;
   font-size: 10px;
   font-weight: 900;
-  color: #38bdf8;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.65);
+  cursor: pointer;
+}
+
+/* Fokus-Timer-Button im Objekt-Modal */
+.obj-modal-actions-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.focus-timer-action-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #fef08a 0%, #facc15 100%);
+  color: #422006;
+  border: 2px solid #ca8a04;
+  border-radius: 14px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(202, 138, 4, 0.28);
+  transition: transform 0.15s ease;
+}
+
+.focus-timer-action-btn.timer-running {
+  background: linear-gradient(135deg, #fee2e2 0%, #fca5a5 100%);
+  color: #7f1d1d;
+  border-color: #ef4444;
+}
+
+.focus-timer-action-btn:active {
+  transform: scale(0.98);
+}
+
+/* 🐷 In-World Sparziel-Plakette am Rosa Sparschwein auf dem Dashboard */
+.piggybank-goal-tag {
+  position: absolute;
+  left: 50%;
+  bottom: -14px;
+  transform: translateX(-50%);
+  background: rgba(26, 18, 11, 0.92);
+  border: 1.5px solid #f59e0b;
+  border-radius: 999px;
+  padding: 2px 8px 3px;
+  min-width: 96px;
+  text-align: center;
+  pointer-events: none;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+  z-index: 25;
+}
+
+.piggybank-goal-tag.goal-ready {
+  border-color: #4ade80;
+  background: rgba(5, 46, 22, 0.94);
+  box-shadow: 0 0 12px rgba(74, 222, 128, 0.85);
+}
+
+.piggybank-goal-label {
+  font-size: 8.5px;
+  font-weight: 800;
+  color: #fef3c7;
+  white-space: nowrap;
+  line-height: 1.1;
   margin-bottom: 2px;
 }
 
-.lucasarts-quip-text {
+.piggybank-goal-Label strong {
+  color: #fde047;
+}
+
+.piggybank-goal-bar-track {
+  width: 100%;
+  height: 3.5px;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.piggybank-goal-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f59e0b 0%, #fde047 100%);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.room-sprite-hotspot.piggy-goal-ready img {
+  filter: drop-shadow(0 0 10px rgba(250, 204, 21, 0.95));
+}
+
+/* 🎯 Sparziel-Hero-Banner oben im Shop-Modal */
+.shop-goal-hero-card {
+  background: linear-gradient(145deg, #27170c 0%, #431407 100%);
+  color: #fef3c7;
+  border: 2px solid #f59e0b;
+  border-radius: 14px;
+  padding: 11px 12px;
+  margin-bottom: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.shop-goal-hero-card.goal-complete {
+  border-color: #4ade80;
+  background: linear-gradient(145deg, #064e3b 0%, #052e16 100%);
+}
+
+.shop-goal-hero-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10.5px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #fdba74;
+  margin-bottom: 3px;
+}
+
+.shop-goal-pct-badge {
+  background: rgba(253, 224, 71, 0.2);
+  border: 1px solid #fde047;
+  color: #fde047;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+}
+
+.shop-goal-hero-title {
+  font-size: 15px;
+  font-weight: 900;
+  color: #ffffff;
+  margin-bottom: 7px;
+}
+
+.shop-goal-bar-outer {
+  width: 100%;
+  height: 10px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(253, 224, 71, 0.4);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.shop-goal-bar-inner {
+  height: 100%;
+  background: linear-gradient(90deg, #ff7a00 0%, #facc15 65%, #fef08a 100%);
+  border-radius: 999px;
+  transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.shop-goal-hero-sub {
+  font-size: 11.5px;
+  color: #fde68a;
+}
+
+.shop-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  border: 2px solid #fed7aa;
+  background: #ffffff;
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+
+.shop-item-row.pinned-goal-row {
+  border-color: #f59e0b;
+  background: #fffbeb;
+}
+
+.pin-active-btn {
+  background: #fef08a !important;
+  border-color: #ca8a04 !important;
+  color: #713f12 !important;
+}
+
+
+/* ==========================================================================
+   10. NEU IN VERSION 0.61:
+       - 👣 "NUR 2 MINUTEN"-MIKROSCHRITT-BUTTON (25% LOOT)
+       - 🗺️ WOHNUNGS-MAP MIT LIVE-RADAR (OFFENE QUESTS & PUTZ-MULTIPLIKATOR)
+       - 🔥 FLOW-COMBO-MULTIPLIKATOR BEI TASK-BATCHING (BIS x1.5 XP)
+       - ↩️ "[↩ RÜCKGÄNGIG]"-UNDO-BUTTON IM LOOT-TOAST
+   ========================================================================== */
+
+/* Nebeneinanderliegende Sekundär-Aktionen im Objekt-Modal (2-Min-Mikroschritt + Fokus-Timer) */
+.obj-modal-secondary-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.micro-step-action-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #dcfce7 0%, #86efac 100%);
+  color: #064e3b;
+  border: 2px solid #16a34a;
+  border-radius: 14px;
+  padding: 10px 8px;
   font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.22);
+  transition: transform 0.15s ease;
+}
+
+.micro-step-action-btn:active {
+  transform: scale(0.97);
+}
+
+/* Flow-Combo Pill im Smart-Badge oben rechts */
+.smart-badge-combo-pill {
+  cursor: pointer;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f97316 0%, #dc2626 100%);
+  color: #fffbeb;
+  border: 1px solid #fde047;
+  font-size: 10.5px;
+  font-weight: 900;
+  box-shadow: 0 0 10px rgba(249, 115, 22, 0.75);
+  animation: comboPulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes comboPulse {
+  0%   { transform: scale(1); }
+  100% { transform: scale(1.07); }
+}
+
+/* Live-Radar Badges auf der interaktiven Wohnungs-Map */
+.map-radar-badge {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+  background: rgba(26, 18, 11, 0.9);
+  color: #fef3c7;
+  border: 1.5px solid #f59e0b;
+  border-radius: 999px;
+  padding: 2px 7px;
+  font-size: 9.5px;
+  font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.65);
+  pointer-events: auto;
+  transition: transform 0.15s ease;
+}
+
+.map-radar-badge:hover {
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+.map-radar-badge.is-current {
+  border-color: #fde047;
+  box-shadow: 0 0 10px rgba(253, 224, 71, 0.9);
+}
+
+.map-radar-badge.all-done {
+  border-color: #4ade80;
+  background: rgba(5, 46, 22, 0.92);
+  color: #bbf7d0;
+}
+
+.map-radar-dirt {
+  padding: 1px 4px;
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 8.5px;
+  font-weight: 900;
+}
+
+/* [↩ Rückgängig]-Undo-Button im Loot-Toast */
+.loot-toast-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  text-align: left;
+}
+
+.loot-toast-msg {
+  flex: 1;
+}
+
+.loot-undo-btn {
+  background: rgba(254, 240, 138, 0.2);
+  color: #fde047;
+  border: 1.5px solid #fde047;
+  border-radius: 999px;
+  padding: 4px 9px;
+  font-size: 11px;
+  font-weight: 900;
+  white-space: nowrap;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.loot-undo-btn:hover,
+.loot-undo-btn:active {
+  background: #fde047;
+  color: #1a120b;
+  transform: scale(0.96);
+}
+
+
+/* ==========================================================================
+   11. NEU IN VERSION 0.62:
+       OBJEKT-ABSCHLUSS-ANIMATIONEN IN DER GROSSANSICHT (HERO-STAGE, MAX. 4 SEK.)
+       - Maßgeschneiderte Choreografien für alle 11 Wohnzimmer-Objekte + Putz-Tools
+   ========================================================================== */
+
+.obj-hero-stage.stage-celebrating {
+  border-color: #f59e0b;
+  box-shadow:
+    0 0 24px var(--stage-aura-color, rgba(255, 146, 43, 0.55)),
+    inset 0 0 28px var(--stage-aura-color, rgba(255, 146, 43, 0.45));
+  cursor: pointer;
+}
+
+.stage-fx-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 6;
+}
+
+.stage-fx-aura-ring {
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  width: 120px;
+  height: 120px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--stage-aura-color, rgba(255, 146, 43, 0.55)) 0%, transparent 72%);
+  animation: stageAuraPulse 0.85s ease-in-out infinite alternate;
+}
+
+@keyframes stageAuraPulse {
+  0%   { transform: translate(-50%, -50%) scale(0.85); opacity: 0.65; }
+  100% { transform: translate(-50%, -50%) scale(1.38); opacity: 1; }
+}
+
+.stage-fx-banner {
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(26, 18, 11, 0.92);
+  color: #fde047;
+  border: 1.5px solid #f59e0b;
+  border-radius: 999px;
+  padding: 3px 11px;
+  font-size: 11px;
+  font-weight: 900;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.55);
+  animation: stageBannerPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes stageBannerPop {
+  0%   { transform: translateX(-50%) scale(0.6); opacity: 0; }
+  100% { transform: translateX(-50%) scale(1); opacity: 1; }
+}
+
+.stage-fx-progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.stage-fx-progress-fill {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #ff7a00 0%, #fde047 50%, #4ade80 100%);
+  transform-origin: left center;
+  animation: stageProgressShrink 3400ms linear forwards;
+}
+
+@keyframes stageProgressShrink {
+  0%   { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+
+/* Schwebende Effekt-Partikel in der Hero-Stage */
+.stage-fx-particles-wrap {
+  position: absolute;
+  inset: 0;
+}
+
+.stage-fx-particle {
+  position: absolute;
+  bottom: 18px;
+  font-size: 19px;
+  opacity: 0;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
+  animation: stageParticleFloatUp 1.55s ease-out infinite;
+  animation-delay: var(--p-delay, 0s);
+}
+
+.stage-fx-overlay.traj-radial-synth-waves .stage-fx-particle,
+.stage-fx-overlay.traj-sonic-rings .stage-fx-particle,
+.stage-fx-overlay.traj-arcade-combo .stage-fx-particle {
+  left: 50% !important;
+  top: 52%;
+  bottom: auto;
+  animation-name: stageParticleRadialBurst;
+  animation-duration: 1.35s;
+}
+
+.stage-fx-overlay.traj-rising-steam .stage-fx-particle,
+.stage-fx-overlay.traj-warm-hearts .stage-fx-particle,
+.stage-fx-overlay.traj-zen-feathers .stage-fx-particle {
+  animation-name: stageParticleSwayUp;
+  animation-duration: 1.85s;
+}
+
+@keyframes stageParticleFloatUp {
+  0%   { transform: translateY(12px) scale(0.5) rotate(-10deg); opacity: 0; }
+  25%  { opacity: 1; }
+  80%  { opacity: 0.95; }
+  100% { transform: translateY(-118px) scale(1.22) rotate(14deg); opacity: 0; }
+}
+
+@keyframes stageParticleSwayUp {
+  0%   { transform: translate(0, 10px) scale(0.55); opacity: 0; }
+  30%  { transform: translate(-12px, -35px) scale(1.05); opacity: 1; }
+  70%  { transform: translate(12px, -80px) scale(1.15); opacity: 0.9; }
+  100% { transform: translate(-6px, -122px) scale(0.9); opacity: 0; }
+}
+
+@keyframes stageParticleRadialBurst {
+  0%   { transform: translate(-50%, -50%) rotate(var(--p-angle)) translateY(0px) scale(0.4); opacity: 0; }
+  25%  { opacity: 1; }
+  100% { transform: translate(-50%, -50%) rotate(var(--p-angle)) translateY(-76px) scale(1.25); opacity: 0; }
+}
+
+/* ==========================================================================
+   SPEZIFISCHE WOHNZIMMER-OBJEKT-KEYFRAMES (MAX. 3.4 – 4.0 SEKUNDEN)
+   ========================================================================== */
+
+/* 1. WOH_001_STAGEPIANO: Lebendiger Tasten-Groove & Swing-Bounce */
+.stage-anim-piano-groove {
+  position: relative;
+  z-index: 4;
+  animation: pianoGrooveAnim 0.55s ease-in-out infinite alternate;
+}
+@keyframes pianoGrooveAnim {
+  0%   { transform: translateY(0) rotate(-2.5deg) scale(1.03); filter: drop-shadow(0 0 8px #ff922b); }
+  50%  { transform: translateY(-7px) rotate(0deg) scale(1.1); filter: drop-shadow(0 0 16px #fde047); }
+  100% { transform: translateY(-2px) rotate(2.5deg) scale(1.05); filter: drop-shadow(0 0 12px #ff7a00); }
+}
+
+/* 2. WOH_002_SYNTH: Elektronischer Filter-Sweep & Neon-Glow */
+.stage-anim-synth-pulse {
+  position: relative;
+  z-index: 4;
+  animation: synthPulseAnim 0.48s cubic-bezier(0.34, 1.56, 0.64, 1) infinite alternate;
+}
+@keyframes synthPulseAnim {
+  0%   { transform: scale(1) skewX(-1.5deg); filter: drop-shadow(0 0 8px #38bdf8) hue-rotate(-12deg) brightness(1.05); }
+  100% { transform: scale(1.12) skewX(1.5deg); filter: drop-shadow(0 0 22px #a855f7) hue-rotate(18deg) brightness(1.22); }
+}
+
+/* 3. WOH_003_UKULELEN: Fröhliches Insel-Strumming-Wackeln */
+.stage-anim-ukulele-strum {
+  position: relative;
+  z-index: 4;
+  transform-origin: 50% 65%;
+  animation: ukuleleStrumAnim 0.36s ease-in-out infinite alternate;
+}
+@keyframes ukuleleStrumAnim {
+  0%   { transform: rotate(-9deg) scale(1.06); filter: drop-shadow(0 0 10px #facc15); }
+  100% { transform: rotate(9deg) scale(1.12); filter: drop-shadow(0 0 18px #fb923c); }
+}
+
+/* 4. WOH_004_MONITORBOXEN: Rhythmischer Bass-Woofer-Thump */
+.stage-anim-speaker-bass {
+  position: relative;
+  z-index: 4;
+  animation: speakerBassAnim 0.42s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+@keyframes speakerBassAnim {
+  0%   { transform: scale(1); filter: drop-shadow(0 0 6px #a855f7); }
+  35%  { transform: scale(1.16, 1.12); filter: drop-shadow(0 0 20px #38bdf8) brightness(1.18); }
+  70%  { transform: scale(0.97, 1.02); }
+  100% { transform: scale(1); }
+}
+
+/* 5. WOH_005_FOTOALBUM: Herzliches Lachen & warmes Seiten-Wippen */
+.stage-anim-album-flip {
+  position: relative;
+  z-index: 4;
+  animation: albumLaughAnim 0.6s ease-in-out infinite alternate;
+}
+@keyframes albumLaughAnim {
+  0%   { transform: translateY(0) scale(1.02) rotate(-2deg); filter: drop-shadow(0 0 10px #f472b6); }
+  50%  { transform: translateY(-9px) scale(1.12) rotate(2deg); filter: drop-shadow(0 0 20px #fde047) brightness(1.12); }
+  100% { transform: translateY(-3px) scale(1.07) rotate(-1deg); }
+}
+
+/* 6. WOH_006_SOFAKISSEN: Sanftes Einkuscheln & Atem-Schweben */
+.stage-anim-pillow-cozy {
+  position: relative;
+  z-index: 4;
+  animation: pillowCozyAnim 1.1s ease-in-out infinite alternate;
+}
+@keyframes pillowCozyAnim {
+  0%   { transform: scale(1.02, 0.96) translateY(3px); filter: drop-shadow(0 0 10px #4ade80); }
+  100% { transform: scale(1.09, 1.08) translateY(-6px); filter: drop-shadow(0 0 20px #fef08a) brightness(1.1); }
+}
+
+/* 7. WOH_007_TEETASSEN: Gemütliches Anstoßen & Wärme-Schimmer */
+.stage-anim-tea-clink {
+  position: relative;
+  z-index: 4;
+  animation: teaClinkAnim 0.75s ease-in-out infinite alternate;
+}
+@keyframes teaClinkAnim {
+  0%   { transform: translateY(0) rotate(-3deg) scale(1.04); filter: drop-shadow(0 0 10px #fbbf24); }
+  50%  { transform: translateY(-6px) rotate(3deg) scale(1.12); filter: drop-shadow(0 0 18px #f97316) brightness(1.12); }
+  100% { transform: translateY(-2px) rotate(0deg) scale(1.07); }
+}
+
+/* 8. WOH_008_GAMEPADS: Action-Controller-Rumble & 16-Bit-Power */
+.stage-anim-gamepad-rumble {
+  position: relative;
+  z-index: 4;
+  animation: gamepadRumbleAnim 0.28s ease-in-out infinite alternate;
+}
+@keyframes gamepadRumbleAnim {
+  0%   { transform: translate(-3px, -2px) rotate(-5deg) scale(1.1); filter: drop-shadow(0 0 12px #3b82f6); }
+  50%  { transform: translate(3px, -5px) rotate(5deg) scale(1.15); filter: drop-shadow(0 0 22px #fde047) brightness(1.2); }
+  100% { transform: translate(-2px, 2px) rotate(-3deg) scale(1.08); }
+}
+
+/* 9. WOH_009_FERNSEHER: Kino-Projektor-Flimmern & Screen-Glow */
+.stage-anim-tv-cinema {
+  position: relative;
+  z-index: 4;
+  animation: tvCinemaAnim 0.65s ease-in-out infinite alternate;
+}
+@keyframes tvCinemaAnim {
+  0%   { transform: scale(1.03); filter: drop-shadow(0 0 12px #6366f1) brightness(1.05); }
+  50%  { transform: scale(1.11); filter: drop-shadow(0 0 24px #38bdf8) brightness(1.22) contrast(1.08); }
+  100% { transform: scale(1.06); filter: drop-shadow(0 0 18px #f59e0b) brightness(1.12); }
+}
+
+/* 10. WOH_010_WANDFOKUS: Meditative Kronleuchter-Aura & Schwebe-Ruhe */
+.stage-anim-wall-zen {
+  position: relative;
+  z-index: 4;
+  animation: wallZenAnim 1.15s ease-in-out infinite alternate;
+}
+@keyframes wallZenAnim {
+  0%   { transform: translateY(2px) scale(1.02); filter: drop-shadow(0 0 12px #2dd4bf); }
+  100% { transform: translateY(-8px) scale(1.12); filter: drop-shadow(0 0 26px #fde047) brightness(1.2); }
+}
+
+/* 11. WOH_AUF_001 & PUTZ-TOOLS: Schwungvoller Fege- & Saug-Sweep */
+.stage-anim-vacuum-sweep {
+  position: relative;
+  z-index: 4;
+  animation: vacuumSweepAnim 0.52s ease-in-out infinite alternate;
+}
+@keyframes vacuumSweepAnim {
+  0%   { transform: translateX(-14px) rotate(-8deg) scale(1.05); filter: drop-shadow(0 0 10px #22c55e); }
+  100% { transform: translateX(14px) rotate(8deg) scale(1.13); filter: drop-shadow(0 0 22px #fde047) brightness(1.18); }
+}
+
+/* Fallback für weitere Räume */
+.stage-anim-generic-celebrate {
+  position: relative;
+  z-index: 4;
+  animation: pianoGrooveAnim 0.55s ease-in-out infinite alternate;
+}
+
+
+/* ==========================================================================
+   12. NEU IN VERSION 0.63:
+       SPEZIFISCHE KINDERZIMMER-OBJEKT-KEYFRAMES IN DER HERO-STAGE (MAX. 3.4s)
+   ========================================================================== */
+
+/* 1. KIN_MB_001: Bunte Holzeisenbahn – Fröhliches Tschu-Tschu-Ruckeln über die Schienen */
+.stage-anim-train-chug {
+  position: relative;
+  z-index: 4;
+  animation: trainChugAnim 0.44s ease-in-out infinite alternate;
+}
+@keyframes trainChugAnim {
+  0%   { transform: translateX(-10px) translateY(0px) rotate(-2.5deg) scale(1.04); filter: drop-shadow(0 0 10px #ef4444); }
+  50%  { transform: translateX(0px) translateY(-7px) rotate(0deg) scale(1.11); filter: drop-shadow(0 0 18px #facc15); }
+  100% { transform: translateX(10px) translateY(0px) rotate(2.5deg) scale(1.06); filter: drop-shadow(0 0 14px #22c55e); }
+}
+
+/* 2. KIN_MB_002: Kleiner Mal- & Basteltisch – Kreatives Pinsel- & Buntstift-Swingen */
+.stage-anim-craft-scribble {
+  position: relative;
+  z-index: 4;
+  animation: craftScribbleAnim 0.48s cubic-bezier(0.34, 1.56, 0.64, 1) infinite alternate;
+}
+@keyframes craftScribbleAnim {
+  0%   { transform: rotate(-6deg) scale(1.03); filter: drop-shadow(0 0 10px #f472b6) saturate(1.15); }
+  50%  { transform: translateY(-6px) rotate(4deg) scale(1.12); filter: drop-shadow(0 0 20px #38bdf8) saturate(1.3); }
+  100% { transform: rotate(6deg) scale(1.07); filter: drop-shadow(0 0 16px #facc15); }
+}
+
+/* 3. KIN_MB_003: Holz-Werkzeugkasten (Japansäge & Stecheisen) – Präziser Paddywood-Säge- & Meister-Impuls */
+.stage-anim-woodwork-craft {
+  position: relative;
+  z-index: 4;
+  animation: woodworkCraftAnim 0.42s ease-in-out infinite alternate;
+}
+@keyframes woodworkCraftAnim {
+  0%   { transform: translate(-8px, 2px) rotate(-5deg) scale(1.04); filter: drop-shadow(0 0 10px #d97706); }
+  60%  { transform: translate(8px, -6px) rotate(4deg) scale(1.13); filter: drop-shadow(0 0 22px #fde047) brightness(1.16); }
+  100% { transform: translate(4px, 0px) rotate(2deg) scale(1.08); filter: drop-shadow(0 0 14px #f59e0b); }
+}
+
+/* 4. KIN_MB_004: Gerahmtes „Gelato Girl“-Poster – Stolzes Galerie-Leuchten & sanftes Schweben */
+.stage-anim-poster-pride {
+  position: relative;
+  z-index: 4;
+  animation: posterPrideAnim 0.85s ease-in-out infinite alternate;
+}
+@keyframes posterPrideAnim {
+  0%   { transform: translateY(2px) scale(1.02) rotate(-1.5deg); filter: drop-shadow(0 0 12px #facc15); }
+  100% { transform: translateY(-8px) scale(1.14) rotate(1.5deg); filter: drop-shadow(0 0 26px #fde047) drop-shadow(0 0 38px #fb923c) brightness(1.18); }
+}
+
+/* 5. KIN_MB_005: Rotes Korg Minipiano – Verspielter Kinder-Tasten-Bounce */
+.stage-anim-korg-jam {
+  position: relative;
+  z-index: 4;
+  animation: korgJamAnim 0.46s cubic-bezier(0.34, 1.56, 0.64, 1) infinite alternate;
+}
+@keyframes korgJamAnim {
+  0%   { transform: translateY(2px) scale(1.05, 0.96) rotate(-3deg); filter: drop-shadow(0 0 10px #ef4444); }
+  50%  { transform: translateY(-9px) scale(1.08, 1.12) rotate(0deg); filter: drop-shadow(0 0 22px #fde047) brightness(1.15); }
+  100% { transform: translateY(-3px) scale(1.12, 1.04) rotate(3deg); filter: drop-shadow(0 0 16px #f97316); }
+}
+
+/* 6. KIN_MB_006: Großes Regenbogen-Plüsch-Einhorn – Flauschiger Freuden-Hüpfer & Regenbogen-Schimmer */
+.stage-anim-unicorn-magic {
+  position: relative;
+  z-index: 4;
+  animation: unicornMagicAnim 0.58s cubic-bezier(0.34, 1.56, 0.64, 1) infinite alternate;
+}
+@keyframes unicornMagicAnim {
+  0%   { transform: translateY(3px) scale(1.04, 0.95) rotate(-4deg); filter: drop-shadow(0 0 12px #c084fc) hue-rotate(-10deg); }
+  100% { transform: translateY(-11px) scale(1.12, 1.12) rotate(4deg); filter: drop-shadow(0 0 24px #f472b6) drop-shadow(0 0 34px #fde047) hue-rotate(15deg) brightness(1.15); }
+}
+
+/* 7. KIN_MB_007: IKEA-Wandregale voller Kinderbücher – Warmes Geschichten-Wiegen */
+.stage-anim-bookshelf-gratitude {
+  position: relative;
+  z-index: 4;
+  animation: bookshelfGratitudeAnim 0.8s ease-in-out infinite alternate;
+}
+@keyframes bookshelfGratitudeAnim {
+  0%   { transform: translateY(0px) rotate(-2deg) scale(1.03); filter: drop-shadow(0 0 10px #38bdf8); }
+  100% { transform: translateY(-7px) rotate(2deg) scale(1.11); filter: drop-shadow(0 0 22px #fde047) brightness(1.14); }
+}
+
+/* 8. KIN_AUF_001: Aufgeschlagenes Gute-Nacht-Buch – Sanftes Traum-Schaukeln im Sternenglanz */
+.stage-anim-bedtime-lullaby {
+  position: relative;
+  z-index: 4;
+  animation: bedtimeLullabyAnim 1.05s ease-in-out infinite alternate;
+}
+@keyframes bedtimeLullabyAnim {
+  0%   { transform: translateY(2px) rotate(-2.5deg) scale(1.02); filter: drop-shadow(0 0 12px #818cf8); }
+  100% { transform: translateY(-7px) rotate(2.5deg) scale(1.11); filter: drop-shadow(0 0 24px #fde047) brightness(1.16); }
+}
+
+/* 9. KIN_AUF_002: Bunte Spielzeugkiste – Lustiges Aufräum-Wackeln (Squash & Stretch) */
+.stage-anim-toybox-tidy {
+  position: relative;
+  z-index: 4;
+  animation: toyboxTidyAnim 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) infinite alternate;
+}
+@keyframes toyboxTidyAnim {
+  0%   { transform: translateY(3px) scale(1.12, 0.92) rotate(-4deg); filter: drop-shadow(0 0 10px #22c55e); }
+  50%  { transform: translateY(-9px) scale(0.96, 1.14) rotate(4deg); filter: drop-shadow(0 0 22px #facc15) brightness(1.15); }
+  100% { transform: translateY(-2px) scale(1.08, 1.05) rotate(-2deg); filter: drop-shadow(0 0 16px #38bdf8); }
+}
+
+
+/* ==========================================================================
+   13. NEU IN VERSION 0.64:
+       TERRY PRATCHETTS SCHEIBENWELT-TRUHE ("THE LUGGAGE" / INTELLIGENTES BIRNBAUMHOLZ)
+       - Unten rechts als Asset im Entwicklermodus (mit vielen kleinen Füßen, Zähnen & Zunge)
+       - 50%-Bildschirm-Fenster mit endlosem, scrollbarem Kästchen-Raster (1 Gegenstand pro Kästchen)
+   ========================================================================== */
+
+.dev-mini-btn.luggage-btn {
+  background: linear-gradient(135deg, #9a3412 0%, #7c2d12 100%);
+  color: #fde047;
+  border-color: #f59e0b;
+}
+
+/* Die Truhe unten rechts im Entwicklermodus */
+.dev-luggage-asset {
+  position: absolute;
+  right: 12px;
+  bottom: 196px;
+  width: 78px;
+  height: 76px;
+  z-index: 335;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.78));
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s ease;
+  user-select: none;
+}
+
+.dev-luggage-asset:hover {
+  transform: scale(1.09) translateY(-3px);
+  filter: drop-shadow(0 0 14px rgba(250, 204, 21, 0.9));
+}
+
+.dev-luggage-asset.drag-over-target {
+  transform: scale(1.22) translateY(-6px);
+  filter: drop-shadow(0 0 22px #fde047) drop-shadow(0 0 32px #ef4444);
+}
+
+.dev-luggage-asset.drag-over-target .luggage-lid-group {
+  transform: translateY(-7px) rotate(-8deg);
+  transform-origin: 20px 36px;
+}
+
+.luggage-svg-sprite {
+  width: 74px;
+  height: 64px;
+  overflow: visible;
+}
+
+.luggage-lid-group {
+  transition: transform 0.18s ease;
+}
+
+/* Leichtes Trappeln der vielen kleinen Füßchen */
+.dev-luggage-asset:hover .luggage-feet-row {
+  animation: luggageFeetTipTap 0.32s ease-in-out infinite alternate;
+}
+
+@keyframes luggageFeetTipTap {
+  0%   { transform: translateY(0px); }
+  100% { transform: translateY(-2.5px); }
+}
+
+.dev-luggage-asset.luggage-chomp {
+  animation: luggageChompBounce 0.48s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes luggageChompBounce {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.26, 0.86) rotate(-5deg); }
+  70%  { transform: scale(0.94, 1.14) rotate(4deg); }
+  100% { transform: scale(1); }
+}
+
+.luggage-count-badge {
+  position: absolute;
+  top: -4px;
+  right: -2px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #334155;
+  color: #e2e8f0;
+  border: 2px solid #f59e0b;
+  font-size: 11px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.65);
+  z-index: 4;
+}
+
+.luggage-count-badge.has-items {
+  background: linear-gradient(135deg, #ea580c 0%, #9a3412 100%);
+  color: #fde047;
+  border-color: #fde047;
+}
+
+.luggage-label-tag {
+  margin-top: -2px;
+  background: rgba(26, 18, 11, 0.94);
+  color: #fde047;
+  border: 1.5px solid #f59e0b;
+  border-radius: 999px;
+  padding: 1px 7px;
+  font-size: 9.5px;
+  font-weight: 900;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+/* 50% Bildschirm-Fenster für die endlose Scheibenwelt-Truhe */
+.dev-luggage-drawer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 50%;
+  z-index: 350;
+  background: linear-gradient(180deg, #271206 0%, #1a0d06 100%);
+  border-top: 3.5px solid #f59e0b;
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -14px 40px rgba(0, 0, 0, 0.85);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: luggageDrawerSlideUp 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes luggageDrawerSlideUp {
+  0%   { transform: translateY(100%); opacity: 0.5; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.luggage-drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: linear-gradient(135deg, #431407 0%, #7c2d12 100%);
+  border-bottom: 2px solid #b45309;
+  flex-shrink: 0;
+}
+
+.luggage-drawer-title-wrap {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.luggage-drawer-title {
+  font-size: 13px;
+  font-weight: 900;
+  color: #fde047;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.luggage-drawer-sub {
+  font-size: 10px;
+  color: #fed7aa;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Scrollbares Kästchen-Raster im Truhen-Fenster */
+.luggage-drawer-grid-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  align-content: start;
+}
+
+.luggage-slot-cell {
+  position: relative;
+  min-height: 104px;
+  border-radius: 12px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.14s ease, border-color 0.14s ease, background 0.14s ease;
+}
+
+.luggage-slot-cell.occupied {
+  background: radial-gradient(circle at 50% 42%, #431407 0%, #271206 100%);
+  border: 2px solid #f59e0b;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.55);
+}
+
+.luggage-slot-cell.occupied:hover {
+  transform: translateY(-2px);
+  border-color: #fde047;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+}
+
+.luggage-slot-cell.empty-slot {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1.5px dashed rgba(245, 158, 11, 0.35);
+  justify-content: center;
+  color: rgba(254, 215, 170, 0.45);
+}
+
+.luggage-slot-cell.empty-slot:hover {
+  border-color: #fde047;
+  background: rgba(253, 224, 71, 0.08);
+  color: #fde047;
+}
+
+.luggage-slot-index {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  font-size: 8.5px;
+  font-weight: 800;
+  color: rgba(254, 215, 170, 0.55);
+}
+
+.luggage-slot-room-tag {
+  position: absolute;
+  top: 4px;
+  right: 5px;
+  background: rgba(245, 158, 11, 0.22);
+  border: 1px solid rgba(253, 224, 71, 0.45);
+  color: #fde047;
+  font-size: 8px;
+  font-weight: 800;
+  padding: 0 4px;
+  border-radius: 999px;
+}
+
+.luggage-slot-img {
+  width: 48px;
+  height: 44px;
+  object-fit: contain;
+  margin-top: 12px;
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.5));
+}
+
+.luggage-slot-emoji {
+  font-size: 26px;
+  margin-top: 12px;
+}
+
+.luggage-slot-name {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #fef3c7;
+  line-height: 1.15;
+  max-width: 100%;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 3px 0;
+}
+
+.luggage-slot-actions {
+  display: flex;
+  gap: 3px;
+  width: 100%;
+}
+
+.luggage-slot-btn {
+  flex: 1;
+  background: rgba(254, 243, 199, 0.14);
+  color: #fde047;
+  border: 1px solid rgba(245, 158, 11, 0.55);
+  border-radius: 6px;
+  padding: 2px 3px;
+  font-size: 8.5px;
+  font-weight: 800;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.luggage-slot-btn.here {
+  background: rgba(2, 132, 199, 0.35);
+  border-color: #38bdf8;
+  color: #e0f2fe;
+}
+
+.luggage-slot-btn:hover {
+  background: #f59e0b;
+  color: #1a120b;
+}
+
+.luggage-empty-plus {
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.luggage-empty-lbl {
+  font-size: 9px;
   font-weight: 700;
-  font-style: italic;
-  color: #fef08a;
-  line-height: 1.32;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+  margin-top: 2px;
+}
+
+
+/* ==========================================================================
+   14. NEU IN VERSION 0.65:
+       - HOCHAUFLÖSENDES PNG-SPRITE FÜR DIE SCHEIBENWELT-TRUHE (sprite_dev_luggage.png)
+       - SPEZIFISCHE DASHBOARD-OBJEKT-KEYFRAMES IN DER HERO-STAGE (MAX. 3.4s)
+   ========================================================================== */
+
+.luggage-png-sprite {
+  width: 76px;
+  height: 68px;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+  transition: transform 0.18s ease;
+}
+
+.dev-luggage-asset:hover .luggage-png-sprite {
+  animation: luggageFeetTipTap 0.3s ease-in-out infinite alternate;
+}
+
+/* 1. DASH_001_PINNWAND: Kork-Pinnwand – Entschlossener Pin-Tusch & Erfolgs-Schwingen */
+.stage-anim-dash-pinnwand {
+  position: relative;
+  z-index: 4;
+  animation: dashPinnwandAnim 0.52s cubic-bezier(0.34, 1.56, 0.64, 1) infinite alternate;
+}
+@keyframes dashPinnwandAnim {
+  0%   { transform: scale(1.02) rotate(-2deg); filter: drop-shadow(0 0 10px #ea580c); }
+  50%  { transform: scale(1.13) rotate(1.5deg) translateY(-6px); filter: drop-shadow(0 0 24px #fde047) brightness(1.15); }
+  100% { transform: scale(1.07) rotate(-1deg) translateY(-2px); filter: drop-shadow(0 0 16px #22c55e); }
+}
+
+/* 2. DASH_002_GOALS: GOALS-Checkliste – Bullseye-Zoom & Ziel-Fokus */
+.stage-anim-dash-goals {
+  position: relative;
+  z-index: 4;
+  animation: dashGoalsAnim 0.48s cubic-bezier(0.22, 1, 0.36, 1) infinite alternate;
+}
+@keyframes dashGoalsAnim {
+  0%   { transform: scale(1) translateY(2px); filter: drop-shadow(0 0 10px #10b981); }
+  60%  { transform: scale(1.16) translateY(-7px); filter: drop-shadow(0 0 24px #fde047) brightness(1.18); }
+  100% { transform: scale(1.09) translateY(-3px); filter: drop-shadow(0 0 18px #38bdf8); }
+}
+
+/* 3. DASH_003_LAMPE: Schreibtischlampe (Vibe Coding) – Elektrischer Hyperfokus-Lichtstrahl & RGB-Puls */
+.stage-anim-dash-vibecoding {
+  position: relative;
+  z-index: 4;
+  animation: dashVibeCodingAnim 0.44s ease-in-out infinite alternate;
+}
+@keyframes dashVibeCodingAnim {
+  0%   { transform: translateY(0px) rotate(-3deg) scale(1.04); filter: drop-shadow(0 0 12px #38bdf8) brightness(1.08); }
+  50%  { transform: translateY(-8px) rotate(2deg) scale(1.14); filter: drop-shadow(0 0 28px #fde047) drop-shadow(0 0 40px #a855f7) brightness(1.28); }
+  100% { transform: translateY(-3px) rotate(3deg) scale(1.09); filter: drop-shadow(0 0 20px #f97316) brightness(1.18); }
+}
+
+/* 4. DASH_004_ORGANIZER: Leder-Stifteorganizer (AfA-Check) – Zackiges Stempel- & Sortier-Wippen */
+.stage-anim-dash-organizer {
+  position: relative;
+  z-index: 4;
+  animation: dashOrganizerAnim 0.46s cubic-bezier(0.34, 1.56, 0.64, 1) infinite alternate;
+}
+@keyframes dashOrganizerAnim {
+  0%   { transform: translateY(3px) scale(1.06, 0.95) rotate(-3.5deg); filter: drop-shadow(0 0 10px #f59e0b); }
+  100% { transform: translateY(-9px) scale(1.1, 1.12) rotate(3.5deg); filter: drop-shadow(0 0 22px #fde047) brightness(1.15); }
+}
+
+/* 5. DASH_005_RECHNER: Taschenrechner & Briefstapel – Befreiender Kassensturz-Rumble */
+.stage-anim-dash-calculator {
+  position: relative;
+  z-index: 4;
+  animation: dashCalculatorAnim 0.34s ease-in-out infinite alternate;
+}
+@keyframes dashCalculatorAnim {
+  0%   { transform: translate(-4px, 1px) rotate(-4deg) scale(1.05); filter: drop-shadow(0 0 10px #22c55e); }
+  50%  { transform: translate(4px, -7px) rotate(4deg) scale(1.15); filter: drop-shadow(0 0 24px #fde047) brightness(1.2); }
+  100% { transform: translate(0px, -3px) rotate(-2deg) scale(1.09); filter: drop-shadow(0 0 16px #10b981); }
+}
+
+/* 6. DASH_007_ROBOTER: Holz-Roboter (ADHD Quest programmieren) – Fröhlicher Mecha-Roboter-Tanz */
+.stage-anim-dash-robot {
+  position: relative;
+  z-index: 4;
+  animation: dashRobotDanceAnim 0.38s steps(2, end) infinite alternate;
+}
+@keyframes dashRobotDanceAnim {
+  0%   { transform: translateY(0px) rotate(-7deg) scale(1.06); filter: drop-shadow(0 0 12px #a855f7); }
+  50%  { transform: translateY(-10px) rotate(0deg) scale(1.16); filter: drop-shadow(0 0 24px #38bdf8) brightness(1.22); }
+  100% { transform: translateY(-2px) rotate(7deg) scale(1.1); filter: drop-shadow(0 0 20px #fde047); }
+}
+
+/* 7. DASH_008_NOTIZBUCH: Aufgeschlagenes Notizbuch (Recherche) – Dynamisches Blätter- & Geistesblitz-Schweben */
+.stage-anim-dash-notebook {
+  position: relative;
+  z-index: 4;
+  animation: dashNotebookAnim 0.68s ease-in-out infinite alternate;
+}
+@keyframes dashNotebookAnim {
+  0%   { transform: translateY(2px) rotate(-2.5deg) scale(1.03); filter: drop-shadow(0 0 10px #0ea5e9); }
+  100% { transform: translateY(-8px) rotate(2.5deg) scale(1.13); filter: drop-shadow(0 0 24px #fde047) brightness(1.16); }
+}
+
+/* 8. DASH_009_ISTQB: Bunter Bücherstapel (ISTQB) – Solider Level-Up-Wissens-Bounce */
+.stage-anim-dash-istqb {
+  position: relative;
+  z-index: 4;
+  animation: dashIstqbAnim 0.54s cubic-bezier(0.34, 1.56, 0.64, 1) infinite alternate;
+}
+@keyframes dashIstqbAnim {
+  0%   { transform: translateY(3px) scale(1.08, 0.94); filter: drop-shadow(0 0 10px #6366f1); }
+  100% { transform: translateY(-10px) scale(1.1, 1.14); filter: drop-shadow(0 0 24px #fde047) drop-shadow(0 0 34px #38bdf8) brightness(1.18); }
+}
+
+/* 9. DASH_010_KOFFER: Reisekoffer (Bewerbung abgeschickt!) – Kraftvoller Take-Off-Jubel-Hopser */
+.stage-anim-dash-suitcase {
+  position: relative;
+  z-index: 4;
+  animation: dashSuitcaseAnim 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) infinite alternate;
+}
+@keyframes dashSuitcaseAnim {
+  0%   { transform: translateY(4px) scale(1.1, 0.92) rotate(-4deg); filter: drop-shadow(0 0 12px #eab308); }
+  60%  { transform: translateY(-12px) scale(1.06, 1.16) rotate(4deg); filter: drop-shadow(0 0 28px #fde047) drop-shadow(0 0 40px #22c55e) brightness(1.22); }
+  100% { transform: translateY(-6px) scale(1.12, 1.08) rotate(0deg); filter: drop-shadow(0 0 20px #ff7a00); }
+}
+
+
+/* ==========================================================================
+   15. NEU IN VERSION 0.66:
+       SPEZIFISCHE KÜCHEN-OBJEKT-KEYFRAMES IN DER HERO-STAGE (MAX. 3.4s)
+   ========================================================================== */
+
+/* 1. KUE_001_01: Geschirrspüler – Rhythmischer Klarspül- & Dampf-Glanz-Puls */
+.stage-anim-kue-dishwasher {
+  position: relative;
+  z-index: 4;
+  animation: kueDishwasherAnim 0.48s cubic-bezier(0.34, 1.56, 0.64, 1) infinite alternate;
+}
+@keyframes kueDishwasherAnim {
+  0%   { transform: translateY(2px) scale(1.03, 0.97) rotate(-1.5deg); filter: drop-shadow(0 0 10px #38bdf8); }
+  50%  { transform: translateY(-7px) scale(1.11, 1.09) rotate(1.5deg); filter: drop-shadow(0 0 24px #bae6fd) drop-shadow(0 0 34px #fde047) brightness(1.22); }
+  100% { transform: translateY(-2px) scale(1.07, 1.04) rotate(0deg); filter: drop-shadow(0 0 16px #0284c7); }
+}
+
+/* 2. KUE_002_01: Obstschale & Tisch-Reinigungsset – Schwungvoller Wisch-Glanz von links nach rechts */
+.stage-anim-kue-tablewipe {
+  position: relative;
+  z-index: 4;
+  animation: kueTableWipeAnim 0.46s ease-in-out infinite alternate;
+}
+@keyframes kueTableWipeAnim {
+  0%   { transform: translateX(-12px) rotate(-6deg) scale(1.04); filter: drop-shadow(0 0 10px #22c55e); }
+  50%  { transform: translateY(-6px) rotate(0deg) scale(1.13); filter: drop-shadow(0 0 22px #fde047) brightness(1.18); }
+  100% { transform: translateX(12px) rotate(6deg) scale(1.06); filter: drop-shadow(0 0 14px #4ade80); }
+}
+
+/* 3. KUE_003_01: Schneidebrett, Kochmesser & Kupfertopf – Lebendiges Schnippel- & Schmor-Brutzeln */
+.stage-anim-kue-cooking {
+  position: relative;
+  z-index: 4;
+  animation: kueCookingAnim 0.36s cubic-bezier(0.34, 1.56, 0.64, 1) infinite alternate;
+}
+@keyframes kueCookingAnim {
+  0%   { transform: translate(-4px, 2px) rotate(-4.5deg) scale(1.04); filter: drop-shadow(0 0 10px #f97316); }
+  55%  { transform: translate(4px, -9px) rotate(4.5deg) scale(1.14); filter: drop-shadow(0 0 24px #fde047) drop-shadow(0 0 34px #ea580c) brightness(1.18); }
+  100% { transform: translate(0px, -3px) rotate(-1.5deg) scale(1.08); filter: drop-shadow(0 0 16px #f59e0b); }
+}
+
+/* 4. KUE_AUF_004: Mülleimer-Trennsystem & Putzeimer – Befreiender Deckel-Klapp- & Rausschmiss-Bounce */
+.stage-anim-kue-trash {
+  position: relative;
+  z-index: 4;
+  animation: kueTrashBounceAnim 0.44s cubic-bezier(0.34, 1.56, 0.64, 1) infinite alternate;
+}
+@keyframes kueTrashBounceAnim {
+  0%   { transform: translateY(4px) scale(1.11, 0.92) rotate(-3deg); filter: drop-shadow(0 0 10px #10b981); }
+  60%  { transform: translateY(-11px) scale(0.97, 1.15) rotate(3deg); filter: drop-shadow(0 0 24px #fde047) brightness(1.18); }
+  100% { transform: translateY(-3px) scale(1.07, 1.05) rotate(0deg); filter: drop-shadow(0 0 16px #22c55e); }
+}
+
+/* 5. KUE_MB_001: Siebträger-Kaffeemaschine – Warmes Barista-Brüh-Vibrieren & Crema-Glow */
+.stage-anim-kue-espresso {
+  position: relative;
+  z-index: 4;
+  animation: kueEspressoBrewAnim 0.32s ease-in-out infinite alternate;
+}
+@keyframes kueEspressoBrewAnim {
+  0%   { transform: translate(-2px, 1px) scale(1.04); filter: drop-shadow(0 0 12px #d97706); }
+  50%  { transform: translate(2px, -6px) scale(1.13); filter: drop-shadow(0 0 26px #fde047) drop-shadow(0 0 38px #b45309) brightness(1.2); }
+  100% { transform: translate(-1px, -3px) scale(1.09); filter: drop-shadow(0 0 18px #f59e0b); }
+}
+
+/* 6. KUE_MB_002: Zentangle-Skizzenblock & Fineliner – Meditatives Zeichen-Pendeln im Zen-Fluss */
+.stage-anim-kue-zentangle {
+  position: relative;
+  z-index: 4;
+  animation: kueZentangleFlowAnim 0.82s ease-in-out infinite alternate;
+}
+@keyframes kueZentangleFlowAnim {
+  0%   { transform: translate(-5px, 2px) rotate(-4deg) scale(1.03); filter: drop-shadow(0 0 12px #a855f7); }
+  50%  { transform: translate(0px, -8px) rotate(0deg) scale(1.13); filter: drop-shadow(0 0 24px #38bdf8) brightness(1.16); }
+  100% { transform: translate(5px, -3px) rotate(4deg) scale(1.08); filter: drop-shadow(0 0 20px #fde047); }
+}
+
+
+/* ==========================================================================
+   16. NEU IN VERSION 0.67:
+       SPEZIFISCHE FLUR-OBJEKT-KEYFRAMES IN DER HERO-STAGE (MAX. 3.4s)
+   ========================================================================== */
+
+/* 1. FLU_001_01: Freies braunes Holzbrett – Spiegelglatter Politur-Swipe & Gold-Glanz */
+.stage-anim-flu-woodboard {
+  position: relative;
+  z-index: 4;
+  animation: fluWoodboardAnim 0.48s ease-in-out infinite alternate;
+}
+@keyframes fluWoodboardAnim {
+  0%   { transform: translateX(-10px) scale(1.03) rotate(-1.5deg); filter: drop-shadow(0 0 10px #f59e0b); }
+  50%  { transform: translateY(-6px) scale(1.13) rotate(0deg); filter: drop-shadow(0 0 24px #fde047) brightness(1.22); }
+  100% { transform: translateX(10px) scale(1.06) rotate(1.5deg); filter: drop-shadow(0 0 16px #22c55e); }
+}
+
+/* 2. FLU_002_01: Brettspiel-Stapel & Witzebuch – Vergnügtes Würfel- & Kicher-Wackeln */
+.stage-anim-flu-boardgames {
+  position: relative;
+  z-index: 4;
+  animation: fluBoardgamesAnim 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) infinite alternate;
+}
+@keyframes fluBoardgamesAnim {
+  0%   { transform: translateY(2px) rotate(-6deg) scale(1.04); filter: drop-shadow(0 0 10px #ec4899); }
+  50%  { transform: translateY(-10px) rotate(5deg) scale(1.15); filter: drop-shadow(0 0 22px #fde047) brightness(1.18); }
+  100% { transform: translateY(-3px) rotate(-3deg) scale(1.08); filter: drop-shadow(0 0 16px #38bdf8); }
+}
+
+/* 3. FLU_003_01: Oranger Eulen-Wecker – Schrilles 5-Uhr-Wecker-Klingeln & Flügel-Hopser */
+.stage-anim-flu-owlclock {
+  position: relative;
+  z-index: 4;
+  transform-origin: 50% 60%;
+  animation: fluOwlClockRingAnim 0.26s ease-in-out infinite alternate;
+}
+@keyframes fluOwlClockRingAnim {
+  0%   { transform: translateY(0px) rotate(-11deg) scale(1.06); filter: drop-shadow(0 0 12px #f97316); }
+  50%  { transform: translateY(-9px) rotate(0deg) scale(1.16); filter: drop-shadow(0 0 26px #fde047) brightness(1.22); }
+  100% { transform: translateY(-2px) rotate(11deg) scale(1.09); filter: drop-shadow(0 0 18px #ea580c); }
+}
+
+/* 4. FLU_004_01: Grün-weiße Kommoden-Schubladen – Sattes Einrasten (Schubladen-Takt) */
+.stage-anim-flu-drawers {
+  position: relative;
+  z-index: 4;
+  animation: fluDrawersSlideAnim 0.52s cubic-bezier(0.22, 1, 0.36, 1) infinite alternate;
+}
+@keyframes fluDrawersSlideAnim {
+  0%   { transform: scale(1.02, 0.96) translateY(3px); filter: drop-shadow(0 0 10px #10b981); }
+  60%  { transform: scale(1.12, 1.08) translateY(-7px); filter: drop-shadow(0 0 22px #fde047) brightness(1.16); }
+  100% { transform: scale(1.06, 1.03) translateY(-2px); filter: drop-shadow(0 0 16px #34d399); }
+}
+
+/* 5. FLU_005_01: Postkarten & Familienzettel an der Tür-Pinnwand – Fröhliches Zettel-Flattern */
+.stage-anim-flu-pinboard {
+  position: relative;
+  z-index: 4;
+  animation: fluPinboardFlutterAnim 0.54s ease-in-out infinite alternate;
+}
+@keyframes fluPinboardFlutterAnim {
+  0%   { transform: translateY(1px) rotate(-3.5deg) scale(1.03); filter: drop-shadow(0 0 10px #ea580c); }
+  100% { transform: translateY(-8px) rotate(3.5deg) scale(1.13); filter: drop-shadow(0 0 24px #fde047) brightness(1.17); }
+}
+
+/* 6. FLU_006_01: Holz-Schlüsselschale mit Sonnenbrille – Lässiger Sonnenschein-Aufbruch-Swing */
+.stage-anim-flu-keybowl {
+  position: relative;
+  z-index: 4;
+  animation: fluKeybowlSwingAnim 0.58s cubic-bezier(0.34, 1.56, 0.64, 1) infinite alternate;
+}
+@keyframes fluKeybowlSwingAnim {
+  0%   { transform: translateY(2px) rotate(-4deg) scale(1.03); filter: drop-shadow(0 0 10px #38bdf8); }
+  50%  { transform: translateY(-8px) rotate(2deg) scale(1.14); filter: drop-shadow(0 0 26px #fde047) brightness(1.22); }
+  100% { transform: translateY(-3px) rotate(4deg) scale(1.08); filter: drop-shadow(0 0 18px #f59e0b); }
+}
+
+/* 7. FLU_007_01: Kinderjacke & Einkaufstasche an der Garderobe – Gemütliches Jacken-Ausschütteln */
+.stage-anim-flu-coatstand {
+  position: relative;
+  z-index: 4;
+  transform-origin: 50% 25%;
+  animation: fluCoatstandSwayAnim 0.56s ease-in-out infinite alternate;
+}
+@keyframes fluCoatstandSwayAnim {
+  0%   { transform: rotate(-6deg) scale(1.03); filter: drop-shadow(0 0 10px #22c55e); }
+  50%  { transform: translateY(-6px) rotate(0deg) scale(1.12); filter: drop-shadow(0 0 22px #fde047) brightness(1.15); }
+  100% { transform: rotate(6deg) scale(1.07); filter: drop-shadow(0 0 16px #fb923c); }
+}
+
+/* 8. FLU_008_01: Werkzeugkasten, Akkuschrauber & Bauplan (Empore/Flurebene) – Kraftvoller 1000-XP Meisterbau-Rumble */
+.stage-anim-flu-empore-build {
+  position: relative;
+  z-index: 4;
+  animation: fluEmporeBuildAnim 0.36s cubic-bezier(0.34, 1.56, 0.64, 1) infinite alternate;
+}
+@keyframes fluEmporeBuildAnim {
+  0%   { transform: translate(-5px, 2px) rotate(-4.5deg) scale(1.05); filter: drop-shadow(0 0 14px #eab308); }
+  55%  { transform: translate(5px, -11px) rotate(4.5deg) scale(1.17); filter: drop-shadow(0 0 30px #fde047) drop-shadow(0 0 42px #ff7a00) brightness(1.25); }
+  100% { transform: translate(0px, -4px) rotate(-1.5deg) scale(1.1); filter: drop-shadow(0 0 22px #22c55e); }
+}
+
+
+/* ==========================================================================
+   17. NEU IN VERSION 0.68:
+       SPEZIFISCHE BADEZIMMER-OBJEKT-KEYFRAMES IN DER HERO-STAGE (MAX. 3.4s)
+   ========================================================================== */
+
+/* 1. BAD_MB_001: Gepackte Badetasche – Dynamisches Wellen-Gleiten & Wasser-Splash */
+.stage-anim-bad-swimbag {
+  position: relative;
+  z-index: 4;
+  animation: badSwimbagWaveAnim 0.54s ease-in-out infinite alternate;
+}
+@keyframes badSwimbagWaveAnim {
+  0%   { transform: translate(-8px, 3px) rotate(-5deg) scale(1.03); filter: drop-shadow(0 0 10px #0ea5e9); }
+  50%  { transform: translate(0px, -9px) rotate(0deg) scale(1.14); filter: drop-shadow(0 0 24px #38bdf8) drop-shadow(0 0 34px #fde047) brightness(1.18); }
+  100% { transform: translate(8px, 2px) rotate(5deg) scale(1.07); filter: drop-shadow(0 0 16px #0284c7); }
+}
+
+/* 2. BAD_MB_002: Glasdusche mit Regenduschkopf – Erfrischendes Kaltwasser-Schütteln & Frost-Glanz */
+.stage-anim-bad-coldshower {
+  position: relative;
+  z-index: 4;
+  animation: badColdShowerShiverAnim 0.28s ease-in-out infinite alternate;
+}
+@keyframes badColdShowerShiverAnim {
+  0%   { transform: translate(-3px, 0px) rotate(-2deg) scale(1.05); filter: drop-shadow(0 0 12px #38bdf8) brightness(1.1); }
+  50%  { transform: translate(3px, -6px) rotate(2deg) scale(1.13); filter: drop-shadow(0 0 26px #bae6fd) drop-shadow(0 0 38px #fde047) brightness(1.26); }
+  100% { transform: translate(-2px, -2px) rotate(-1deg) scale(1.09); filter: drop-shadow(0 0 18px #0284c7); }
+}
+
+/* 3. BAD_MB_003: Pillendose & Wasserglas (Venla) – Klarer Energie-Puls & Fokus-Schimmer */
+.stage-anim-bad-venla {
+  position: relative;
+  z-index: 4;
+  animation: badVenlaPulseAnim 0.48s cubic-bezier(0.34, 1.56, 0.64, 1) infinite alternate;
+}
+@keyframes badVenlaPulseAnim {
+  0%   { transform: translateY(2px) scale(1.02); filter: drop-shadow(0 0 10px #2dd4bf); }
+  60%  { transform: translateY(-9px) scale(1.16); filter: drop-shadow(0 0 24px #fde047) drop-shadow(0 0 34px #4ade80) brightness(1.22); }
+  100% { transform: translateY(-3px) scale(1.09); filter: drop-shadow(0 0 16px #14b8a6); }
+}
+
+/* 4. BAD_MB_004: Spiegel über dem Waschbecken – Ruhiges Selbstmitgefühl-Leuchten & Spiegelglanz */
+.stage-anim-bad-mirror {
+  position: relative;
+  z-index: 4;
+  animation: badMirrorShineAnim 0.88s ease-in-out infinite alternate;
+}
+@keyframes badMirrorShineAnim {
+  0%   { transform: translateY(2px) scale(1.02) rotate(-1.5deg); filter: drop-shadow(0 0 12px #facc15); }
+  100% { transform: translateY(-8px) scale(1.13) rotate(1.5deg); filter: drop-shadow(0 0 26px #fde047) drop-shadow(0 0 38px #38bdf8) brightness(1.2); }
+}
+
+/* 5. BAD_AUF_001: Wäschekorb & Waschpulver – Rhythmischer Waschmaschinen-Schleuder-Takt */
+.stage-anim-bad-washmachine {
+  position: relative;
+  z-index: 4;
+  animation: badWashSpinAnim 0.36s cubic-bezier(0.34, 1.56, 0.64, 1) infinite alternate;
+}
+@keyframes badWashSpinAnim {
+  0%   { transform: translate(-4px, 2px) scale(1.08, 0.94) rotate(-5deg); filter: drop-shadow(0 0 10px #3b82f6); }
+  50%  { transform: translate(0px, -8px) scale(0.96, 1.14) rotate(0deg); filter: drop-shadow(0 0 22px #38bdf8) brightness(1.18); }
+  100% { transform: translate(4px, 1px) scale(1.1, 0.96) rotate(5deg); filter: drop-shadow(0 0 18px #fde047); }
+}
+
+/* 6. BAD_AUF_002: Badreiniger, Schwamm & Abzieher – Blitzblanker Abzieher-Wisch-Sweep */
+.stage-anim-bad-cleaner {
+  position: relative;
+  z-index: 4;
+  animation: badCleanerSqueegeeAnim 0.46s ease-in-out infinite alternate;
+}
+@keyframes badCleanerSqueegeeAnim {
+  0%   { transform: translateX(-12px) rotate(-7deg) scale(1.04); filter: drop-shadow(0 0 10px #22c55e); }
+  50%  { transform: translateY(-7px) rotate(0deg) scale(1.14); filter: drop-shadow(0 0 24px #fde047) brightness(1.22); }
+  100% { transform: translateX(12px) rotate(7deg) scale(1.07); filter: drop-shadow(0 0 18px #38bdf8); }
+}
+
+/* 7. BAD_AUF_003: Frisch zusammengelegte Handtücher – Kuscheliges Stapel-Federn & Wärme-Aura */
+.stage-anim-bad-towels {
+  position: relative;
+  z-index: 4;
+  animation: badTowelsFluffAnim 0.64s cubic-bezier(0.34, 1.56, 0.64, 1) infinite alternate;
+}
+@keyframes badTowelsFluffAnim {
+  0%   { transform: translateY(3px) scale(1.07, 0.94); filter: drop-shadow(0 0 10px #fbbf24); }
+  100% { transform: translateY(-9px) scale(1.08, 1.13); filter: drop-shadow(0 0 24px #fde047) drop-shadow(0 0 34px #fb923c) brightness(1.17); }
+}
+
+
+/* ==========================================================================
+   18. NEU IN VERSION 0.69:
+       SPEZIFISCHE SCHLAFZIMMER-OBJEKT-KEYFRAMES IN DER HERO-STAGE (MAX. 3.4s)
+   ========================================================================== */
+
+/* 1. SCH_MB_001: Massageöl & Spa-Handtuch – Sanftes Spa-Wogen & Aroma-Glow */
+.stage-anim-sch-massage {
+  position: relative;
+  z-index: 4;
+  animation: schMassageSwayAnim 0.72s ease-in-out infinite alternate;
+}
+@keyframes schMassageSwayAnim {
+  0%   { transform: translateY(2px) rotate(-3deg) scale(1.02); filter: drop-shadow(0 0 10px #f472b6); }
+  50%  { transform: translateY(-7px) rotate(0deg) scale(1.12); filter: drop-shadow(0 0 24px #fde047) brightness(1.16); }
+  100% { transform: translateY(-2px) rotate(3deg) scale(1.07); filter: drop-shadow(0 0 18px #fb923c); }
+}
+
+/* 2. SCH_MB_002: Rostorange & senfgelbe Kissen – Kuscheliges Anschmiegen & Wärme-Puls */
+.stage-anim-sch-pillows {
+  position: relative;
+  z-index: 4;
+  animation: schPillowsCuddleAnim 0.68s cubic-bezier(0.34, 1.56, 0.64, 1) infinite alternate;
+}
+@keyframes schPillowsCuddleAnim {
+  0%   { transform: translateY(3px) scale(1.06, 0.94) rotate(-2deg); filter: drop-shadow(0 0 10px #fb923c); }
+  100% { transform: translateY(-9px) scale(1.09, 1.12) rotate(2deg); filter: drop-shadow(0 0 24px #fde047) drop-shadow(0 0 34px #f43f5e) brightness(1.16); }
+}
+
+/* 3. SCH_MB_003: Messing-Teleskop – Kosmischer Sternenhimmel-Schwenk & Messing-Funkeln */
+.stage-anim-sch-telescope {
+  position: relative;
+  z-index: 4;
+  transform-origin: 50% 70%;
+  animation: schTelescopeStarAnim 0.62s ease-in-out infinite alternate;
+}
+@keyframes schTelescopeStarAnim {
+  0%   { transform: rotate(-5.5deg) scale(1.03); filter: drop-shadow(0 0 12px #6366f1); }
+  50%  { transform: translateY(-7px) rotate(0deg) scale(1.14); filter: drop-shadow(0 0 26px #fde047) drop-shadow(0 0 38px #38bdf8) brightness(1.22); }
+  100% { transform: rotate(5.5deg) scale(1.08); filter: drop-shadow(0 0 18px #a855f7); }
+}
+
+/* 4. SCH_MB_004: Ausgerollte Yogamatte & Hanteln – Kraftvoller Workout-Pump & Core-Puls */
+.stage-anim-sch-yogamat {
+  position: relative;
+  z-index: 4;
+  animation: schYogamatPumpAnim 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) infinite alternate;
+}
+@keyframes schYogamatPumpAnim {
+  0%   { transform: translateY(3px) scale(1.08, 0.93); filter: drop-shadow(0 0 10px #22c55e); }
+  60%  { transform: translateY(-11px) scale(1.04, 1.16); filter: drop-shadow(0 0 24px #fde047) drop-shadow(0 0 34px #10b981) brightness(1.2); }
+  100% { transform: translateY(-4px) scale(1.11, 1.06); filter: drop-shadow(0 0 18px #38bdf8); }
+}
+
+/* 5. SCH_MB_005: Paar Laufschuhe auf der Holzbank – Dynamischer 10.000-Schritte-Sprint-Stride */
+.stage-anim-sch-runningshoes {
+  position: relative;
+  z-index: 4;
+  animation: schRunningStrideAnim 0.36s ease-in-out infinite alternate;
+}
+@keyframes schRunningStrideAnim {
+  0%   { transform: translate(-8px, 2px) rotate(-7deg) scale(1.04); filter: drop-shadow(0 0 10px #0ea5e9); }
+  50%  { transform: translate(0px, -10px) rotate(2deg) scale(1.15); filter: drop-shadow(0 0 24px #fde047) brightness(1.2); }
+  100% { transform: translate(8px, 0px) rotate(7deg) scale(1.08); filter: drop-shadow(0 0 16px #22c55e); }
+}
+
+/* 6. SCH_MB_006: Aufgeschlagenes Journal – Inspirierendes Stärken-Leuchten & Erkenntnis-Schweben */
+.stage-anim-sch-journal {
+  position: relative;
+  z-index: 4;
+  animation: schJournalGlowAnim 0.74s ease-in-out infinite alternate;
+}
+@keyframes schJournalGlowAnim {
+  0%   { transform: translateY(2px) rotate(-2.5deg) scale(1.02); filter: drop-shadow(0 0 12px #eab308); }
+  100% { transform: translateY(-9px) rotate(2.5deg) scale(1.14); filter: drop-shadow(0 0 28px #fde047) drop-shadow(0 0 40px #f59e0b) brightness(1.22); }
+}
+
+/* 7. SCH_MB_007: Brennende Kerzen – Romantisches Kerzenflackern & warmer Herzschlag-Glow */
+.stage-anim-sch-candles {
+  position: relative;
+  z-index: 4;
+  animation: schCandlesRomanceAnim 0.52s ease-in-out infinite alternate;
+}
+@keyframes schCandlesRomanceAnim {
+  0%   { transform: translateY(1px) scale(1.02) rotate(-1.5deg); filter: drop-shadow(0 0 14px #ef4444) brightness(1.08); }
+  50%  { transform: translateY(-7px) scale(1.14) rotate(1.5deg); filter: drop-shadow(0 0 28px #fde047) drop-shadow(0 0 42px #f97316) brightness(1.26); }
+  100% { transform: translateY(-3px) scale(1.09) rotate(-1deg); filter: drop-shadow(0 0 20px #ec4899) brightness(1.16); }
+}
+
+/* 8. SCH_AUF_001: Staubwedel & frische Bettwäsche – Luftiges Ausschütteln & Frische-Wirbel */
+.stage-anim-sch-cleanbed {
+  position: relative;
+  z-index: 4;
+  animation: schCleanBedFluffAnim 0.46s cubic-bezier(0.34, 1.56, 0.64, 1) infinite alternate;
+}
+@keyframes schCleanBedFluffAnim {
+  0%   { transform: translateX(-10px) translateY(2px) rotate(-6deg) scale(1.04); filter: drop-shadow(0 0 10px #2dd4bf); }
+  50%  { transform: translateX(0px) translateY(-10px) rotate(0deg) scale(1.15); filter: drop-shadow(0 0 26px #fde047) brightness(1.2); }
+  100% { transform: translateX(10px) translateY(1px) rotate(6deg) scale(1.08); filter: drop-shadow(0 0 16px #38bdf8); }
 }

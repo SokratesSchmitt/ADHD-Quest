@@ -13,7 +13,7 @@
  * - Achievements (Beständiger Geist, Wochenheld, Monatsveteran)
  */
 const Engine = (function () {
-  const APP_VERSION = "0.56";
+  const APP_VERSION = "0.70";
   const STORAGE_KEY = "ADHD_QUEST_SHEET_STATE_V0_38";
   const SPLASH_DATE_KEY = "adhdQuest_lastSplashDate";
 
@@ -67,6 +67,7 @@ const Engine = (function () {
         "assets/bg_schlafzimmer_dirty_s3.jpg"
       ]
     },
+    luggageSprite: "assets/sprite_dev_luggage.png",
     cleaningToolSprites: {
       1: "assets/cleaning_sprites/sprite_clean_besen_s1.png",
       2: "assets/cleaning_sprites/sprite_clean_kehrset_s2.png",
@@ -717,7 +718,7 @@ const Engine = (function () {
         zielTabelle: "Aufgaben",
         verknuepfung: "A13",
         posX: -0.57, posY: 0.351,
-        leftPct: 3.50, topPct: 59.50, widthPct: 19.00, heightPct: 11.08, zIndex: 15,
+        leftPct: 2.80, topPct: 58.20, widthPct: 20.50, heightPct: 13.80, zIndex: 15,
         xPct: 13.0, yPct: 65.0,
         icon: "🍽️",
         iconUrl: "assets/icons/icon_kue_001.png",
@@ -2174,7 +2175,8 @@ const Engine = (function () {
       showRoomBadgeOnFrame: true,
       miniStatPillCollapsed: false,
       showBottomRoomDock: true,
-      timeOfDayMode: "auto"
+      timeOfDayMode: "auto",
+      pinnedShopGoalId: "Effektpedal kaufen"
     },
     roomDirtLevels: {
       "Flur": 1,
@@ -2184,6 +2186,7 @@ const Engine = (function () {
       "Badezimmer": 1
     },
     customObjectLayout: {},
+    luggageChestItems: [],
     dailyMbSnapshots: {},
     completedToday: {},
     questlog: [
@@ -2287,7 +2290,81 @@ const Engine = (function () {
     if (ASSETS.doorCleaningCoords[rName]) {
       payload.doorCleaning = ASSETS.doorCleaningCoords[rName];
     }
+    payload.luggageChestItems = getLuggageChestItems();
     return JSON.stringify(payload, null, 2);
+  }
+
+  // --- SCHEIBENWELT-TRUHE ("THE LUGGAGE" / INTELLIGENTES BIRNBAUMHOLZ) FÜR DEN DEV-MODUS (v0.64) ---
+  function getLuggageChestItems() {
+    if (!Array.isArray(state.luggageChestItems)) {
+      state.luggageChestItems = [];
+    }
+    return state.luggageChestItems;
+  }
+
+  function isObjectInLuggage(objId) {
+    return getLuggageChestItems().includes(objId);
+  }
+
+  function findObjectByIdAcrossRooms(objId) {
+    for (const rKey of Object.keys(ROOM_OBJECTS)) {
+      const found = (ROOM_OBJECTS[rKey] || []).find(o => o.id === objId);
+      if (found) return found;
+    }
+    return null;
+  }
+
+  function getLuggageChestObjectsDetailed() {
+    return getLuggageChestItems().map(id => {
+      const obj = findObjectByIdAcrossRooms(id);
+      if (obj) return obj;
+      return { id, name: id, raum: "Unbekannt", icon: "📦" };
+    });
+  }
+
+  function storeObjectInLuggage(objId) {
+    if (!objId) return { ok: false };
+    // Post-its oder dynamische Tür-Besen nicht in die Truhe sperren, nur echte Raum-Objekte
+    const obj = findObjectByIdAcrossRooms(objId);
+    if (!obj) return { ok: false, msg: "Nur feste Raum-Gegenstände können in die Truhe gepackt werden." };
+    const list = getLuggageChestItems();
+    if (!list.includes(objId)) {
+      list.push(objId);
+      saveState();
+    }
+    return { ok: true, obj };
+  }
+
+  function restoreObjectFromLuggage(objId, targetRoom) {
+    const list = getLuggageChestItems();
+    const idx = list.indexOf(objId);
+    if (idx === -1) return { ok: false };
+    list.splice(idx, 1);
+    const obj = findObjectByIdAcrossRooms(objId);
+    // Optional: Falls ein Zielraum übergeben wird und das Objekt im aktuellen Raum platziert werden soll
+    if (obj && targetRoom && obj.raum !== targetRoom) {
+      // Verschiebe Objekt in den gewünschten Raum, falls es dort abgelegt wird
+      const oldRoomList = ROOM_OBJECTS[obj.raum] || [];
+      const oldIdx = oldRoomList.findIndex(o => o.id === objId);
+      if (oldIdx !== -1) {
+        oldRoomList.splice(oldIdx, 1);
+      }
+      obj.raum = targetRoom;
+      if (!ROOM_OBJECTS[targetRoom]) ROOM_OBJECTS[targetRoom] = [];
+      ROOM_OBJECTS[targetRoom].push(obj);
+    }
+    saveState();
+    return { ok: true, obj };
+  }
+
+  function emptyLuggageChest() {
+    state.luggageChestItems = [];
+    // Stelle auch Raum-Zuordnungen aus FACTORY_ROOM_OBJECTS wieder her
+    Object.keys(FACTORY_ROOM_OBJECTS).forEach(rKey => {
+      ROOM_OBJECTS[rKey] = JSON.parse(JSON.stringify(FACTORY_ROOM_OBJECTS[rKey]));
+    });
+    applyCustomLayoutToObjects();
+    saveState();
   }
 
 
@@ -2371,6 +2448,471 @@ const Engine = (function () {
     "CLEAN_STAGE_2": "„Besen und Kehrblech stehen bereit. Die Unordnung breitet sich langsam aus… aber für den x1.7-Multiplikator lohnt sich der Einsatz noch richtig!“",
     "CLEAN_STAGE_3": "„Hier hilft kein Besen mehr, jetzt muss schweres Gerät ran! Der Staubsauger wartet schon auf seinen Einsatz (Bonus x1.4).“"
   };
+
+  // --- OBJEKT-ABSCHLUSS-ANIMATIONEN IN DER GROSSANSICHT (HERO-STAGE, MAX. 4 SEK.) (v0.62) ---
+  // Jedes Objekt erhält eine maßgeschneiderte Choreografie (CSS-Bewegung + schwebende Effekt-Sprites/Partikel + Banner)
+  const OBJECT_STAGE_ANIMATIONS = {
+    // === WOHNZIMMER (11 OBJEKTE + DYNAMISCHE PUTZ-STUFEN) ===
+    "WOH_001_STAGEPIANO": {
+      motionClass: "stage-anim-piano-groove",
+      auraColor: "rgba(255, 146, 43, 0.55)",
+      bannerText: "🎹 88 Tasten im vollen Groove!",
+      particles: ["🎵", "🎶", "🎼", "✨", "🎹", "🎵", "🎶", "✨"],
+      trajectory: "float-up-notes"
+    },
+    "WOH_002_SYNTH": {
+      motionClass: "stage-anim-synth-pulse",
+      auraColor: "rgba(56, 189, 248, 0.65)",
+      bannerText: "🎛️ Filter-Sweep & 90s Synth-Vibes!",
+      particles: ["⚡", "🎛️", "🔊", "✨", "🎶", "💫", "⚡", "🔊"],
+      trajectory: "radial-synth-waves"
+    },
+    "WOH_003_UKULELEN": {
+      motionClass: "stage-anim-ukulele-strum",
+      auraColor: "rgba(250, 204, 21, 0.6)",
+      bannerText: "🎸 Aloha-Strumming & gute Laune!",
+      particles: ["🎵", "🌺", "🎶", "☀️", "✨", "🎸", "🎵", "🌺"],
+      trajectory: "strum-burst"
+    },
+    "WOH_004_MONITORBOXEN": {
+      motionClass: "stage-anim-speaker-bass",
+      auraColor: "rgba(168, 85, 247, 0.55)",
+      bannerText: "🎧 Kristallklarer Studio-Sound!",
+      particles: ["🔊", "🎵", "〰️", "🎶", "✨", "🎧", "🔊", "🎵"],
+      trajectory: "sonic-rings"
+    },
+    "WOH_005_FOTOALBUM": {
+      motionClass: "stage-anim-album-flip",
+      auraColor: "rgba(244, 114, 182, 0.55)",
+      bannerText: "📗 Herzhaft gelacht & Erinnerungen getankt!",
+      particles: ["😄", "❤️", "📸", "✨", "😂", "💛", "📸", "✨"],
+      trajectory: "warm-hearts"
+    },
+    "WOH_006_SOFAKISSEN": {
+      motionClass: "stage-anim-pillow-cozy",
+      auraColor: "rgba(74, 222, 128, 0.5)",
+      bannerText: "🛋️ Tiefenentspannt durchgeatmet!",
+      particles: ["🌿", "☁️", "✨", "😌", "💤", "🍃", "☁️", "✨"],
+      trajectory: "zen-feathers"
+    },
+    "WOH_007_TEETASSEN": {
+      motionClass: "stage-anim-tea-clink",
+      auraColor: "rgba(251, 191, 36, 0.58)",
+      bannerText: "☕ Wärmendes Gespräch bei heißem Tee!",
+      particles: ["♨️", "💬", "❤️", "✨", "🍵", "♨️", "💛", "💬"],
+      trajectory: "rising-steam"
+    },
+    "WOH_008_GAMEPADS": {
+      motionClass: "stage-anim-gamepad-rumble",
+      auraColor: "rgba(59, 130, 246, 0.65)",
+      bannerText: "🎮 Koop-Session mit Pia: Kolonie gerettet!",
+      particles: ["🎮", "💥", "⭐", "🏆", "⚡", "👾", "🚀", "⭐"],
+      trajectory: "arcade-combo"
+    },
+    "WOH_009_FERNSEHER": {
+      motionClass: "stage-anim-tv-cinema",
+      auraColor: "rgba(99, 102, 241, 0.6)",
+      bannerText: "🎬 Großes Kino & gemütlicher Filmabend!",
+      particles: ["🍿", "🎬", "⭐", "🎞️", "✨", "🍿", "🎥", "⭐"],
+      trajectory: "cinema-popcorn"
+    },
+    "WOH_010_WANDFOKUS": {
+      motionClass: "stage-anim-wall-zen",
+      auraColor: "rgba(45, 212, 191, 0.58)",
+      bannerText: "🕯️ 10 Min. Fokus-Stille: Kopf-Cache geleert!",
+      particles: ["🧘", "✨", "🕯️", "💫", "🧠", "✨", "🕯️", "💫"],
+      trajectory: "zen-halo"
+    },
+    "WOH_AUF_001": {
+      motionClass: "stage-anim-vacuum-sweep",
+      auraColor: "rgba(34, 197, 94, 0.6)",
+      bannerText: "🧹 Wohnzimmer-Samstagsputz: Alles blitzt!",
+      particles: ["✨", "🫧", "🧹", "🌟", "💨", "✨", "🫧", "🌟"],
+      trajectory: "clean-sweep-sparkles"
+    },
+
+    // === KINDERZIMMER (9 OBJEKTE) (v0.63) ===
+    "KIN_MB_001": {
+      motionClass: "stage-anim-train-chug",
+      auraColor: "rgba(239, 68, 68, 0.55)",
+      bannerText: "🚂 Tschu-Tschu! Volldampf auf dem Spielteppich!",
+      particles: ["🚂", "💨", "🚃", "🌟", "🎲", "💨", "🧸", "✨"],
+      trajectory: "float-up-notes"
+    },
+    "KIN_MB_002": {
+      motionClass: "stage-anim-craft-scribble",
+      auraColor: "rgba(244, 114, 182, 0.6)",
+      bannerText: "🎨 Buntes Meisterwerk am Basteltisch!",
+      particles: ["🎨", "🖍️", "✂️", "🌈", "⭐", "🖌️", "✨", "🌈"],
+      trajectory: "radial-synth-waves"
+    },
+    "KIN_MB_003": {
+      motionClass: "stage-anim-woodwork-craft",
+      auraColor: "rgba(217, 119, 6, 0.65)",
+      bannerText: "🪚 Paddywood Est. 1979: Feinste Handwerkskunst!",
+      particles: ["🪚", "🔨", "🪵", "✨", "📐", "🔥", "🏆", "✨"],
+      trajectory: "arcade-combo"
+    },
+    "KIN_MB_004": {
+      motionClass: "stage-anim-poster-pride",
+      auraColor: "rgba(250, 204, 21, 0.65)",
+      bannerText: "🌟 Gelato Girl glänzt: Stolz auf jeden Schritt!",
+      particles: ["🌟", "🍦", "🌸", "✨", "💛", "👑", "🌟", "✨"],
+      trajectory: "warm-hearts"
+    },
+    "KIN_MB_005": {
+      motionClass: "stage-anim-korg-jam",
+      auraColor: "rgba(239, 68, 68, 0.62)",
+      bannerText: "🎹 Rotes Korg-Minipiano: Frühförderungs-Jam!",
+      particles: ["🎹", "🎵", "🎶", "🔴", "✨", "🎼", "🎵", "🎶"],
+      trajectory: "float-up-notes"
+    },
+    "KIN_MB_006": {
+      motionClass: "stage-anim-unicorn-magic",
+      auraColor: "rgba(192, 132, 252, 0.65)",
+      bannerText: "🦄 Regenbogen-Einhorn-Magie & Gekicher!",
+      particles: ["🦄", "🌈", "💖", "✨", "😂", "⭐", "🌈", "💖"],
+      trajectory: "warm-hearts"
+    },
+    "KIN_MB_007": {
+      motionClass: "stage-anim-bookshelf-gratitude",
+      auraColor: "rgba(56, 189, 248, 0.55)",
+      bannerText: "📚 Vorlese-Zeit & warme Dankbarkeit!",
+      particles: ["📚", "💛", "📖", "✨", "🥰", "🌟", "💛", "✨"],
+      trajectory: "zen-feathers"
+    },
+    "KIN_AUF_001": {
+      motionClass: "stage-anim-bedtime-lullaby",
+      auraColor: "rgba(129, 140, 248, 0.62)",
+      bannerText: "📖 Gute-Nacht-Geschichte: Schlaf gut, kleine Ronja!",
+      particles: ["🌙", "⭐", "💤", "✨", "📖", "🧸", "🌙", "💤"],
+      trajectory: "zen-feathers"
+    },
+    "KIN_AUF_002": {
+      motionClass: "stage-anim-toybox-tidy",
+      auraColor: "rgba(34, 197, 94, 0.6)",
+      bannerText: "🧸 Spielzeugkiste gebändigt: Alles hüpft rein!",
+      particles: ["🧸", "🧱", "✨", "🎉", "🌟", "🎲", "🫧", "✨"],
+      trajectory: "arcade-combo"
+    },
+
+    // === DASHBOARD / ARBEITSZIMMER (9 OBJEKTE) (v0.65) ===
+    "DASH_001_PINNWAND": {
+      motionClass: "stage-anim-dash-pinnwand",
+      auraColor: "rgba(234, 88, 12, 0.62)",
+      bannerText: "📋 Kork-Pinnwand: Hürde gemeistert & abgehakt!",
+      particles: ["📌", "✅", "📋", "✨", "🏆", "⭐", "📌", "✅"],
+      trajectory: "arcade-combo"
+    },
+    "DASH_002_GOALS": {
+      motionClass: "stage-anim-dash-goals",
+      auraColor: "rgba(16, 185, 129, 0.62)",
+      bannerText: "🎯 Volltreffer! Top vorbereitet ins Gespräch!",
+      particles: ["🎯", "🏹", "🌟", "💼", "✨", "📈", "🎯", "🏆"],
+      trajectory: "radial-synth-waves"
+    },
+    "DASH_003_LAMPE": {
+      motionClass: "stage-anim-dash-vibecoding",
+      auraColor: "rgba(56, 189, 248, 0.68)",
+      bannerText: "💡 Vibe Coding: Hyperfokus-Licht & Code-Magie!",
+      particles: ["💡", "⚡", "💻", "🎧", "✨", "🚀", "🔥", "⚡"],
+      trajectory: "radial-synth-waves"
+    },
+    "DASH_004_ORGANIZER": {
+      motionClass: "stage-anim-dash-organizer",
+      auraColor: "rgba(245, 158, 11, 0.6)",
+      bannerText: "✒️ Täglicher AfA-Check: Sauber abgeheftet!",
+      particles: ["✒️", "📑", "🪙", "✅", "✨", "📂", "✒️", "✅"],
+      trajectory: "float-up-notes"
+    },
+    "DASH_005_RECHNER": {
+      motionClass: "stage-anim-dash-calculator",
+      auraColor: "rgba(34, 197, 94, 0.65)",
+      bannerText: "🧮 Papierkram-Endgegner besiegt (+300 XP)!",
+      particles: ["🧮", "💶", "📨", "✅", "✨", "🎉", "🧾", "🏆"],
+      trajectory: "arcade-combo"
+    },
+    "DASH_007_ROBOTER": {
+      motionClass: "stage-anim-dash-robot",
+      auraColor: "rgba(168, 85, 247, 0.68)",
+      bannerText: "🤖 Meta-Quest: ADHD Quest weiterentwickelt!",
+      particles: ["🤖", "⚙️", "💻", "⚡", "✨", "🕹️", "🚀", "🌟"],
+      trajectory: "arcade-combo"
+    },
+    "DASH_008_NOTIZBUCH": {
+      motionClass: "stage-anim-dash-notebook",
+      auraColor: "rgba(14, 165, 233, 0.6)",
+      bannerText: "📖 20 Min. Fokus-Recherche: Voller Überblick!",
+      particles: ["📖", "🔍", "💡", "✨", "📝", "🎯", "🔍", "✨"],
+      trajectory: "zen-feathers"
+    },
+    "DASH_009_ISTQB": {
+      motionClass: "stage-anim-dash-istqb",
+      auraColor: "rgba(99, 102, 241, 0.65)",
+      bannerText: "📚 ISTQB-Wissen sitzt: 0 Bugs, 100% Coverage!",
+      particles: ["📚", "🎓", "🐞", "✅", "🧠", "✨", "🔖", "🏆"],
+      trajectory: "float-up-notes"
+    },
+    "DASH_010_KOFFER": {
+      motionClass: "stage-anim-dash-suitcase",
+      auraColor: "rgba(250, 204, 21, 0.7)",
+      bannerText: "🧳 Bewerbung abgeschickt! Epischer Meilenstein!",
+      particles: ["🧳", "🚀", "✉️", "🪙", "🎉", "🏆", "🌟", "✨"],
+      trajectory: "arcade-combo"
+    },
+
+    // === KÜCHE (6 OBJEKTE) (v0.66) ===
+    "KUE_001_01": {
+      motionClass: "stage-anim-kue-dishwasher",
+      auraColor: "rgba(56, 189, 248, 0.65)",
+      bannerText: "🍽️ Geschirrspüler-Endgegner besiegt: Alles glänzt!",
+      particles: ["🍽️", "🫧", "✨", "🥂", "💧", "🌟", "🫧", "✨"],
+      trajectory: "rising-steam"
+    },
+    "KUE_002_01": {
+      motionClass: "stage-anim-kue-tablewipe",
+      auraColor: "rgba(34, 197, 94, 0.62)",
+      bannerText: "🧽 Küchentisch blitzblank: Freie Sicht & Ruhe!",
+      particles: ["🧽", "✨", "🍎", "🫧", "🌟", "🍋", "✨", "🫧"],
+      trajectory: "clean-sweep-sparkles"
+    },
+    "KUE_003_01": {
+      motionClass: "stage-anim-kue-cooking",
+      auraColor: "rgba(249, 115, 22, 0.65)",
+      bannerText: "🍳 Meister-Alchemie am Herd: Mittagessen steht!",
+      particles: ["🍳", "🔪", "🥕", "♨️", "🥘", "🌿", "✨", "♨️"],
+      trajectory: "arcade-combo"
+    },
+    "KUE_AUF_004": {
+      motionClass: "stage-anim-kue-trash",
+      auraColor: "rgba(16, 185, 129, 0.62)",
+      bannerText: "🗑️ Müll-Expedition erledigt (+125 XP)!",
+      particles: ["🗑️", "♻️", "✨", "💨", "🍃", "🪙", "🏆", "✨"],
+      trajectory: "arcade-combo"
+    },
+    "KUE_MB_001": {
+      motionClass: "stage-anim-kue-espresso",
+      auraColor: "rgba(217, 119, 6, 0.68)",
+      bannerText: "☕ Siebträger-Gold: Schwarzes Elixier gebraut!",
+      particles: ["☕", "♨️", "🫘", "✨", "🤎", "⚡", "♨️", "✨"],
+      trajectory: "rising-steam"
+    },
+    "KUE_MB_002": {
+      motionClass: "stage-anim-kue-zentangle",
+      auraColor: "rgba(168, 85, 247, 0.6)",
+      bannerText: "✒️ 10 Min. Zentangle-Flow: Kopf im Ruhemodus!",
+      particles: ["✒️", "🌀", "✨", "🧘", "〰️", "💫", "🌀", "✨"],
+      trajectory: "zen-feathers"
+    },
+
+    // === FLUR (8 OBJEKTE) (v0.67) ===
+    "FLU_001_01": {
+      motionClass: "stage-anim-flu-woodboard",
+      auraColor: "rgba(245, 158, 11, 0.65)",
+      bannerText: "✨ Kommoden-Holzbrett frei & blitzblank!",
+      particles: ["✨", "🪵", "🫧", "🌟", "🧹", "✨", "🫧", "🌟"],
+      trajectory: "clean-sweep-sparkles"
+    },
+    "FLU_002_01": {
+      motionClass: "stage-anim-flu-boardgames",
+      auraColor: "rgba(236, 72, 153, 0.62)",
+      bannerText: "🎲 Witzebuch & Spiele-Archiv: Herzhaft gelacht!",
+      particles: ["🎲", "😂", "🃏", "🤣", "✨", "🎭", "🎲", "😂"],
+      trajectory: "arcade-combo"
+    },
+    "FLU_003_01": {
+      motionClass: "stage-anim-flu-owlclock",
+      auraColor: "rgba(249, 115, 22, 0.68)",
+      bannerText: "🦉 5-Uhr-Eule jubelt: 10.000 Schritte im Kasten!",
+      particles: ["🦉", "⏰", "👟", "🌅", "🔥", "✨", "🦉", "👟"],
+      trajectory: "radial-synth-waves"
+    },
+    "FLU_004_01": {
+      motionClass: "stage-anim-flu-drawers",
+      auraColor: "rgba(16, 185, 129, 0.62)",
+      bannerText: "🗄️ Textil-Tetris gemeistert: Alles sauber im Fach!",
+      particles: ["🗄️", "👕", "🧦", "✨", "✅", "🧺", "👕", "✨"],
+      trajectory: "float-up-notes"
+    },
+    "FLU_005_01": {
+      motionClass: "stage-anim-flu-pinboard",
+      auraColor: "rgba(234, 88, 12, 0.62)",
+      bannerText: "📌 Familien-Pinnwand: Kindergarten-Start geglückt!",
+      particles: ["📌", "🎒", "👧", "💛", "✅", "✨", "📌", "🎒"],
+      trajectory: "warm-hearts"
+    },
+    "FLU_006_01": {
+      motionClass: "stage-anim-flu-keybowl",
+      auraColor: "rgba(56, 189, 248, 0.64)",
+      bannerText: "🕶️ Schlüssel, Brille & Sonne: Ab nach draußen!",
+      particles: ["🕶️", "🔑", "☀️", "🌳", "👣", "✨", "🕶️", "☀️"],
+      trajectory: "zen-feathers"
+    },
+    "FLU_007_01": {
+      motionClass: "stage-anim-flu-coatstand",
+      auraColor: "rgba(34, 197, 94, 0.62)",
+      bannerText: "🧥 Garderoben-Quest: Sicher wieder zuhause!",
+      particles: ["🧥", "🛍️", "🏡", "💛", "✨", "🎉", "🧥", "💛"],
+      trajectory: "warm-hearts"
+    },
+    "FLU_008_01": {
+      motionClass: "stage-anim-flu-empore-build",
+      auraColor: "rgba(250, 204, 21, 0.72)",
+      bannerText: "🧰 Großprojekt Empore & Flurebene (+1000 XP / +1000 G)!",
+      particles: ["🧰", "🪚", "🔩", "📏", "🪵", "🏆", "🪙", "🔥"],
+      trajectory: "arcade-combo"
+    },
+
+    // === BADEZIMMER (7 OBJEKTE) (v0.68) ===
+    "BAD_MB_001": {
+      motionClass: "stage-anim-bad-swimbag",
+      auraColor: "rgba(14, 165, 233, 0.68)",
+      bannerText: "🏊 Bahn frei! +5 MB Wasser-Frische-Boost!",
+      particles: ["🏊", "🌊", "🥽", "💦", "🐬", "✨", "🌊", "💦"],
+      trajectory: "radial-synth-waves"
+    },
+    "BAD_MB_002": {
+      motionClass: "stage-anim-bad-coldshower",
+      auraColor: "rgba(56, 189, 248, 0.72)",
+      bannerText: "🚿 Frostblitz-Dusche: 100 % hellwach & fokussiert!",
+      particles: ["🚿", "❄️", "💧", "⚡", "🧊", "✨", "❄️", "💧"],
+      trajectory: "arcade-combo"
+    },
+    "BAD_MB_003": {
+      motionClass: "stage-anim-bad-venla",
+      auraColor: "rgba(45, 212, 191, 0.65)",
+      bannerText: "💊 Tägliche Routine sitzt: Neuro-Buff aktiv (+50 XP)!",
+      particles: ["💊", "🧠", "⚡", "✨", "💚", "💧", "🧠", "✨"],
+      trajectory: "float-up-notes"
+    },
+    "BAD_MB_004": {
+      motionClass: "stage-anim-bad-mirror",
+      auraColor: "rgba(250, 204, 21, 0.62)",
+      bannerText: "🪞 Kurzer Blick in den Spiegel: Sei stolz & milde mit dir!",
+      particles: ["🪞", "💛", "✨", "🌿", "😌", "🌟", "💛", "✨"],
+      trajectory: "warm-hearts"
+    },
+    "BAD_AUF_001": {
+      motionClass: "stage-anim-bad-washmachine",
+      auraColor: "rgba(59, 130, 246, 0.65)",
+      bannerText: "🧺 Schleudergang läuft: Wäscheberg bezwungen!",
+      particles: ["🧺", "🫧", "🌀", "👕", "✨", "💧", "🫧", "🌀"],
+      trajectory: "radial-synth-waves"
+    },
+    "BAD_AUF_002": {
+      motionClass: "stage-anim-bad-cleaner",
+      auraColor: "rgba(34, 197, 94, 0.65)",
+      bannerText: "✨ Bad-Samstagsputz: Armaturen glänzen wie Zwergengold!",
+      particles: ["✨", "🧽", "🫧", "💎", "🌟", "💧", "✨", "🫧"],
+      trajectory: "clean-sweep-sparkles"
+    },
+    "BAD_AUF_003": {
+      motionClass: "stage-anim-bad-towels",
+      auraColor: "rgba(251, 191, 36, 0.62)",
+      bannerText: "🧖 Frisch aus dem Trockner: Flauschig gestapelt!",
+      particles: ["🧖", "♨️", "✨", "🧺", "☁️", "💛", "♨️", "✨"],
+      trajectory: "rising-steam"
+    },
+
+    // === SCHLAFZIMMER (8 OBJEKTE) (v0.69) ===
+    "SCH_MB_001": {
+      motionClass: "stage-anim-sch-massage",
+      auraColor: "rgba(244, 114, 182, 0.62)",
+      bannerText: "💆 Wellness-Oase: Schultern entspannt & +2 MB getankt!",
+      particles: ["💆", "🌸", "✨", "🕯️", "🌿", "💛", "🌸", "✨"],
+      trajectory: "zen-feathers"
+    },
+    "SCH_MB_002": {
+      motionClass: "stage-anim-sch-pillows",
+      auraColor: "rgba(251, 146, 60, 0.65)",
+      bannerText: "🕯️ Geborgenheit & Nähe: Sicherer Hafen zu zweit!",
+      particles: ["🧡", "💛", "✨", "🫂", "🌙", "💫", "🧡", "✨"],
+      trajectory: "warm-hearts"
+    },
+    "SCH_MB_003": {
+      motionClass: "stage-anim-sch-telescope",
+      auraColor: "rgba(99, 102, 241, 0.68)",
+      bannerText: "🔭 Sternklare Nacht: Weitblick & innere Ruhe (+2 MB)!",
+      particles: ["🔭", "🌙", "⭐", "🌌", "✨", "☄️", "🌟", "🌙"],
+      trajectory: "radial-synth-waves"
+    },
+    "SCH_MB_004": {
+      motionClass: "stage-anim-sch-yogamat",
+      auraColor: "rgba(34, 197, 94, 0.65)",
+      bannerText: "🧘 Sport-Quest & Planking: Körper-Akku aufgeladen!",
+      particles: ["🧘", "💪", "🔥", "⚡", "✨", "🏆", "💪", "🔥"],
+      trajectory: "arcade-combo"
+    },
+    "SCH_MB_005": {
+      motionClass: "stage-anim-sch-runningshoes",
+      auraColor: "rgba(14, 165, 233, 0.65)",
+      bannerText: "👟 10.000 Schritte im Kasten: Starke Ausdauer (+50 XP)!",
+      particles: ["👟", "👣", "💨", "🌳", "🏅", "✨", "👟", "👣"],
+      trajectory: "float-up-notes"
+    },
+    "SCH_MB_006": {
+      motionClass: "stage-anim-sch-journal",
+      auraColor: "rgba(250, 204, 21, 0.66)",
+      bannerText: "📓 Eigene Stärken schwarz auf weiß: Selbstwert-Schild aktiv!",
+      particles: ["📓", "✍️", "🌟", "🦁", "💡", "✨", "💛", "🌟"],
+      trajectory: "warm-hearts"
+    },
+    "SCH_MB_007": {
+      motionClass: "stage-anim-sch-candles",
+      auraColor: "rgba(239, 68, 68, 0.64)",
+      bannerText: "🕯️ Warmes Kerzenlicht & Zweisamkeit: Koop-Quest perfekt!",
+      particles: ["🕯️", "❤️", "🔥", "✨", "💖", "🌙", "❤️", "✨"],
+      trajectory: "warm-hearts"
+    },
+    "SCH_AUF_001": {
+      motionClass: "stage-anim-sch-cleanbed",
+      auraColor: "rgba(45, 212, 191, 0.65)",
+      bannerText: "🛏️ Schlafzimmer-Samstagsputz: Frische Bettwäsche (+150 XP)!",
+      particles: ["🛏️", "✨", "🫧", "🌬️", "🌟", "🪶", "✨", "🫧"],
+      trajectory: "clean-sweep-sparkles"
+    },
+
+    // === DYNAMISCHE PUTZ-SPRITES AN DER TÜR (STUFEN 1–3) ===
+    "CLEAN_STAGE_1": {
+      motionClass: "stage-anim-vacuum-sweep",
+      auraColor: "rgba(22, 163, 74, 0.65)",
+      bannerText: "🧹 Frühstart-Besen (x2.0): Raum sofort blitzblank!",
+      particles: ["🧹", "✨", "🌟", "💨", "🫧", "✨", "🏆", "🌟"],
+      trajectory: "clean-sweep-sparkles"
+    },
+    "CLEAN_STAGE_2": {
+      motionClass: "stage-anim-vacuum-sweep",
+      auraColor: "rgba(234, 88, 12, 0.62)",
+      bannerText: "🧹 Kehrset-Einsatz (x1.7): Alles weggefegt!",
+      particles: ["🧹", "✨", "🫧", "💨", "🌟", "✨", "🫧", "🌟"],
+      trajectory: "clean-sweep-sparkles"
+    },
+    "CLEAN_STAGE_3": {
+      motionClass: "stage-anim-vacuum-sweep",
+      auraColor: "rgba(220, 38, 38, 0.62)",
+      bannerText: "🔌 Staubsauger-Power (x1.4): Chaos besiegt!",
+      particles: ["🔌", "💨", "✨", "🫧", "🌟", "⚡", "✨", "🌟"],
+      trajectory: "clean-sweep-sparkles"
+    }
+  };
+
+  function getObjectStageAnimation(obj) {
+    if (!obj) return null;
+    if (obj.isDirtCleaner) {
+      return OBJECT_STAGE_ANIMATIONS[`CLEAN_STAGE_${obj.dirtLevel || 1}`] || OBJECT_STAGE_ANIMATIONS["CLEAN_STAGE_1"];
+    }
+    if (OBJECT_STAGE_ANIMATIONS[obj.id]) {
+      return OBJECT_STAGE_ANIMATIONS[obj.id];
+    }
+    // Fallback für Räume, die als Nächstes folgen
+    return {
+      motionClass: "stage-anim-generic-celebrate",
+      auraColor: "rgba(255, 146, 43, 0.55)",
+      bannerText: `✨ ${obj.name} erledigt!`,
+      particles: ["✨", "⭐", "🪙", "🎉", "✨", "⭐", "💫", "🎉"],
+      trajectory: "float-up-notes"
+    };
+  }
 
   function getLucasArtsQuip(obj) {
     if (!obj) return "";
@@ -2544,6 +3086,9 @@ const Engine = (function () {
         const parsed = JSON.parse(raw);
         const merged = Object.assign({}, defaultState, parsed);
         merged.settings = Object.assign({}, defaultState.settings, merged.settings || {});
+        if (!Array.isArray(merged.luggageChestItems)) {
+          merged.luggageChestItems = [];
+        }
         if (!merged.roomDirtLevels) {
           merged.roomDirtLevels = JSON.parse(JSON.stringify(defaultState.roomDirtLevels));
         }
@@ -2704,37 +3249,175 @@ const Engine = (function () {
     saveState();
   }
 
-  // --- AUFGABE ODER MB-AKTIVITÄT ABSCHLIESSEN ---
-  function completeObject(obj) {
+  // --- SPARZIEL-TRACKER FÜR GROSSPROJEKTE IM SHOP (v0.59 - ID- & Namens-synchron mit Google Sheet) ---
+  function getPinnedShopGoal() {
+    const rawPin = (state && state.settings && state.settings.pinnedShopGoalId) || "Effektpedal kaufen";
+    const normPin = String(rawPin).trim().toLowerCase();
+
+    // Legacy-Mapping falls noch SHOP_005 / SHOP_5 o.ä. gespeichert war
+    const legacyById = {
+      "shop_001": "wow spielen", "shop_1": "wow spielen",
+      "shop_002": "xbox spielen", "shop_2": "xbox spielen",
+      "shop_003": "steam spielen", "shop_3": "steam spielen",
+      "shop_004": "viennese", "shop_4": "viennese",
+      "shop_005": "effektpedal kaufen", "shop_5": "effektpedal kaufen",
+      "shop_006": "akai mpc sample", "shop_6": "akai mpc sample"
+    };
+    const targetNameNorm = legacyById[normPin] || normPin;
+
+    const item = SHOP_ITEMS.find(i =>
+      String(i.id || "").trim().toLowerCase() === normPin ||
+      String(i.name || "").trim().toLowerCase() === targetNameNorm
+    ) || SHOP_ITEMS.find(i => Number(i.preisGold) >= 10000) || SHOP_ITEMS[0];
+
+    if (!item) return null;
+    const currentGold = Math.max(0, Number(state.character.gold) || 0);
+    const targetGold = Math.max(1, Number(item.preisGold) || 1);
+    const rawPct = (currentGold / targetGold) * 100;
+    const pct = Math.min(100, Math.round(rawPct));
+    const exactPct = Math.min(100, Math.round(rawPct * 10) / 10);
+    const missingGold = Math.max(0, targetGold - currentGold);
+    const canAffordGold = currentGold >= targetGold;
+    const canAffordAp = (Number(state.character.ap) || 0) >= (Number(item.kostenAp) || 0);
+    return {
+      item,
+      id: item.id,
+      name: item.name,
+      currentGold,
+      targetGold,
+      pct,
+      exactPct,
+      missingGold,
+      canAffordGold,
+      canAffordAll: canAffordGold && canAffordAp
+    };
+  }
+
+  function setPinnedShopGoal(itemIdentifier) {
+    if (!state.settings) state.settings = {};
+    const found = SHOP_ITEMS.find((it, idx) =>
+      String(idx) === String(itemIdentifier) ||
+      it.id === itemIdentifier ||
+      it.name === itemIdentifier
+    );
+    // Speichere immer den eindeutigen Item-Namen, damit ein Google-Sheet-Sync (SHOP_1 vs SHOP_001) den Pin niemals überschreibt!
+    state.settings.pinnedShopGoalId = found ? found.name : itemIdentifier;
+    saveState();
+    return getPinnedShopGoal();
+  }
+
+  // --- PARALYSE-BRECHER (#1) & POMODORO-ZEIT-PARSER (#3) (v0.58) ---
+  function getQuestDurationMinutes(obj) {
+    if (!obj) return 5;
+    const txt = `${obj.name || ""} ${obj.anzeigeName || ""}`;
+    const match = txt.match(/(\d+)\s*(?:min|Min|Minuten)/i);
+    if (match && match[1]) {
+      return Math.max(1, parseInt(match[1], 10));
+    }
+    // Falls keine explizite Minutenzahl im Namen steht: Sinnvolle Kurz-Defaults (5 bis 15 Min)
+    if (txt.includes("Samstagsputz") || txt.includes("Bauprojekt") || txt.includes("Bewerbung")) return 15;
+    if (txt.includes("Vibe Coding") || txt.includes("ADHD Quest programmieren")) return 20;
+    if (txt.includes("Atemübung") || txt.includes("Venla")) return 2;
+    return 5;
+  }
+
+  // --- FLOW-COMBO, LIVE-RADAR, MIKROSCHRITT (25%) & UNDO-SNAPSHOT ENGINE (v0.61) ---
+  let lastActionUndoSnapshot = null;
+  let flowComboState = { count: 0, lastTimestamp: 0 };
+
+  function getFlowComboInfo() {
+    const now = Date.now();
+    // Flow-Combo hält 15 Minuten (900.000 ms) zwischen zwei erledigten Aufgaben an
+    if (flowComboState.lastTimestamp > 0 && (now - flowComboState.lastTimestamp) <= 15 * 60 * 1000) {
+      const mult = Math.min(1.5, Math.round((1.0 + Math.max(0, flowComboState.count - 1) * 0.1) * 10) / 10);
+      return { count: flowComboState.count, multiplier: mult, active: flowComboState.count >= 2 };
+    }
+    return { count: 0, multiplier: 1.0, active: false };
+  }
+
+  function getRoomRadarStats(roomName) {
+    const objs = (ROOM_OBJECTS[roomName] || []).filter(o => !o.isMapDoor && !o.isShopTrigger && !isObjectInLuggage(o.id));
+    const completed = (state && state.completedToday) || {};
+    const doneCount = objs.filter(o => !!completed[o.id]).length;
+    const totalCount = objs.length;
+    const openCount = Math.max(0, totalCount - doneCount);
+    const hasDirt = isRoomDirtEnabled(roomName);
+    const dirtLvl = hasDirt ? getRoomDirtLevel(roomName) : 0;
+    const dirtMult = hasDirt ? getDirtMultiplier(dirtLvl) : 1.0;
+    return {
+      roomName,
+      doneCount,
+      totalCount,
+      openCount,
+      hasDirt,
+      dirtLvl,
+      dirtMult
+    };
+  }
+
+  // --- AUFGABE ODER MB-AKTIVITÄT ABSCHLIESSEN (INKL. 2-MIN-MIKROSCHRITT, FLOW-COMBO & UNDO-SNAPSHOT) ---
+  function completeObject(obj, options = {}) {
+    const isMicroStep = !!options.isMicroStep;
+    const microFactor = isMicroStep ? 0.25 : 1.0;
+
+    // 1. Snapshot für "[↩ Rückgängig]" vor der Änderung anlegen
+    lastActionUndoSnapshot = {
+      character: JSON.parse(JSON.stringify(state.character)),
+      roomDirtLevels: JSON.parse(JSON.stringify(state.roomDirtLevels || {})),
+      completedToday: JSON.parse(JSON.stringify(state.completedToday || {})),
+      dailyMbSnapshots: JSON.parse(JSON.stringify(state.dailyMbSnapshots || {})),
+      flowComboState: Object.assign({}, flowComboState),
+      objName: obj.name
+    };
+
+    // 2. Flow-Combo aktualisieren (innerhalb von 15 Minuten steigt der XP-Multiplikator um +10% pro Aufgabe bis x1.5)
+    const nowMs = Date.now();
+    if (flowComboState.lastTimestamp > 0 && (nowMs - flowComboState.lastTimestamp) <= 15 * 60 * 1000) {
+      flowComboState.count += 1;
+    } else {
+      flowComboState.count = 1;
+    }
+    flowComboState.lastTimestamp = nowMs;
+    const comboMult = Math.min(1.5, Math.round((1.0 + Math.max(0, flowComboState.count - 1) * 0.1) * 10) / 10);
+
     const roomName = obj.raum || state.settings.currentRoom || "Flur";
     const dirtLvl = getRoomDirtLevel(roomName);
     const isCleaningQuest = !!(obj.isDirtCleaner || (obj.name && (obj.name.includes("Samstagsputz") || obj.name.includes("aufräumen") || obj.name.includes("Tisch abwischen"))));
-    const mult = (isCleaningQuest && dirtLvl >= 1) ? getDirtMultiplier(dirtLvl) : 1.0;
+    const dirtMult = (isCleaningQuest && dirtLvl >= 1 && !isMicroStep) ? getDirtMultiplier(dirtLvl) : 1.0;
 
-    const xpGain = Math.round((Number(obj.xp) || 0) * mult);
-    const goldGain = Math.round((Number(obj.gold) || 0) * mult);
-    const mbGain = Number(obj.mb) || 0;
-    const apGain = Number(obj.ap) || 0;
+    const rawXp = (Number(obj.xp) || 0) * dirtMult * comboMult * microFactor;
+    const rawGold = (Number(obj.gold) || 0) * dirtMult * microFactor;
+    const rawMb = (Number(obj.mb) || 0) * microFactor;
+    const rawAp = (Number(obj.ap) || 0) * microFactor;
 
-    if (isCleaningQuest && dirtLvl >= 1) {
-      state.roomDirtLevels[roomName] = 0; // Raum ist nach dem Putzen wieder blitzblank (Stufe 0)!
+    const xpGain = (Number(obj.xp) || 0) > 0 ? Math.max(1, Math.round(rawXp)) : 0;
+    const goldGain = (Number(obj.gold) || 0) > 0 ? Math.max(1, Math.round(rawGold)) : 0;
+    const mbGain = rawMb > 0 ? Math.max(1, Math.round(rawMb)) : Math.round(rawMb);
+    const apGain = (Number(obj.ap) || 0) > 0 ? (isMicroStep ? Math.max(0, Math.round(rawAp)) : Math.round(rawAp)) : 0;
+
+    if (isCleaningQuest && dirtLvl >= 1 && !isMicroStep) {
+      state.roomDirtLevels[roomName] = 0; // Raum ist nach dem vollen Putzen wieder blitzblank (Stufe 0)!
     }
 
     state.character.xp += xpGain;
     state.character.gold = Math.max(0, state.character.gold + goldGain);
     state.character.mb = Math.min(100, Math.max(0, state.character.mb + mbGain));
     state.character.ap = Math.max(0, state.character.ap + apGain);
-    state.completedToday[obj.id] = true;
+    if (!isMicroStep) {
+      state.completedToday[obj.id] = true;
+    }
 
     const now = new Date();
     const datumStr = now.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
     const zeitStr = now.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 
+    const logTitle = isMicroStep ? `👣 2-Min-Start: ${obj.name}` : obj.name;
+
     // Exakt nach Struktur deines Tabellenblatts "Questlog" (Spalten A bis H)
     state.questlog.unshift({
       datum: datumStr,
       uhrzeit: zeitStr,
-      aktivitaet: obj.name,
+      aktivitaet: logTitle,
       typ: obj.zielTabelle === "Aufgaben" ? "Aufgabe" : "Erholung",
       xp: xpGain,
       mb: mbGain,
@@ -2749,9 +3432,40 @@ const Engine = (function () {
     saveState();
 
     // Synchronisiert automatisch mit deinem Google Sheet via doPost(e)
-    if (obj.zielTabelle === "Aufgaben" || obj.zielTabelle === "MB Aktivitaeten") {
+    if (!isMicroStep && (obj.zielTabelle === "Aufgaben" || obj.zielTabelle === "MB Aktivitaeten")) {
       postToGoogleSheet(obj.zielTabelle, obj.name);
     }
+
+    return {
+      xpGain,
+      goldGain,
+      mbGain,
+      apGain,
+      dirtMult,
+      comboCount: flowComboState.count,
+      comboMult,
+      isMicroStep
+    };
+  }
+
+  function canUndoLastAction() {
+    return !!lastActionUndoSnapshot;
+  }
+
+  function undoLastAction() {
+    if (!lastActionUndoSnapshot) return { ok: false };
+    const snap = lastActionUndoSnapshot;
+    state.character = snap.character;
+    state.roomDirtLevels = snap.roomDirtLevels;
+    state.completedToday = snap.completedToday;
+    state.dailyMbSnapshots = snap.dailyMbSnapshots;
+    flowComboState = snap.flowComboState;
+    if (state.questlog && state.questlog.length > 0) {
+      state.questlog.shift();
+    }
+    lastActionUndoSnapshot = null;
+    saveState();
+    return { ok: true, objName: snap.objName };
   }
 
   // --- SHOP-KAUF (PRÜFT GOLD IN B10 UND AP IN D10 WIE IM APPS SCRIPT) ---
@@ -2822,11 +3536,27 @@ const Engine = (function () {
     resetObjectLayout,
     resetRoomLayout,
     exportRoomLayoutCode,
+    getLuggageChestItems,
+    isObjectInLuggage,
+    findObjectByIdAcrossRooms,
+    getLuggageChestObjectsDetailed,
+    storeObjectInLuggage,
+    restoreObjectFromLuggage,
+    emptyLuggageChest,
     TIME_PHASES,
     getActiveTimePhase,
     getWeeklyAdventurerBalance,
     LUCASARTS_QUIPS,
     getLucasArtsQuip,
+    OBJECT_STAGE_ANIMATIONS,
+    getObjectStageAnimation,
+    getPinnedShopGoal,
+    setPinnedShopGoal,
+    getQuestDurationMinutes,
+    getFlowComboInfo,
+    getRoomRadarStats,
+    canUndoLastAction,
+    undoLastAction,
     getState: () => state,
     saveState,
     shouldShowDailySplash,

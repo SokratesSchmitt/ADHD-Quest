@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="ADHD Quest">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="assets/avatar/avatar_happy.png">
-  <title>ADHD QUEST | Version 0.56</title>
+  <title>ADHD QUEST | Version 0.70</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -23,21 +23,28 @@
       <div class="intro-zoom-container">
         <img src="aq_schriftzugtitle.png" alt="ADHD Quest Startbild" id="intro-splash-img" class="intro-splash-img">
       </div>
-      <div class="intro-version-badge">Version 0.56 • Tippen zum Überspringen</div>
+      <div class="intro-version-badge">Version 0.70 • Tippen zum Überspringen</div>
     </div>
 
     <!-- ==================================================================
-         CLEAN FULLSCREEN HUD (v0.56): NUR SCHWEBENDER PROFILRAHMEN OBEN LINKS
+         CLEAN FULLSCREEN HUD (v0.70): NUR SCHWEBENDER PROFILRAHMEN OBEN LINKS
          ================================================================== -->
     <div class="floating-avatar-hud">
       <div class="avatar-popout-wrapper" onclick="openCharacterModal()" title="Charakterbogen, Werte & 10 Avatar-States öffnen">
         <div class="avatar-ring-bg" id="avatar-progress-ring"></div>
+        <div class="avatar-focus-timer-ring hidden" id="focus-timer-ring"></div>
         <img src="assets/avatar/avatar_happy.png" alt="Paddy Avatar" id="header-avatar-img" class="avatar-popout-sprite">
+        <div class="focus-timer-hud-pill hidden" id="focus-timer-hud-pill" onclick="event.stopPropagation(); handleFocusTimerPillClick();" title="Aktiver Fokus-Timer (Antippen zum Öffnen / Abschließen)">
+          ⏳ <span id="focus-timer-hud-text">20:00</span>
+        </div>
         <button class="wow-ring-addon-btn addon-pos-lupe" id="hint-magnifier-btn" onclick="event.stopPropagation(); triggerObjectHints();" title="🔍 Offene Gegenstände im Raum kurz aufleuchten lassen">
           🔍
         </button>
         <button class="wow-ring-addon-btn addon-pos-settings" id="hud-settings-btn" onclick="event.stopPropagation(); openSettingsModal();" title="⚙️ Einstellungen & UI-Rahmen anpassen">
           ⚙️
+        </button>
+        <button class="wow-ring-addon-btn addon-pos-dice" id="paralyse-breaker-btn" onclick="event.stopPropagation(); triggerParalyseBreaker();" title="🎲 Paralyse-Brecher: Zufällige schnelle Aufgabe für mich auswählen!">
+          🎲
         </button>
       </div>
       <div class="mini-stat-pill" id="mini-stat-pill" onclick="toggleMiniStatPill()" title="Live-Ressourcen (Antippen zum Ein-/Ausklappen)">
@@ -58,8 +65,65 @@
       <div id="ui-frame-overlay" class="ui-frame-overlay"></div>
       <div id="ui-frame-room-badge" class="ui-frame-room-badge hidden"></div>
       <nav id="bottom-room-dock" class="bottom-room-dock" aria-label="Schnell-Raumwechsel"></nav>
-      <!-- Raum-Spielerfigur entfernt (v0.56) für ruhigere Raum-Ansicht -->
+      <!-- Raum-Spielerfigur entfernt (v0.70) für ruhigere Raum-Ansicht -->
+            <!-- Scheibenwelt-Truhe ("Die Truhe" / The Luggage mit vielen kleinen Füßen) unten rechts im Entwicklermodus (v0.70) -->
+      <div id="dev-luggage-asset" class="dev-luggage-asset hidden" onclick="event.stopPropagation(); toggleLuggageDrawer();" title="🧰 Die Truhe (Intelligentes Birnbaumholz): Klicken zum Öffnen/Schließen oder Objekt im Dev-Modus hierher ziehen!">
+        <div class="luggage-count-badge" id="luggage-count-badge">0</div>
+        <img src="assets/sprite_dev_luggage.png" alt="Die Truhe" class="luggage-png-sprite" onerror="if(this.src.includes('assets/')){this.src='sprite_dev_luggage.png';}else{this.style.display='none'; this.nextElementSibling.style.display='block';}">
+        <svg class="luggage-svg-sprite" style="display:none;" viewBox="0 0 120 105" xmlns="http://www.w3.org/2000/svg">
+          <!-- Viele kleine trappelnde Füßchen unten (Terry Pratchetts "The Luggage") -->
+          <g class="luggage-feet-row">
+            <path d="M16 82 L14 96 L22 96 L20 82 Z" fill="#d97706" stroke="#1a120b" stroke-width="2.5"/>
+            <path d="M28 83 L26 98 L34 98 L32 83 Z" fill="#f59e0b" stroke="#1a120b" stroke-width="2.5"/>
+            <path d="M40 83 L39 97 L47 97 L45 83 Z" fill="#d97706" stroke="#1a120b" stroke-width="2.5"/>
+            <path d="M52 83 L51 99 L59 99 L58 83 Z" fill="#f59e0b" stroke="#1a120b" stroke-width="2.5"/>
+            <path d="M64 83 L63 97 L71 97 L70 83 Z" fill="#d97706" stroke="#1a120b" stroke-width="2.5"/>
+            <path d="M76 83 L75 99 L83 99 L82 83 Z" fill="#f59e0b" stroke="#1a120b" stroke-width="2.5"/>
+            <path d="M88 83 L87 97 L95 97 L93 83 Z" fill="#d97706" stroke="#1a120b" stroke-width="2.5"/>
+            <path d="M99 82 L98 96 L106 96 L104 82 Z" fill="#f59e0b" stroke="#1a120b" stroke-width="2.5"/>
+          </g>
+          <!-- Unterer Truhenkörper (Intelligentes Birnbaumholz mit Messingbeschlägen) -->
+          <rect x="10" y="44" width="100" height="41" rx="6" fill="#7c2d12" stroke="#1a120b" stroke-width="3.5"/>
+          <rect x="14" y="48" width="92" height="33" rx="3" fill="#9a3412"/>
+          <!-- Holzplanken-Linien -->
+          <line x1="14" y1="59" x2="106" y2="59" stroke="#431407" stroke-width="2"/>
+          <line x1="14" y1="70" x2="106" y2="70" stroke="#431407" stroke-width="2"/>
+          <!-- Dunkler Schlund + Zähne & rote Zunge im Spalt -->
+          <rect x="12" y="34" width="96" height="13" fill="#0f0b14" stroke="#1a120b" stroke-width="2.5"/>
+          <polygon points="18,35 23,43 28,35 33,43 38,35 43,43 48,35 53,43 58,35 63,43 68,35 73,43 78,35 83,43 88,35 93,43 98,35 103,43" fill="#fef3c7" stroke="#1a120b" stroke-width="1.2"/>
+          <path d="M52 43 Q60 53 68 43 Z" fill="#ef4444" stroke="#1a120b" stroke-width="1.5"/>
+          <!-- Gewölbter Truhendeckel (leicht geöffnet, schnappend) -->
+          <g class="luggage-lid-group">
+            <path d="M8 36 C8 14, 112 14, 112 36 Z" fill="#9a3412" stroke="#1a120b" stroke-width="3.5"/>
+            <path d="M24 19 L24 36 M96 19 L96 36" stroke="#f59e0b" stroke-width="4.5" stroke-linecap="round"/>
+          </g>
+          <!-- Messing-Gurte & Schlossplatte -->
+          <rect x="21" y="44" width="7" height="41" fill="#f59e0b" stroke="#1a120b" stroke-width="2"/>
+          <rect x="92" y="44" width="7" height="41" fill="#f59e0b" stroke="#1a120b" stroke-width="2"/>
+          <rect x="52" y="42" width="16" height="18" rx="3" fill="#fde047" stroke="#1a120b" stroke-width="2.5"/>
+          <circle cx="60" cy="49" r="2.5" fill="#1a120b"/>
+          <path d="M58 50 L57 56 L63 56 L62 50 Z" fill="#1a120b"/>
+        </svg>
+        <div class="luggage-label-tag">🧰 Die Truhe</div>
+      </div>
+
+      <!-- Halber Bildschirm (50% Höhe) Scrollbares Endlos-Truhen-Fenster (v0.70) -->
+      <div id="dev-luggage-drawer" class="dev-luggage-drawer hidden">
+        <div class="luggage-drawer-header">
+          <div class="luggage-drawer-title-wrap">
+            <span class="luggage-drawer-title">🧰 Die Truhe (Intelligentes Birnbaumholz)</span>
+            <span class="luggage-drawer-sub" id="luggage-drawer-subtitle">Endloses Inventar • Antippen zum Rausholen</span>
+          </div>
+          <div style="display:flex; gap:5px; align-items:center;">
+            <button type="button" class="dev-mini-btn accent" id="luggage-store-current-btn" onclick="storeSelectedDevObjectInLuggage()" title="Aktuell im Raum markiertes Objekt in die Truhe legen">📥 Reinlegen</button>
+            <button type="button" class="dev-mini-btn warn" onclick="restoreAllFromLuggage()" title="Alle eingelagerten Gegenstände wieder in ihre Räume zurückstellen">🔄 Alle raus</button>
+            <button type="button" class="modal-close" style="width:24px; height:24px; font-size:11px;" onclick="closeLuggageDrawer()">✕</button>
+          </div>
+        </div>
+        <div class="luggage-drawer-grid-scroll" id="luggage-drawer-grid"></div>
+      </div>
       <div id="dev-inspector-bar" class="dev-inspector-bar hidden"></div>
+      <div id="loot-particles-layer" class="loot-particles-layer"></div>
       <div id="loot-toast" class="loot-toast hidden"></div>
     </main>
 
@@ -79,9 +143,19 @@
           <div id="obj-modal-lucas-quip" class="lucasarts-quip-box"></div>
           <p id="obj-modal-desc" style="font-size:13.5px; font-weight:700; color:#1e293b; margin-bottom:10px;"></p>
           <div id="obj-modal-rewards" class="reward-badges-row"></div>
-          <button class="primary-action-btn" id="obj-complete-btn" onclick="confirmObjectAction()">
-            ✨ Loot sammeln & abhaken!
-          </button>
+          <div class="obj-modal-actions-stack">
+            <div class="obj-modal-secondary-row">
+              <button class="micro-step-action-btn" id="obj-micro-step-btn" onclick="confirmMicroStepAction()" title="Nimmt den Start-Druck: Nur 2 Minuten anfangen und sofort 25% Loot sichern!">
+                👣 Nur 2 Min. (25% Loot)
+              </button>
+              <button class="focus-timer-action-btn" id="obj-focus-timer-btn" onclick="startObjectFocusTimer()">
+                ⏳ Fokus-Timer
+              </button>
+            </div>
+            <button class="primary-action-btn" id="obj-complete-btn" onclick="confirmObjectAction()">
+              ✨ Loot sammeln & abhaken!
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -120,7 +194,7 @@
     <div class="modal-backdrop" id="log-modal" onclick="if(event.target===this) closeModal('log-modal')">
       <div class="modal-card">
         <div class="modal-header">
-          <span>📜 Tageschronik & System (v0.56)</span>
+          <span>📜 Tageschronik & System (v0.70)</span>
           <button class="modal-close" onclick="closeModal('log-modal')">✕</button>
         </div>
         <div class="modal-body">
@@ -166,7 +240,7 @@
     <div class="modal-backdrop" id="settings-modal" onclick="if(event.target===this) closeModal('settings-modal')">
       <div class="modal-card">
         <div class="modal-header">
-          <span>⚙️ Einstellungen & UI-Design (v0.56)</span>
+          <span>⚙️ Einstellungen & UI-Design (v0.70)</span>
           <button class="modal-close" onclick="closeModal('settings-modal')">✕</button>
         </div>
         <div class="modal-body" id="settings-modal-body" style="max-height:72vh; overflow-y:auto;"></div>
