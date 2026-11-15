@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }, 4500);
 });
 
-// --- 1. TÄGLICHER 5-SEKUNDEN INTRO-SPLASH-SCREEN (1x pro Tag | v0.70) ---
+// --- 1. TÄGLICHER 5-SEKUNDEN INTRO-SPLASH-SCREEN (1x pro Tag | v0.71) ---
 function initDailyIntroScreen(forceShow = false) {
   const introEl = document.getElementById("intro-screen");
   const splashImg = document.getElementById("intro-splash-img");
@@ -711,10 +711,20 @@ function renderAll() {
     }
   }
 
+  const activeTheme = (s.settings && s.settings.colorTheme) || "orange";
+  const isGoldTheme = activeTheme === "gold";
+  document.body.classList.toggle("theme-gold", isGoldTheme);
+  const shellEl = document.getElementById("app-shell");
+  if (shellEl) shellEl.classList.toggle("theme-gold", isGoldTheme);
+  const themeMeta = document.querySelector('meta[name="theme-color"]');
+  if (themeMeta) themeMeta.setAttribute("content", isGoldTheme ? "#eab308" : "#ff7a00");
+
   const ringEl = document.getElementById("avatar-progress-ring");
   if (ringEl) {
     const mbVal = Math.max(0, Math.min(100, Number(s.character.mb) || 0));
-    ringEl.style.background = `conic-gradient(#ff7a00 0% ${mbVal}%, #3b2314 ${mbVal}% 100%)`;
+    const ringMainCol = isGoldTheme ? "#facc15" : "#ff7a00";
+    const ringTrackCol = isGoldTheme ? "#3b2a10" : "#3b2314";
+    ringEl.style.background = `conic-gradient(${ringMainCol} 0% ${mbVal}%, ${ringTrackCol} ${mbVal}% 100%)`;
   }
 
   const roomName = s.settings.currentRoom || "Flur";
@@ -1397,7 +1407,7 @@ function openCharacterModal() {
   if (body) {
     body.innerHTML = `
       <div style="display:flex; align-items:center; gap:14px; background:#fff7ed; border:2px solid #fed7aa; border-radius:14px; padding:12px; margin-bottom:12px;">
-        <img id="modal-profile-ref-img" src="${getIdleAvatarFrameUrl()}" alt="Profilbild Referenz" style="width:116px; height:116px; border-radius:50%; object-fit:contain; object-position:center bottom; padding-top:2px; border:3.5px solid #ff7a00; image-rendering:auto; background:radial-gradient(circle at 50% 40%, #fff9db 0%, #ffd43b 70%, #f76707 100%); flex-shrink:0;">
+        <img id="modal-profile-ref-img" src="${getIdleAvatarFrameUrl()}" alt="Profilbild Referenz" style="width:116px; height:116px; border-radius:50%; object-fit:contain; object-position:center bottom; padding-top:2px; border:3.5px solid var(--theme-primary, #ff7a00); image-rendering:auto; background:radial-gradient(circle at 50% 40%, #fff9db 0%, #ffd43b 70%, #f76707 100%); flex-shrink:0;">
         <div style="flex:1;">
           <div style="font-weight:900; font-size:15px; color:#9a3412;">Offizielle Designreferenz (Paddy)</div>
           <div style="font-size:12px; color:#475569; margin-top:2px;">
@@ -1726,6 +1736,7 @@ function pulseMiniStatPill() {
 function renderUiFrameOverlay(roomName) {
   const s = Engine.getState();
   const activeFrameId = (s.settings && s.settings.uiFrame) || "frame_1_wood_gold";
+  const activeColorTheme = (s.settings && s.settings.colorTheme) || "orange";
   const framesList = (Engine.ASSETS && Engine.ASSETS.uiFrames) || [];
   const frameObj = framesList.find(f => f.id === activeFrameId) || framesList[0];
 
@@ -1936,6 +1947,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function openSettingsModal() {
   const s = Engine.getState();
   const activeFrameId = (s.settings && s.settings.uiFrame) || "frame_1_wood_gold";
+  const activeColorTheme = (s.settings && s.settings.colorTheme) || "orange";
   const showRoomBadge = !!(s.settings && s.settings.showRoomBadgeOnFrame);
   const showDock = s.settings ? (s.settings.showBottomRoomDock !== false) : true;
   const useBadge = !!(s.settings && s.settings.useProfileBadgeInHud);
@@ -1989,6 +2001,29 @@ function openSettingsModal() {
   const body = document.getElementById("settings-modal-body");
   if (body) {
     body.innerHTML = `
+      <div style="background:#fefce8; border:2px solid #facc15; border-radius:14px; padding:12px; margin-bottom:12px;">
+        <div style="font-weight:900; font-size:13px; color:#854d0e; margin-bottom:6px;">
+          🎨 DOMINANTER FARBTON (FARBSCHEMA):
+        </div>
+        <div style="font-size:11px; color:#713f12; margin-bottom:8px;">
+          Wähle zwischen klassischem ADHD-Quest-Orange oder dem warmen Introscreen-Gold/Gelb:
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <button type="button"
+                  class="secondary-btn"
+                  style="padding:9px 8px; font-size:12px; display:flex; align-items:center; justify-content:center; gap:6px; ${activeColorTheme === 'orange' ? 'background:linear-gradient(135deg,#ff7a00 0%,#ea580c 100%); color:#fff; border-color:#9a3412; box-shadow:0 4px 10px rgba(234,88,12,0.35);' : 'background:#fff; color:#9a3412; border-color:#fdba74;'}"
+                  onclick="selectColorTheme('orange')">
+            🟠 Standard-Orange ${activeColorTheme === 'orange' ? '✓' : ''}
+          </button>
+          <button type="button"
+                  class="secondary-btn"
+                  style="padding:9px 8px; font-size:12px; display:flex; align-items:center; justify-content:center; gap:6px; ${activeColorTheme === 'gold' ? 'background:linear-gradient(135deg,#fde047 0%,#eab308 100%); color:#422006; border-color:#a16207; box-shadow:0 4px 12px rgba(234,179,8,0.45);' : 'background:#fff; color:#854d0e; border-color:#fde047;'}"
+                  onclick="selectColorTheme('gold')">
+            🟡 Intro-Gold / Gelb ${activeColorTheme === 'gold' ? '✓' : ''}
+          </button>
+        </div>
+      </div>
+
       <div style="background:#fff7ed; border:2px solid #fed7aa; border-radius:14px; padding:12px; margin-bottom:12px;">
         <div style="font-weight:900; font-size:13px; color:#9a3412; margin-bottom:8px;">
           🖼️ 1. UI-UMRAHMUNG FÜR DIE HINTERGRUNDBILDER WÄHLEN:
@@ -2052,6 +2087,20 @@ function openSettingsModal() {
     `;
   }
   openModal("settings-modal");
+}
+
+function selectColorTheme(themeId) {
+  const s = Engine.getState();
+  if (!s.settings) s.settings = {};
+  s.settings.colorTheme = themeId === "gold" ? "gold" : "orange";
+  Engine.saveState();
+  renderAll();
+  openSettingsModal();
+  if (themeId === "gold") {
+    showLootToast("🟡 Farbschema aktiviert: Introscreen-Gold / Gelb!");
+  } else {
+    showLootToast("🟠 Farbschema aktiviert: Klassisches ADHD-Quest-Orange!");
+  }
 }
 
 function selectUiFrame(frameId) {

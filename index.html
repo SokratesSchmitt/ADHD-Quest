@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="ADHD Quest">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="assets/avatar/avatar_happy.png">
-  <title>ADHD QUEST | Version 0.70</title>
+  <title>ADHD QUEST | Version 0.71</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -23,11 +23,11 @@
       <div class="intro-zoom-container">
         <img src="aq_schriftzugtitle.png" alt="ADHD Quest Startbild" id="intro-splash-img" class="intro-splash-img">
       </div>
-      <div class="intro-version-badge">Version 0.70 • Tippen zum Überspringen</div>
+      <div class="intro-version-badge">Version 0.71 • Tippen zum Überspringen</div>
     </div>
 
     <!-- ==================================================================
-         CLEAN FULLSCREEN HUD (v0.70): NUR SCHWEBENDER PROFILRAHMEN OBEN LINKS
+         CLEAN FULLSCREEN HUD (v0.71): NUR SCHWEBENDER PROFILRAHMEN OBEN LINKS
          ================================================================== -->
     <div class="floating-avatar-hud">
       <div class="avatar-popout-wrapper" onclick="openCharacterModal()" title="Charakterbogen, Werte & 10 Avatar-States öffnen">
@@ -65,8 +65,8 @@
       <div id="ui-frame-overlay" class="ui-frame-overlay"></div>
       <div id="ui-frame-room-badge" class="ui-frame-room-badge hidden"></div>
       <nav id="bottom-room-dock" class="bottom-room-dock" aria-label="Schnell-Raumwechsel"></nav>
-      <!-- Raum-Spielerfigur entfernt (v0.70) für ruhigere Raum-Ansicht -->
-            <!-- Scheibenwelt-Truhe ("Die Truhe" / The Luggage mit vielen kleinen Füßen) unten rechts im Entwicklermodus (v0.70) -->
+      <!-- Raum-Spielerfigur entfernt (v0.71) für ruhigere Raum-Ansicht -->
+            <!-- Scheibenwelt-Truhe ("Die Truhe" / The Luggage mit vielen kleinen Füßen) unten rechts im Entwicklermodus (v0.71) -->
       <div id="dev-luggage-asset" class="dev-luggage-asset hidden" onclick="event.stopPropagation(); toggleLuggageDrawer();" title="🧰 Die Truhe (Intelligentes Birnbaumholz): Klicken zum Öffnen/Schließen oder Objekt im Dev-Modus hierher ziehen!">
         <div class="luggage-count-badge" id="luggage-count-badge">0</div>
         <img src="assets/sprite_dev_luggage.png" alt="Die Truhe" class="luggage-png-sprite" onerror="if(this.src.includes('assets/')){this.src='sprite_dev_luggage.png';}else{this.style.display='none'; this.nextElementSibling.style.display='block';}">
@@ -107,7 +107,7 @@
         <div class="luggage-label-tag">🧰 Die Truhe</div>
       </div>
 
-      <!-- Halber Bildschirm (50% Höhe) Scrollbares Endlos-Truhen-Fenster (v0.70) -->
+      <!-- Halber Bildschirm (50% Höhe) Scrollbares Endlos-Truhen-Fenster (v0.71) -->
       <div id="dev-luggage-drawer" class="dev-luggage-drawer hidden">
         <div class="luggage-drawer-header">
           <div class="luggage-drawer-title-wrap">
@@ -194,7 +194,7 @@
     <div class="modal-backdrop" id="log-modal" onclick="if(event.target===this) closeModal('log-modal')">
       <div class="modal-card">
         <div class="modal-header">
-          <span>📜 Tageschronik & System (v0.70)</span>
+          <span>📜 Tageschronik & System (v0.71)</span>
           <button class="modal-close" onclick="closeModal('log-modal')">✕</button>
         </div>
         <div class="modal-body">
@@ -240,7 +240,7 @@
     <div class="modal-backdrop" id="settings-modal" onclick="if(event.target===this) closeModal('settings-modal')">
       <div class="modal-card">
         <div class="modal-header">
-          <span>⚙️ Einstellungen & UI-Design (v0.70)</span>
+          <span>⚙️ Einstellungen & UI-Design (v0.71)</span>
           <button class="modal-close" onclick="closeModal('settings-modal')">✕</button>
         </div>
         <div class="modal-body" id="settings-modal-body" style="max-height:72vh; overflow-y:auto;"></div>

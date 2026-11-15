@@ -1,5 +1,5 @@
 /* ==========================================================================
-   ADHD QUEST – STYLESHEET v0.70 (CLEAN FULLSCREEN + CEL-SHADING / LUCASARTS)
+   ADHD QUEST – STYLESHEET v0.71 (CLEAN FULLSCREEN + CEL-SHADING / LUCASARTS)
    ========================================================================== */
 
 * {
@@ -2801,4 +2801,185 @@ html, body {
   0%   { transform: translateX(-10px) translateY(2px) rotate(-6deg) scale(1.04); filter: drop-shadow(0 0 10px #2dd4bf); }
   50%  { transform: translateX(0px) translateY(-10px) rotate(0deg) scale(1.15); filter: drop-shadow(0 0 26px #fde047) brightness(1.2); }
   100% { transform: translateX(10px) translateY(1px) rotate(6deg) scale(1.08); filter: drop-shadow(0 0 16px #38bdf8); }
+}
+
+
+/* ==========================================================================
+   19. NEU IN VERSION 0.71:
+       OPTIONALES FARBSCHEMA "INTROSCREEN-GOLD / GELB" (.theme-gold)
+       - Schaltet alle dominanten Orange-Akzente (#ff7a00 / #ea580c) auf das
+         leuchtende Gold/Gelb (#fde047 / #facc15 / #eab308) des neuen Introscreens um!
+   ========================================================================== */
+
+:root {
+  --theme-primary: #ff7a00;
+}
+
+body.theme-gold,
+.app-shell.theme-gold {
+  --theme-primary: #facc15;
+}
+
+/* Goldener Außen-Schimmer & feine goldene Rahmenkante analog zum neuen Introscreen */
+.app-shell.theme-gold {
+  box-shadow:
+    0 0 0 2.5px #eab308,
+    0 20px 60px rgba(0, 0, 0, 0.8),
+    0 0 38px rgba(250, 204, 21, 0.28);
+}
+
+/* Intro-Badge in Gold/Gelb */
+.theme-gold .intro-version-badge {
+  border-color: #fde047;
+  color: #fef08a;
+  box-shadow: 0 0 16px rgba(250, 204, 21, 0.45), 0 4px 14px rgba(0, 0, 0, 0.6);
+}
+
+/* Avatar-Ring & innere Sonne in strahlendem Gold/Gelb */
+.theme-gold .avatar-ring-bg {
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.68),
+    0 0 18px rgba(250, 204, 21, 0.42),
+    inset 0 0 0 2.5px #1a120b,
+    0 0 0 3px #eab308;
+}
+
+.theme-gold .avatar-ring-bg::after {
+  background: radial-gradient(circle at 50% 38%, #fefce8 0%, #fde047 64%, #ca8a04 100%);
+}
+
+/* WoW-Ring-Addon-Buttons & Mini-Stat-Pille in Gold/Gelb */
+.theme-gold .wow-ring-addon-btn {
+  border-color: #fde047;
+  color: #fef9c3;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7), 0 0 8px rgba(250, 204, 21, 0.35);
+}
+
+.theme-gold .mini-stat-pill {
+  border-color: #fde047;
+  color: #fef9c3;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.55), 0 0 10px rgba(250, 204, 21, 0.25);
+}
+
+@keyframes statPillPulseGold {
+  0%   { transform: scale(1); }
+  45%  { transform: scale(1.12); background: rgba(202, 138, 4, 0.96); border-color: #fef08a; color: #ffffff; }
+  100% { transform: scale(1); }
+}
+
+.theme-gold .mini-stat-pill.pulse-loot {
+  animation: statPillPulseGold 0.6s ease;
+}
+
+/* Smart-Badge oben rechts & unteres 7-Raum-Dock im Gold/Gelb-Look */
+.theme-gold .ui-frame-room-badge {
+  border-color: #fde047;
+  color: #fef9c3;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6), 0 0 12px rgba(250, 204, 21, 0.28);
+}
+
+.theme-gold .smart-badge-count {
+  background: rgba(250, 204, 21, 0.24);
+  border-color: #fde047;
+  color: #fef08a;
+}
+
+.theme-gold .bottom-room-dock {
+  border-color: #eab308;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.7), 0 0 14px rgba(250, 204, 21, 0.24);
+}
+
+.theme-gold .dock-room-btn {
+  border-color: rgba(254, 240, 138, 0.45);
+}
+
+.theme-gold .dock-room-btn.active-dock-room {
+  background: linear-gradient(135deg, #fde047 0%, #eab308 100%);
+  color: #422006;
+  border-color: #fef9c3;
+  box-shadow: 0 4px 14px rgba(250, 204, 21, 0.7);
+}
+
+/* Modals, Header, Buttons, Hero-Stage & Reward-Pills in Gold/Gelb */
+.theme-gold .modal-card {
+  border-color: #a16207;
+  background: #fefce8;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 0 1.5px #fde047;
+}
+
+.theme-gold .modal-header {
+  background: linear-gradient(135deg, #422006 0%, #854d0e 100%);
+  color: #fef08a;
+  border-bottom: 2px solid #fde047;
+}
+
+.theme-gold .modal-close {
+  border-color: #fde047;
+  color: #fef9c3;
+}
+
+.theme-gold .obj-hero-stage {
+  background: radial-gradient(circle at 50% 50%, #fefce8 0%, #fef9c3 68%, #fde047 100%);
+  border-color: #eab308;
+}
+
+.theme-gold .lucasarts-quip-box {
+  border-color: #fde047;
+}
+
+.theme-gold .lucasarts-quip-avatar {
+  border-color: #fde047;
+}
+
+.theme-gold .reward-pill {
+  background: #fef9c3;
+  border-color: #eab308;
+  color: #713f12;
+}
+
+.theme-gold .primary-action-btn {
+  background: linear-gradient(135deg, #fde047 0%, #eab308 100%);
+  color: #422006;
+  border-color: #854d0e;
+  box-shadow: 0 6px 16px rgba(234, 179, 8, 0.45);
+}
+
+.theme-gold .secondary-btn {
+  background: #fefce8;
+  color: #854d0e;
+  border-color: #facc15;
+}
+
+.theme-gold .top-btn {
+  background: linear-gradient(135deg, #facc15 0%, #eab308 100%);
+  color: #422006;
+  border-color: #a16207;
+}
+
+.theme-gold .loot-toast {
+  border-color: #fde047;
+  color: #fef9c3;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7), 0 0 16px rgba(250, 204, 21, 0.35);
+}
+
+.theme-gold .settings-option-card.active-frame {
+  border-color: #eab308;
+  background: #fef9c3;
+}
+
+/* Lupen-Hinweise, Raum-Hover & Map-Highlights im Gold-Modus */
+.theme-gold .room-sprite-hotspot:hover {
+  filter: drop-shadow(0 0 10px rgba(253, 224, 71, 0.85));
+}
+
+.theme-gold .map-room-sprite:hover,
+.theme-gold .map-room-sprite.active-room {
+  filter: drop-shadow(0 0 12px rgba(253, 224, 71, 0.98)) brightness(1.12);
+}
+
+.theme-gold .loot-flying-particle.loot-type-xp {
+  background: linear-gradient(135deg, #fde047 0%, #eab308 100%);
+  color: #422006;
+  border-color: #fefce8;
+  text-shadow: none;
 }
