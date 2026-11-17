@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }, 4500);
 });
 
-// --- 1. TÄGLICHER 5-SEKUNDEN INTRO-SPLASH-SCREEN (1x pro Tag | v0.73 TOP-100 EDITION) ---
+// --- 1. TÄGLICHER 5-SEKUNDEN INTRO-SPLASH-SCREEN (1x pro Tag | v0.75 TOP-100 EDITION) ---
 let isIntroDismissing = false;
 
 function initDailyIntroScreen(forceShow = false) {
