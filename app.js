@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }, 4500);
 });
 
-// --- 1. TÄGLICHER 5-SEKUNDEN INTRO-SPLASH-SCREEN (1x pro Tag | v0.72 TOP-100 EDITION) ---
+// --- 1. TÄGLICHER 5-SEKUNDEN INTRO-SPLASH-SCREEN (1x pro Tag | v0.73 TOP-100 EDITION) ---
 let isIntroDismissing = false;
 
 function initDailyIntroScreen(forceShow = false) {
@@ -1413,13 +1413,15 @@ function openLogModal() {
 }
 
 async function manualSheetSync() {
-  showLootToast("🔄 Synchronisiere mit Google Sheet...");
+  showLootToast("🔄 Synchronisiere Aufgaben, MB-Aktivitäten & Charakterbogen mit Google Sheet...");
   const res = await Engine.fetchFromGoogleSheet();
   if (res && res.ok) {
     renderAll();
-    showLootToast("✅ Charakterbogen-Werte erfolgreich aus Google Sheet geladen!");
+    const s = Engine.getState();
+    showLootToast(`✅ Sheet-Sync erfolgreich! (Lvl ${s.character.level} | ${s.character.gold} Gold | Alle Raum-Aufgaben & MB-Quests abgeglichen)`);
   } else {
-    showLootToast("ℹ️ Lokale Tabellen-Werte aktiv (Level 25 | 9424 Gold | 94% MB).");
+    const s = Engine.getState();
+    showLootToast(`ℹ️ Aktuelle Tabellen-Werte aktiv (Lvl ${s.character.level} | ${s.character.gold} Gold | ${s.character.mb}% MB).`);
   }
 }
 

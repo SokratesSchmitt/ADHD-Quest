@@ -13,7 +13,7 @@
  * - Achievements (Beständiger Geist, Wochenheld, Monatsveteran)
  */
 const Engine = (function () {
-  const APP_VERSION = "0.72";
+  const APP_VERSION = "0.73";
   const STORAGE_KEY = "ADHD_QUEST_SHEET_STATE_V0_38";
   const SPLASH_DATE_KEY = "adhdQuest_lastSplashDate";
 
@@ -418,8 +418,8 @@ const Engine = (function () {
       {
         id: "DASH_004_ORGANIZER",
         raum: "Dashboard",
-        name: "Täglicher Check AfA Bewerbungen",
-        anzeigeName: "Leder-Stifteorganizer (Täglicher Check AfA Bewerbungen)",
+        name: "Täglicher Check Aufräumen",
+        anzeigeName: "Leder-Stifteorganizer (Täglicher Check Aufräumen)",
         zielTabelle: "Aufgaben",
         verknuepfung: "A35",
         icon: "✒️",
@@ -475,8 +475,8 @@ const Engine = (function () {
       {
         id: "DASH_008_NOTIZBUCH",
         raum: "Dashboard",
-        name: "Tägliche Recherche Jobbörsen (20 min)",
-        anzeigeName: "Aufgeschlagenes Notizbuch (Recherche Jobbörsen / Deprexis)",
+        name: "Terminplanung",
+        anzeigeName: "Aufgeschlagenes Notizbuch (Terminplanung / Deprexis)",
         zielTabelle: "Aufgaben",
         verknuepfung: "A36",
         icon: "📖",
@@ -505,8 +505,8 @@ const Engine = (function () {
       {
         id: "DASH_010_KOFFER",
         raum: "Dashboard",
-        name: "Bewerbung geschrieben und abgeschickt",
-        anzeigeName: "Reisekoffer unten rechts (Bewerbung abgeschickt!)",
+        name: "Lästige Papierarbeit erledigt",
+        anzeigeName: "Reisekoffer unten rechts (Lästige Papierarbeit erledigt!)",
         zielTabelle: "Aufgaben",
         verknuepfung: "A41",
         icon: "🧳",
@@ -1970,7 +1970,7 @@ const Engine = (function () {
       {
             "id": "AUF_A35",
             "cellRef": "A35",
-            "name": "Täglicher Check AfA Bewerbungen",
+            "name": "Täglicher Check Aufräumen",
             "mb": 1,
             "xp": 25,
             "gold": 50,
@@ -1982,7 +1982,7 @@ const Engine = (function () {
       {
             "id": "AUF_A36",
             "cellRef": "A36",
-            "name": "Tägliche Recherche Jobbörsen (20 min)",
+            "name": "Terminplanung",
             "mb": 1,
             "xp": 25,
             "gold": 50,
@@ -2042,7 +2042,7 @@ const Engine = (function () {
       {
             "id": "AUF_A41",
             "cellRef": "A41",
-            "name": "Bewerbung geschrieben und abgeschickt",
+            "name": "Lästige Papierarbeit erledigt",
             "mb": 2,
             "xp": 500,
             "gold": 300,
@@ -2159,11 +2159,11 @@ const Engine = (function () {
       maxMb: 100,
       hp: 54,            // B4: Lebenspunkte (HP) = 54
       maxHp: 54,
-      level: 25,         // B6: Level = 25
-      xp: 59005,         // B8: Gesamt-XP = 59005
-      levelProgressText: "1405 / 4900 XP", // C8
-      gold: 9424,        // B10: Gold = 9424
-      ap: 7,             // D10: Aktionspunkte = 7
+      level: 28,         // B6: Level = 28 (Live-Sheet)
+      xp: 78225,         // B8: Gesamt-XP = 78225 (Live-Sheet)
+      levelProgressText: "5325 / 5500 XP", // C8 (Live-Sheet)
+      gold: 13931,       // B10: Gold = 13931 (Live-Sheet)
+      ap: 0,             // D10: Aktionspunkte = 0 (Live-Sheet)
       maxAp: 10,
       aktuelleQuest: "ISTQB Foundation Level", // C14
       streak: 5
@@ -2197,6 +2197,119 @@ const Engine = (function () {
 
   let state = loadState();
   applyCustomLayoutToObjects();
+  syncSheetCatalogToRoomObjects();
+
+  // Überträgt alle Live-Einträge (Namen, XP, Gold, MB, AP, Raum, Repräsentiert durch)
+  // aus dem Google Sheet automatisch über die Zellen-Verknüpfung (z.B. A35, A36, A41)
+  // auf die Raum-Objekte (ROOM_OBJECTS), das Raum-Buch und die Tür-Putz-Aufgaben!
+  function syncSheetCatalogToRoomObjects() {
+    const cat = (state && state.sheetCatalog) || DEFAULT_SHEET_CATALOG;
+    const aufList = (cat && Array.isArray(cat.aufgaben) && cat.aufgaben.length > 0) ? cat.aufgaben : DEFAULT_SHEET_CATALOG.aufgaben;
+    const mbList = (cat && Array.isArray(cat.mbAktivitaeten) && cat.mbAktivitaeten.length > 0) ? cat.mbAktivitaeten : DEFAULT_SHEET_CATALOG.mbAktivitaeten;
+
+    const aufByRef = {};
+    const aufByName = {};
+    aufList.forEach(item => {
+      if (!item || !item.name) return;
+      const ref = String(item.cellRef || item.id || "").replace(/^AUF_/, "").trim();
+      if (ref) aufByRef[ref] = item;
+      aufByName[item.name.trim()] = item;
+    });
+
+    const mbByRef = {};
+    const mbByName = {};
+    mbList.forEach(item => {
+      if (!item || !item.name) return;
+      const ref = String(item.cellRef || item.id || "").replace(/^MB_/, "").trim();
+      if (ref) mbByRef[ref] = item;
+      mbByName[item.name.trim()] = item;
+    });
+
+    // 1. DEFAULT_SHEET_CATALOG live aktualisieren (damit auch das Raum-Buch immer 1:1 synchron ist)
+    if (aufList !== DEFAULT_SHEET_CATALOG.aufgaben) {
+      DEFAULT_SHEET_CATALOG.aufgaben = aufList.map(a => ({
+        id: a.id || ("AUF_" + a.cellRef),
+        cellRef: a.cellRef,
+        name: a.name,
+        mb: Number(a.mb) || 0,
+        xp: Number(a.xp) || 0,
+        gold: Number(a.gold) || 0,
+        ap: Number(a.ap) || 0,
+        status: Boolean(a.status),
+        raum: a.raum || "",
+        repraesentiertDurch: a.repraesentiertDurch || "",
+        zielTabelle: "Aufgaben"
+      }));
+    }
+    if (mbList !== DEFAULT_SHEET_CATALOG.mbAktivitaeten) {
+      DEFAULT_SHEET_CATALOG.mbAktivitaeten = mbList.map(m => ({
+        id: m.id || ("MB_" + m.cellRef),
+        cellRef: m.cellRef,
+        name: m.name,
+        mb: Number(m.mb) || 0,
+        xp: Number(m.xp) || 0,
+        gold: Number(m.gold) || 0,
+        ap: Number(m.ap) || 0,
+        status: Boolean(m.status),
+        raum: m.raum || "",
+        repraesentiertDurch: m.repraesentiertDurch || "",
+        zielTabelle: "MB Aktivitaeten"
+      }));
+    }
+
+    // 2. Alle Raum-Hotspots in ROOM_OBJECTS anhand ihrer `verknuepfung` (z.B. "A35") mit den aktuellen Sheet-Daten abgleichen
+    let changedNamesCount = 0;
+    Object.keys(ROOM_OBJECTS).forEach(rKey => {
+      (ROOM_OBJECTS[rKey] || []).forEach(obj => {
+        if (obj.isMapDoor || obj.isShopTrigger || !obj.verknuepfung) return;
+        const ref = String(obj.verknuepfung).trim();
+        let sheetItem = null;
+        if (obj.zielTabelle === "Aufgaben") {
+          sheetItem = aufByRef[ref] || aufByName[obj.name];
+        } else if (obj.zielTabelle === "MB Aktivitaeten") {
+          sheetItem = mbByRef[ref] || mbByName[obj.name];
+        }
+        if (sheetItem && sheetItem.name) {
+          const oldName = obj.name;
+          const newName = String(sheetItem.name).trim();
+          if (oldName !== newName) {
+            changedNamesCount++;
+            // Aktualisiere auch den Klammer-Text in anzeigeName automatisch, falls der alte Name enthalten war
+            if (obj.anzeigeName && obj.anzeigeName.includes("(")) {
+              const prefix = obj.anzeigeName.split("(")[0].trim();
+              obj.anzeigeName = `${prefix} (${newName})`;
+            } else {
+              obj.anzeigeName = newName;
+            }
+          }
+          obj.name = newName;
+          if (sheetItem.xp !== undefined) obj.xp = Number(sheetItem.xp) || 0;
+          if (sheetItem.gold !== undefined) obj.gold = Number(sheetItem.gold) || 0;
+          if (sheetItem.mb !== undefined) obj.mb = Number(sheetItem.mb) || 0;
+          if (sheetItem.ap !== undefined) obj.ap = Number(sheetItem.ap) || 0;
+          if (sheetItem.repraesentiertDurch) obj.repr = String(sheetItem.repraesentiertDurch).trim();
+        }
+      });
+    });
+
+    // 3. Auch die dynamischen Tür-Putz-Aufgaben (doorCleaningCoords) über ihre Verknüpfung synchronisieren
+    Object.keys(ASSETS.doorCleaningCoords).forEach(rKey => {
+      const cfg = ASSETS.doorCleaningCoords[rKey];
+      if (!cfg || !cfg.verknuepfung) return;
+      const sheetItem = cfg.zielTabelle === "Aufgaben"
+        ? aufByRef[cfg.verknuepfung]
+        : mbByRef[cfg.verknuepfung];
+      if (sheetItem && sheetItem.name) {
+        cfg.taskName = String(sheetItem.name).trim();
+        cfg.baseXp = Number(sheetItem.xp) || 0;
+        cfg.baseGold = Number(sheetItem.gold) || 0;
+        cfg.baseMb = Number(sheetItem.mb) || 0;
+        cfg.baseAp = Number(sheetItem.ap) || 0;
+      }
+    });
+
+    return changedNamesCount;
+  }
 
   function applyCustomLayoutToObjects() {
     const custom = (state && state.customObjectLayout) || {};
@@ -2386,12 +2499,12 @@ const Engine = (function () {
     "DASH_001_PINNWAND": "„Plan A, Budget und die große Übersicht. Ich liebe es, wenn ein Plan funktioniert… oder zumindest bunt angepinnt ist.“",
     "DASH_002_GOALS": "„Meine GOALS-Checkliste. Wer braucht schon Charisma-Buff-Food, wenn man gut vorbereitet ins Gespräch geht?“",
     "DASH_003_LAMPE": "„Kopfhörer auf, Lampe an, Welt aus. Zeit, im Hyperfokus Code-Magie zu wirken, bis die Tasten glühen.“",
-    "DASH_004_ORGANIZER": "„Der tägliche Check der Bewerbungs-Quests. Bürokratie ist zwar kein geschmeidiger Bosskampf, droppt aber verlässlich 50 Gold.“",
+    "DASH_004_ORGANIZER": "„Der tägliche Aufräum-Check am Schreibtisch. Ordnung ist zwar kein geschmeidiger Bosskampf, droppt aber verlässlich 50 Gold und freie Sicht.“",
     "DASH_005_RECHNER": "„Papierkram und Rechnungen… kostet satte 2 Punkte Mentale Batterie, aber 300 XP sind ein verdammt überzeugendes Argument.“",
     "DASH_007_ROBOTER": "„Ich programmiere in einer App eine Quest darüber, wie ich diese App programmiere. Wenn das kein Meta-Gaming auf LucasArts-Niveau ist!“",
-    "DASH_008_NOTIZBUCH": "„20 Minuten gezielte Recherche im Netz – natürlich mit der eisernen Disziplin, nicht nach drei Klicks im Wikipedia-Kaninchenbau über mittelalterliche Belagerungswaffen zu landen.“",
+    "DASH_008_NOTIZBUCH": "„Das aufgeschlagene Notizbuch für die Terminplanung. Wer seine Quests rechtzeitig im Kalender einträgt, wird später nicht von spontanen Terminen gecrittet.“",
     "DASH_009_ISTQB": "„Boundary Value Analysis und Equivalence Partitioning… klingt wie ein Zauberspruch aus Dalaran, ist aber reines ISTQB-Wissen.“",
-    "DASH_010_KOFFER": "„Eine fertig abgeschickte Bewerbung! Das Gefühl beim Klick auf ‚Senden‘ schlägt jeden epischen Raid-Drop.“",
+    "DASH_010_KOFFER": "„Lästige Papierarbeit komplett erledigt und weggepackt! Dieses Gefühl von Freiheit schlägt jeden epischen Raid-Drop (+500 XP & +300 Gold!).“",
 
     // 3. WOHNZIMMER
     "WOH_001_STAGEPIANO": "„88 Tasten reines Dopamin. 20 Minuten spielen regeneriert mehr Mentale Batterie als jeder Heiltrank.“",
@@ -2622,7 +2735,7 @@ const Engine = (function () {
     "DASH_004_ORGANIZER": {
       motionClass: "stage-anim-dash-organizer",
       auraColor: "rgba(245, 158, 11, 0.6)",
-      bannerText: "✒️ Täglicher AfA-Check: Sauber abgeheftet!",
+      bannerText: "✒️ Täglicher Check Aufräumen: Klarschiff gemacht!",
       particles: ["✒️", "📑", "🪙", "✅", "✨", "📂", "✒️", "✅"],
       trajectory: "float-up-notes"
     },
@@ -2643,7 +2756,7 @@ const Engine = (function () {
     "DASH_008_NOTIZBUCH": {
       motionClass: "stage-anim-dash-notebook",
       auraColor: "rgba(14, 165, 233, 0.6)",
-      bannerText: "📖 20 Min. Fokus-Recherche: Voller Überblick!",
+      bannerText: "📖 Terminplanung steht: Voller Überblick!",
       particles: ["📖", "🔍", "💡", "✨", "📝", "🎯", "🔍", "✨"],
       trajectory: "zen-feathers"
     },
@@ -2657,7 +2770,7 @@ const Engine = (function () {
     "DASH_010_KOFFER": {
       motionClass: "stage-anim-dash-suitcase",
       auraColor: "rgba(250, 204, 21, 0.7)",
-      bannerText: "🧳 Bewerbung abgeschickt! Epischer Meilenstein!",
+      bannerText: "🧳 Lästige Papierarbeit erledigt! Epischer Meilenstein!",
       particles: ["🧳", "🚀", "✉️", "🪙", "🎉", "🏆", "🌟", "✨"],
       trajectory: "arcade-combo"
     },
@@ -3086,6 +3199,11 @@ const Engine = (function () {
       if (raw) {
         const parsed = JSON.parse(raw);
         const merged = Object.assign({}, defaultState, parsed);
+        if (parsed.version !== APP_VERSION) {
+          merged.version = APP_VERSION;
+          // Übernehme beim Versions-Upgrade auf v0.73 die frisch aus dem Google Sheet abgeglichenen Charakterwerte als Basis
+          merged.character = Object.assign({}, defaultState.character);
+        }
         merged.settings = Object.assign({}, defaultState.settings, merged.settings || {});
         if (!Array.isArray(merged.luggageChestItems)) {
           merged.luggageChestItems = [];
@@ -3244,8 +3362,9 @@ const Engine = (function () {
           objects: d.objects || []
         };
 
+        const updatedTasksCount = syncSheetCatalogToRoomObjects();
         saveState();
-        return { ok: true, data: d };
+        return { ok: true, data: d, updatedTasksCount: updatedTasksCount };
       }
     } catch (err) {
       console.warn("Offline-Modus aktiv (Sheet-GET optional):", err);
@@ -3620,6 +3739,7 @@ const Engine = (function () {
     shouldShowDailySplash,
     resetDailySplashLock,
     fetchFromGoogleSheet,
+    syncSheetCatalogToRoomObjects,
     completeObject,
     buyShopItem,
     exportBackup
