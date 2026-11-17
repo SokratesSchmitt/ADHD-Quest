@@ -13,7 +13,7 @@
  * - Achievements (Beständiger Geist, Wochenheld, Monatsveteran)
  */
 const Engine = (function () {
-  const APP_VERSION = "0.71";
+  const APP_VERSION = "0.72";
   const STORAGE_KEY = "ADHD_QUEST_SHEET_STATE_V0_38";
   const SPLASH_DATE_KEY = "adhdQuest_lastSplashDate";
 
@@ -2172,7 +2172,7 @@ const Engine = (function () {
       currentRoom: "Dashboard",
       liveSheetSync: true,
       uiFrame: "frame_1_wood_gold",
-      colorTheme: "gold",
+      colorTheme: "orange",
       showRoomBadgeOnFrame: true,
       miniStatPillCollapsed: false,
       showBottomRoomDock: true,
@@ -3143,6 +3143,60 @@ const Engine = (function () {
     }
   }
 
+  // --- TÄGLICH WECHSELNDE 90s-LUCASARTS-LADESPRÜCHE FÜRS INTRO (v0.72) ---
+  const INTRO_LUCASARTS_QUIPS = [
+    "☕ Kaffeetasse wird auf 92 °C Betriebstemperatur vorgeheizt…",
+    "🧰 Zähle die Füßchen der Scheibenwelt-Truhe… (1, 2, 3… viele!)",
+    "🎛️ Lade Soundblaster 16 & General-MIDI-Treiber… OK!",
+    "🏴‍☠️ Hinter dir, ein dreiköpfiger Affe! … Ach nein, nur der Alltags-Questlog.",
+    "🟣 Purpurtentakel wurde sicherheitshalber vom Stromnetz getrennt.",
+    "🪚 „Paddywood Est. 1979“-Werkbank und KVH-Balken sind ausgerichtet!",
+    "🎹 88 Tasten & Ukulele gestimmt – Dopamin-Synthese betriebsbereit!",
+    "⚡ Kalibriere Hyperfokus-Kompensator und 2-Minuten-Mikroschritte…",
+    "🎲 Würfle Initiative gegen den inneren Schweinehund… Kritischer Treffer!",
+    "🍽️ Warnung: Der Geschirrspüler spawnt im Dunkeln heimlich neue Löffel.",
+    "🦉 Die 5-Uhr-Eule im Flur beobachtet deinen Kaffee-Pegel wohlwollend.",
+    "🛡️ Ruhestein auf das Dashboard gesetzt – bereit für die heutige Quest!"
+  ];
+
+  function getDailyIntroQuip(forceRandom = false) {
+    if (forceRandom) {
+      return INTRO_LUCASARTS_QUIPS[Math.floor(Math.random() * INTRO_LUCASARTS_QUIPS.length)];
+    }
+    const now = new Date();
+    const dayIndex = (now.getFullYear() * 366 + (now.getMonth() + 1) * 31 + now.getDate()) % INTRO_LUCASARTS_QUIPS.length;
+    return INTRO_LUCASARTS_QUIPS[dayIndex];
+  }
+
+  // Warmer 90s-Adventure Sonic-Branding Akkord (FM/Chiptune-Arpeggio) für den Intro-Start
+  function playIntroChime() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const now = ctx.currentTime;
+      // Warmer D-Dur-9 / A-Dur Adventure-Fanfare-Chime
+      const notes = [
+        { freq: 293.66, start: 0.00, dur: 0.55, vol: 0.11, type: "triangle" }, // D4
+        { freq: 440.00, start: 0.09, dur: 0.55, vol: 0.11, type: "triangle" }, // A4
+        { freq: 554.37, start: 0.18, dur: 0.65, vol: 0.12, type: "sine" },     // C#5
+        { freq: 587.33, start: 0.28, dur: 0.85, vol: 0.15, type: "triangle" }, // D5
+        { freq: 880.00, start: 0.40, dur: 0.95, vol: 0.09, type: "sine" }      // A5 Glanz-Oberton
+      ];
+      notes.forEach(n => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = n.type;
+        osc.frequency.setValueAtTime(n.freq, now + n.start);
+        gain.gain.setValueAtTime(0.001, now + n.start);
+        gain.gain.linearRampToValueAtTime(n.vol, now + n.start + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.0008, now + n.start + n.dur);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + n.start);
+        osc.stop(now + n.start + n.dur + 0.02);
+      });
+    } catch (e) {}
+  }
+
   function playSynthSuccess() {
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -3549,6 +3603,9 @@ const Engine = (function () {
     getWeeklyAdventurerBalance,
     LUCASARTS_QUIPS,
     getLucasArtsQuip,
+    INTRO_LUCASARTS_QUIPS,
+    getDailyIntroQuip,
+    playIntroChime,
     OBJECT_STAGE_ANIMATIONS,
     getObjectStageAnimation,
     getPinnedShopGoal,

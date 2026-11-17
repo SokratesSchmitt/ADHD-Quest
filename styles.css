@@ -1,5 +1,5 @@
 /* ==========================================================================
-   ADHD QUEST – STYLESHEET v0.71 (CLEAN FULLSCREEN + CEL-SHADING / LUCASARTS)
+   ADHD QUEST – STYLESHEET v0.72 (CLEAN FULLSCREEN + CEL-SHADING / LUCASARTS)
    ========================================================================== */
 
 * {
@@ -2982,4 +2982,174 @@ body.theme-gold,
   color: #422006;
   border-color: #fefce8;
   text-shadow: none;
+}
+
+
+/* ==========================================================================
+   20. NEU IN VERSION 0.72:
+       TOP-100 INTRO-SPLASH-UPGRADE (LOGO-SHEEN, PARTIKEL, LUCASARTS-QUIP &
+       SANFTER ZOOM-THROUGH-ÜBERGANG)
+   ========================================================================== */
+
+/* Sanfter Zoom-Through & Crossfade beim Verlassen des Intros */
+.intro-overlay {
+  transition: opacity 0.42s cubic-bezier(0.22, 1, 0.36, 1), transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.intro-overlay.intro-fade-out {
+  opacity: 0;
+  transform: scale(1.06);
+  pointer-events: none;
+}
+
+/* Schräger Gold-Orange Lichtglanz (Sheen), der über das obere "ADHD QUEST"-Logo streicht */
+.intro-logo-sheen {
+  position: absolute;
+  top: 2%;
+  left: -120%;
+  width: 65%;
+  height: 32%;
+  background: linear-gradient(
+    115deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(254, 240, 138, 0.08) 35%,
+    rgba(255, 237, 213, 0.58) 50%,
+    rgba(255, 122, 0, 0.18) 65%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-24deg);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.intro-logo-sheen.animate-sheen {
+  animation: introLogoSheenSweep 2.8s cubic-bezier(0.22, 1, 0.36, 1) 0.35s forwards;
+}
+
+@keyframes introLogoSheenSweep {
+  0%   { left: -110%; opacity: 0; }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { left: 145%; opacity: 0; }
+}
+
+/* Dezente schwebende Funken & Kaffeedampf-Partikel auf dem Intro-Screen */
+.intro-ambient-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+  overflow: hidden;
+}
+
+.intro-sparkle-dot {
+  position: absolute;
+  font-size: 16px;
+  opacity: 0;
+  filter: drop-shadow(0 0 8px rgba(255, 122, 0, 0.9));
+  animation: introParticleFloat 3.2s ease-in-out infinite;
+}
+
+/* Positionen passend zum neuen Intro-Artwork (Logo links/rechts, Kaffeetasse Mitte, Truhe unten) */
+.intro-sparkle-dot.s1 { left: 18%; top: 18%; animation-delay: 0.1s; font-size: 18px; }
+.intro-sparkle-dot.s2 { left: 78%; top: 15%; animation-delay: 0.7s; font-size: 17px; }
+.intro-sparkle-dot.s3 { left: 52%; top: 50%; animation-delay: 0.3s; font-size: 19px; }
+.intro-sparkle-dot.s4 { left: 26%; top: 28%; animation-delay: 1.2s; font-size: 15px; }
+.intro-sparkle-dot.s5 { left: 72%; top: 76%; animation-delay: 0.9s; font-size: 16px; }
+
+@keyframes introParticleFloat {
+  0%   { transform: translateY(8px) scale(0.6); opacity: 0; }
+  35%  { opacity: 0.92; }
+  75%  { opacity: 0.75; }
+  100% { transform: translateY(-28px) scale(1.18); opacity: 0; }
+}
+
+/* Unterer Intro-HUD-Stack: Täglicher 90s-LucasArts-Spruch + Tap-to-Start Badge + 5s-Balken */
+.intro-hud-stack {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 348px;
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  pointer-events: none;
+}
+
+.intro-lucas-quip-pill {
+  width: 100%;
+  background: rgba(15, 11, 20, 0.88);
+  color: #fffbeb;
+  border: 1.5px solid #ff7a00;
+  border-radius: 14px;
+  padding: 7px 12px;
+  font-size: 11.5px;
+  font-weight: 800;
+  font-style: italic;
+  text-align: center;
+  line-height: 1.3;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.7), 0 0 12px rgba(255, 122, 0, 0.28);
+  backdrop-filter: blur(5px);
+  animation: introQuipSlideUp 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.theme-gold .intro-lucas-quip-pill {
+  border-color: #fde047;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.7), 0 0 12px rgba(250, 204, 21, 0.35);
+}
+
+@keyframes introQuipSlideUp {
+  0%   { transform: translateY(12px) scale(0.92); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* Überschreibe alte absolute Positionierung des Badges, da es jetzt im .intro-hud-stack sitzt */
+.intro-hud-stack .intro-version-badge {
+  position: static;
+  transform: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+}
+
+.intro-cta-pulse {
+  color: #fde047;
+  animation: introCtaPulse 1.1s ease-in-out infinite alternate;
+}
+
+@keyframes introCtaPulse {
+  0%   { opacity: 0.78; }
+  100% { opacity: 1; text-shadow: 0 0 8px rgba(253, 224, 71, 0.85); }
+}
+
+.intro-progress-track {
+  width: 76%;
+  height: 4px;
+  background: rgba(15, 11, 20, 0.75);
+  border: 1px solid rgba(255, 122, 0, 0.55);
+  border-radius: 999px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.intro-progress-fill {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #ff7a00 0%, #fde047 100%);
+  transform-origin: left center;
+}
+
+.intro-progress-fill.animate-progress {
+  animation: introProgressFillAnim 5000ms linear forwards;
+}
+
+@keyframes introProgressFillAnim {
+  0%   { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
 }

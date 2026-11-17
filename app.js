@@ -22,31 +22,69 @@ document.addEventListener("DOMContentLoaded", async () => {
   }, 4500);
 });
 
-// --- 1. TÄGLICHER 5-SEKUNDEN INTRO-SPLASH-SCREEN (1x pro Tag | v0.71) ---
+// --- 1. TÄGLICHER 5-SEKUNDEN INTRO-SPLASH-SCREEN (1x pro Tag | v0.72 TOP-100 EDITION) ---
+let isIntroDismissing = false;
+
 function initDailyIntroScreen(forceShow = false) {
   const introEl = document.getElementById("intro-screen");
   const splashImg = document.getElementById("intro-splash-img");
+  const sheenEl = document.getElementById("intro-logo-sheen");
+  const progEl = document.getElementById("intro-progress-fill");
+  const quipEl = document.getElementById("intro-lucas-quip-pill");
   if (!introEl || !splashImg) return;
 
   if (forceShow || Engine.shouldShowDailySplash()) {
     clearTimeout(introTimer);
-    introEl.classList.remove("hidden");
+    isIntroDismissing = false;
+    introEl.classList.remove("hidden", "intro-fade-out");
+
+    // Täglich wechselnder (oder beim manuellen Testen zufälliger) 90s-LucasArts-Spruch
+    if (quipEl && Engine.getDailyIntroQuip) {
+      quipEl.textContent = Engine.getDailyIntroQuip(forceShow);
+    }
+
+    // Reset & Start: Ken-Burns-Zoom + Logo-Lichtglanz + 5s-Progress-Bar
     splashImg.classList.remove("animate-zoom");
+    if (sheenEl) sheenEl.classList.remove("animate-sheen");
+    if (progEl) progEl.classList.remove("animate-progress");
     void splashImg.offsetWidth;
     splashImg.classList.add("animate-zoom");
+    if (sheenEl) sheenEl.classList.add("animate-sheen");
+    if (progEl) progEl.classList.add("animate-progress");
+
+    // Sonic Branding: Warmer 90s-Adventure Chime (falls Browser Audio bereits erlaubt)
+    if (Engine.playIntroChime) {
+      Engine.playIntroChime();
+    }
 
     introTimer = setTimeout(() => {
-      dismissIntroScreen();
+      dismissIntroScreen(false);
     }, 5000);
   } else {
     introEl.classList.add("hidden");
   }
 }
 
-function dismissIntroScreen() {
-  clearTimeout(introTimer);
+function dismissIntroScreen(byUserTap = true) {
+  if (isIntroDismissing) return;
   const introEl = document.getElementById("intro-screen");
-  if (introEl) introEl.classList.add("hidden");
+  if (!introEl || introEl.classList.contains("hidden")) return;
+
+  isIntroDismissing = true;
+  clearTimeout(introTimer);
+
+  // Falls beim Auto-Start Audio durch Browser-Autoplay-Policy blockiert war, klingt der Chime sanft beim Antippen
+  if (byUserTap && Engine.playIntroChime) {
+    Engine.playIntroChime();
+  }
+
+  // Sanfter Zoom-Through & Crossfade in den aktuellen Raum (statt hartem Schnitt)
+  introEl.classList.add("intro-fade-out");
+  setTimeout(() => {
+    introEl.classList.add("hidden");
+    introEl.classList.remove("intro-fade-out");
+    isIntroDismissing = false;
+  }, 420);
 }
 
 function replayDailyIntro() {
