@@ -1,0 +1,15 @@
+node_modules/
+dist/
+
+# Native build output
+android/.gradle/
+android/app/build/
+android/build/
+src-tauri/target/
+
+# Local IDE and operating-system files
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db

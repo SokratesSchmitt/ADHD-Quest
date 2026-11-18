@@ -1,0 +1,27 @@
+{
+  "name": "adhd-quest-private-app",
+  "version": "0.75.0",
+  "private": true,
+  "type": "module",
+  "description": "Private Android and Windows builds of ADHD Quest",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node scripts/build-web.mjs",
+    "verify": "npm run build && node --check app.js && node --check engine.js && node --check scripts/build-web.mjs && node --check scripts/verify-build.mjs && node scripts/verify-build.mjs",
+    "android:sync": "npm run build && cap sync android",
+    "android:open": "npm run android:sync && cap open android",
+    "android:build:debug": "npm run android:sync && cd android && ./gradlew assembleDebug",
+    "windows:dev": "npm run build && tauri dev",
+    "windows:build": "npm run build && tauri build"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/core": "^8.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.0.0",
+    "@tauri-apps/cli": "^2.0.0"
+  }
+}

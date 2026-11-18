@@ -1,0 +1,8 @@
+{
+  "appId": "de.sokratesschmitt.adhdquest",
+  "appName": "ADHD Quest",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  }
+}

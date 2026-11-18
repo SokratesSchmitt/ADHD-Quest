@@ -67,7 +67,7 @@ const Engine = (function () {
         "assets/bg_schlafzimmer_dirty_s3.jpg"
       ]
     },
-    luggageSprite: "assets/sprite_dev_luggage.png",
+    luggageSprite: null,
     cleaningToolSprites: {
       1: "assets/cleaning_sprites/sprite_clean_besen_s1.png",
       2: "assets/cleaning_sprites/sprite_clean_kehrset_s2.png",
@@ -723,7 +723,7 @@ const Engine = (function () {
         icon: "🍽️",
         iconUrl: "assets/icons/icon_kue_001.png",
         spriteUrl: "assets/kueche_sprites/sprite_kue_geschirrspueler.png",
-        soundUrl: "https://raw.githubusercontent.com/SokratesSchmitt/ADHD-Quest/main/sounds/sfx_kue_001.mp3",
+        soundUrl: "sfx/sfx_kue_001.mp3",
         iconName: "icon_kue_001.png",
         soundName: "sfx_kue_001.mp3",
         mb: 0, xp: 125, gold: 10, ap: 1,
@@ -742,7 +742,7 @@ const Engine = (function () {
         icon: "🧽",
         iconUrl: "assets/icons/icon_kue_putzeimer.png",
         spriteUrl: "assets/kueche_sprites/sprite_kue_obst_putzset.png",
-        soundUrl: "https://raw.githubusercontent.com/SokratesSchmitt/ADHD-Quest/main/sounds/sfx_kue_002.mp3",
+        soundUrl: "sfx/sfx_kue_002.mp3",
         iconName: "icon_kue_002.png",
         soundName: "sfx_kue_002.mp3",
         mb: 0, xp: 5, gold: 5, ap: 1,
@@ -761,7 +761,7 @@ const Engine = (function () {
         icon: "🍳",
         iconUrl: "assets/icons/icon_kue_schneidebrett_topf.png",
         spriteUrl: "assets/kueche_sprites/sprite_kue_schneidebrett_topf.png",
-        soundUrl: "https://raw.githubusercontent.com/SokratesSchmitt/ADHD-Quest/main/sounds/sfx_kue_003.mp3",
+        soundUrl: "sfx/sfx_kue_003.mp3",
         iconName: "icon_kue_003.png",
         soundName: "sfx_kue_003.mp3",
         mb: 0, xp: 125, gold: 1, ap: 1,
@@ -3253,8 +3253,7 @@ const Engine = (function () {
     playSynthSuccess();
     if (soundUrl) {
       try {
-        const cleanUrl = soundUrl.replace("/sfx/", "/sounds/");
-        const audio = new Audio(cleanUrl);
+        const audio = new Audio(soundUrl);
         audio.volume = 0.7;
         audio.play().catch(() => {});
       } catch (e) {}
